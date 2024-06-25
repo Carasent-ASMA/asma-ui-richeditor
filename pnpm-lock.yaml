@@ -18,60 +18,30 @@ importers:
       '@emotion/styled':
         specifier: ^11.11.0
         version: 11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0)
-      '@fontsource/material-icons':
-        specifier: ^5.0.4
-        version: 5.0.16
       '@fontsource/roboto':
         specifier: ^5.0.4
         version: 5.0.12
-      '@iconify/react':
-        specifier: ^4.1.1
-        version: 4.1.1(react@18.2.0)
       '@mui/material':
         specifier: ^5.13.7
         version: 5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@tanstack/react-table':
-        specifier: ^8.10.0
-        version: 8.10.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
-      date-fns:
-        specifier: ^2.30.0
-        version: 2.30.0
       immer:
         specifier: ^9.*
         version: 9.0.21
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
-      material-ui-popup-state:
-        specifier: ^5.0.10
-        version: 5.0.10(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       node:
         specifier: 18.17.0
         version: 18.17.0
-      notistack:
-        specifier: ^3.0.1
-        version: 3.0.1(csstype@3.1.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: ^18.2.0
         version: 18.2.0
-      react-day-picker:
-        specifier: ^8.8.2
-        version: 8.8.2(date-fns@2.30.0)(react@18.2.0)
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       react-quill:
         specifier: ^2.0.0
         version: 2.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      sass:
-        specifier: ^1.77.5
-        version: 1.77.5
-      vite-plugin-css-injected-by-js:
-        specifier: ^3.5.1
-        version: 3.5.1(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2))
     devDependencies:
       '@changesets/cli':
         specifier: ^2.26.2
@@ -148,6 +118,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.0.0
         version: 4.0.0(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2))
+      asma-core-ui:
+        specifier: 3.1.0-3
+        version: 3.1.0-3(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@mui/material@5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(csstype@3.1.2)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2))
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.24)
@@ -199,6 +172,9 @@ importers:
       vite:
         specifier: ^4.3.9
         version: 4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2)
+      vite-plugin-css-injected-by-js:
+        specifier: ^3.5.1
+        version: 3.5.1(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2))
       vite-plugin-dts:
         specifier: ^3.1.1
         version: 3.1.1(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2)(typescript@5.0.4)
@@ -1488,8 +1464,8 @@ packages:
   '@floating-ui/utils@0.1.1':
     resolution: {integrity: sha512-m0G6wlnhm/AX0H12IOWtK8gASEMffnX08RtKkCgTdHb9JpHKGloI7icFfLg9ZmQeavcvR0PKmzxClyuFPSjKWw==}
 
-  '@fontsource/material-icons@5.0.16':
-    resolution: {integrity: sha512-QjlHDR78ojpZfHEHJE0ltDYwyX0pWT6iMS2I9e/bJenVSktFcM+iyCHwjKmA+SDaLf5ASmx1QZNuNT4DNmsrHg==}
+  '@fontsource/material-icons@5.0.18':
+    resolution: {integrity: sha512-2DL5z2yKWE+kXQrBiUTwIOMQjhs6t+EoPql8Ai4N6t2mjUhBdi2RChW44V3z1WgwupoqILXrAa4/id4/AuruMQ==}
 
   '@fontsource/roboto@5.0.12':
     resolution: {integrity: sha512-x0o17jvgoSSbS9OZnUX2+xJmVRvVCfeaYJjkS7w62iN7CuJWtMf5vJj8LqgC7ibqIkitOHVW+XssRjgrcHn62g==}
@@ -2734,15 +2710,15 @@ packages:
   '@swc/types@0.1.4':
     resolution: {integrity: sha512-z/G02d+59gyyUb7KYhKi9jOhicek6QD2oMaotUyG+lUkybpXoV49dY9bj7Ah5Q+y7knK2jU67UTX9FyfGzaxQg==}
 
-  '@tanstack/react-table@8.10.0':
-    resolution: {integrity: sha512-FNhKE3525hryvuWw90xRbP16qNiq7OLJkDZopOKcwyktErLi1ibJzAN9DFwA/gR1br9SK4StXZh9JPvp9izrrQ==}
+  '@tanstack/react-table@8.17.3':
+    resolution: {integrity: sha512-5gwg5SvPD3lNAXPuJJz1fOCEZYk9/GeBFH3w/hCgnfyszOIzwkwgp5I7Q4MJtn0WECp84b5STQUDdmvGi8m3nA==}
     engines: {node: '>=12'}
     peerDependencies:
-      react: '>=16'
-      react-dom: '>=16'
+      react: '>=16.8'
+      react-dom: '>=16.8'
 
-  '@tanstack/table-core@8.10.0':
-    resolution: {integrity: sha512-e701yAJ18aGDP6mzVworlFAmQ+gi3Wtqx5mGZUe2BUv4W4D80dJxUfkHdtEGJ6GryAnlCCNTej7eaJiYmPhyYg==}
+  '@tanstack/table-core@8.17.3':
+    resolution: {integrity: sha512-mPBodDGVL+fl6d90wUREepHa/7lhsghg2A3vFpakEhrhtbIlgNAZiMr7ccTgak5qbHqF14Fwy+W1yFWQt+WmYQ==}
     engines: {node: '>=12'}
 
   '@testing-library/dom@9.3.1':
@@ -3406,6 +3382,16 @@ packages:
 
   asap@2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
+
+  asma-core-ui@3.1.0-3:
+    resolution: {integrity: sha512-L0BVg3d1JGi6OFInbkqFotYvNzowy+k1OGhgNgL7pDW2Buu8rwdfmGOCECSxKrc7Zy/qLRxTlmr9x/qzk+GA+g==}
+    peerDependencies:
+      '@emotion/react': ^11.*
+      '@emotion/styled': ^11.*
+      '@mui/material': ^5.*
+      immer: ^9.*
+      react: ^18.*
+      react-dom: ^18.*
 
   assert@2.1.0:
     resolution: {integrity: sha512-eLHpSK/Y4nhMJ07gDaAzoX/XAKS8PSaojml3M0DM4JpV1LAi5JOJ/p6H/XWrl8L+DzVEvVCW1z3vWAaB9oTsQw==}
@@ -6190,9 +6176,11 @@ packages:
     peerDependencies:
       react: '>= 0.14.0'
 
-  material-ui-popup-state@5.0.10:
-    resolution: {integrity: sha512-gd0DI8skwCSdth/j/yndoIwNkS2eDusosTe5hyPZ3jbrMzDkbQBs+tBbwapQ9hLfgiVLwICd1mwyerUV9Y5Elw==}
+  material-ui-popup-state@5.1.2:
+    resolution: {integrity: sha512-+MPpydg2a/NqSbF4vNKbsHeEktiH6j0OPtNud0ZbhElKRc915XdyNH3Z7N+lL/l1erHcsCHB85izHC+zc6GgmQ==}
+    engines: {node: '>=16'}
     peerDependencies:
+      '@mui/material': ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   mdast-util-definitions@4.0.0:
@@ -7441,10 +7429,10 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  react-day-picker@8.8.2:
-    resolution: {integrity: sha512-sK5M5PNZaLiszmACUKUpVu1eX3eFDVV+WLdWQ3BxTPbEC9jhuawmlgpbSXX5dIIQQwJpZ4wwP5+vsMVOwa1IRw==}
+  react-day-picker@8.10.1:
+    resolution: {integrity: sha512-TMx7fNbhLk15eqcMt+7Z7S2KF7mfTId/XJDjKE8f+IUcFn0l08/kI4FiYTL/0yuOLmEcbR4Fwe3GJf/NiiMnPA==}
     peerDependencies:
-      date-fns: ^2.28.0
+      date-fns: ^2.28.0 || ^3.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   react-dev-utils@12.0.1:
@@ -8913,7 +8901,6 @@ packages:
 
   workbox-google-analytics@6.6.0:
     resolution: {integrity: sha512-p4DJa6OldXWd6M9zRl0H6vB9lkrmqYFkRQ2xEiNdBFp9U0LhsGO7hsBscVEyH9H2/3eZZt8c97NB2FD9U2NJ+Q==}
-    deprecated: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
 
   workbox-navigation-preload@6.6.0:
     resolution: {integrity: sha512-utNEWG+uOfXdaZmvhshrh7KzhDu/1iMHyQOV6Aqup8Mm78D286ugu5k9MFD9SzBT5TcwgwSORVvInaXWbvKz9Q==}
@@ -10484,7 +10471,7 @@ snapshots:
 
   '@floating-ui/utils@0.1.1': {}
 
-  '@fontsource/material-icons@5.0.16': {}
+  '@fontsource/material-icons@5.0.18': {}
 
   '@fontsource/roboto@5.0.12': {}
 
@@ -12524,13 +12511,13 @@ snapshots:
 
   '@swc/types@0.1.4': {}
 
-  '@tanstack/react-table@8.10.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@tanstack/react-table@8.17.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@tanstack/table-core': 8.10.0
+      '@tanstack/table-core': 8.17.3
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  '@tanstack/table-core@8.10.0': {}
+  '@tanstack/table-core@8.17.3': {}
 
   '@testing-library/dom@9.3.1':
     dependencies:
@@ -13306,6 +13293,32 @@ snapshots:
   arrify@1.0.1: {}
 
   asap@2.0.6: {}
+
+  asma-core-ui@3.1.0-3(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@mui/material@5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(csstype@3.1.2)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2)):
+    dependencies:
+      '@emotion/react': 11.11.1(@types/react@18.0.37)(react@18.2.0)
+      '@emotion/styled': 11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0)
+      '@fontsource/material-icons': 5.0.18
+      '@fontsource/roboto': 5.0.12
+      '@iconify/react': 4.1.1(react@18.2.0)
+      '@mui/material': 5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@tanstack/react-table': 8.17.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      clsx: 1.2.1
+      date-fns: 2.30.0
+      immer: 9.0.21
+      lodash-es: 4.17.21
+      material-ui-popup-state: 5.1.2(@mui/material@5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
+      node: 18.17.0
+      notistack: 3.0.1(csstype@3.1.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react: 18.2.0
+      react-day-picker: 8.10.1(date-fns@2.30.0)(react@18.2.0)
+      react-dom: 18.2.0(react@18.2.0)
+      react-quill: 2.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      sass: 1.77.5
+      vite-plugin-css-injected-by-js: 3.5.1(vite@4.3.9(@types/node@18.0.3)(less@4.1.3)(sass@1.77.5)(stylus@0.59.0)(terser@5.18.2))
+    transitivePeerDependencies:
+      - csstype
+      - vite
 
   assert@2.1.0:
     dependencies:
@@ -16897,18 +16910,15 @@ snapshots:
     dependencies:
       react: 18.2.0
 
-  material-ui-popup-state@5.0.10(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+  material-ui-popup-state@5.1.2(@mui/material@5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0):
     dependencies:
       '@babel/runtime': 7.23.8
       '@mui/material': 5.13.7(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.1(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react@18.2.0))(@types/react@18.0.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@types/prop-types': 15.7.5
+      '@types/react': 18.0.37
       classnames: 2.5.1
       prop-types: 15.8.1
       react: 18.2.0
-    transitivePeerDependencies:
-      - '@emotion/react'
-      - '@emotion/styled'
-      - '@types/react'
-      - react-dom
 
   mdast-util-definitions@4.0.0:
     dependencies:
@@ -18319,7 +18329,7 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  react-day-picker@8.8.2(date-fns@2.30.0)(react@18.2.0):
+  react-day-picker@8.10.1(date-fns@2.30.0)(react@18.2.0):
     dependencies:
       date-fns: 2.30.0
       react: 18.2.0

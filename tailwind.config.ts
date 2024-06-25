@@ -1,27 +1,26 @@
-import { type Config } from 'tailwindcss'
-import twConfigs from './tw-configs/twConfigs.json'
+import defaultTheme from 'tailwindcss/defaultTheme'
+import twConfigs from 'asma-core-ui/tw-configs/twConfigs.json'
 
 const boxShadow = twConfigs.boxShadow,
     animation = twConfigs.animation,
     keyframes = twConfigs.keyframes,
-    fontFamily = twConfigs.fontFamily
+    colors = twConfigs.colors
 
 export default {
-    mode: 'jit',
-    important: true,
-    content: ['src/**/*.{js,jsx,ts,tsx}'],
+    content: ['index.html', './src/**/*.{js,jsx,ts,tsx}'],
     theme: {
-        fontFamily,
+        fontFamily: {
+            roboto: ['Roboto'],
+        },
         extend: {
-            colors: { ...twConfigs.colors },
+            screens: {
+                ...defaultTheme.screens,
+            },
             boxShadow,
             animation,
             keyframes,
+            colors,
         },
     },
-    darkMode: 'media',
-    corePlugins: {
-        preflight: false,
-    },
     plugins: [require('tailwind-scrollbar')],
-} satisfies Config
+}

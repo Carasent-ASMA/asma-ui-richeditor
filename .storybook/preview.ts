@@ -1,8 +1,9 @@
 import { useEffect, useGlobals } from '@storybook/addons'
 import { withThemeByClassName } from '@storybook/addon-styling'
 import 'tailwindcss/tailwind.css'
-import './normalize.css'
-import '../src/styles/index.css'
+import './styles/normalize.css'
+import './styles/variables.css'
+import './styles/index.css'
 
 export const parameters = {
     // themes: {
