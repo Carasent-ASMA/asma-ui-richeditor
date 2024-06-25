@@ -1,0 +1,58 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "plugins": [
+            {
+                "name": "typescript-plugin-css-modules"
+            }
+        ],
+        "types": ["vite/client", "node"],
+        "paths": {
+            "*": ["*"],
+            "@": ["src/*"],
+            "asma-ui-richeditor": ["src/index.ts"]
+        },
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "allowJs": false,
+        "skipLibCheck": true,
+        "esModuleInterop": false,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
+        "jsx": "preserve",
+        "baseUrl": ".",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": false,
+        "noImplicitReturns": true,
+        "noUnusedParameters": true,
+        "noUncheckedIndexedAccess": true,
+        "noFallthroughCasesInSwitch": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "experimentalDecorators": false,
+        "verbatimModuleSyntax": true,
+        "useUnknownInCatchVariables": false
+    },
+    "exclude": ["dist", "node_modules"],
+    "include": [
+        "tailwind.config.ts",
+        "tw-configs/**/*.json",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.scss",
+        "**/*.module.scss",
+        "vite.config.ts",
+        "package.json",
+        "src/styles/**/*.json"
+    ]
+}
