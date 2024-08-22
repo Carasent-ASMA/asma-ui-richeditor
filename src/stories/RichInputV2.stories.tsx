@@ -13,7 +13,8 @@ export default meta
 export const Input2 = () => {
     return (
         <div className=''>
-            <RichInput dataTest='test' disabled onChange={() => undefined} value='Hello World' className='' />
+            <RichInput dataTest='test' disabled onUpdate={() => undefined} content='Hello World' className='' />
+            <RichInput dataTest='test' ghost onUpdate={() => undefined} content='Hello World' className='' />
         </div>
     )
 }

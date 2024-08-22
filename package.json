@@ -3,7 +3,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "version": "0.0.1",
+    "version": "0.1.0",
     "type": "module",
     "files": [
         "dist/**/*",
@@ -41,11 +41,27 @@
         "@emotion/styled": "^11.11.0",
         "@fontsource/roboto": "^5.0.4",
         "@mui/material": "^5.13.7",
+        "@tiptap/extension-blockquote": "^2.6.5",
+        "@tiptap/extension-bold": "^2.6.5",
+        "@tiptap/extension-bullet-list": "^2.6.5",
+        "@tiptap/extension-color": "^2.6.5",
+        "@tiptap/extension-document": "^2.6.5",
+        "@tiptap/extension-hard-break": "^2.6.5",
+        "@tiptap/extension-heading": "^2.6.5",
+        "@tiptap/extension-horizontal-rule": "^2.6.5",
+        "@tiptap/extension-italic": "^2.6.5",
+        "@tiptap/extension-list-item": "^2.6.5",
+        "@tiptap/extension-ordered-list": "^2.6.5",
+        "@tiptap/extension-paragraph": "^2.6.5",
+        "@tiptap/extension-placeholder": "^2.6.5",
+        "@tiptap/extension-strike": "^2.6.5",
+        "@tiptap/extension-text": "^2.6.5",
+        "@tiptap/extension-text-style": "^2.6.5",
+        "@tiptap/react": "^2.6.5",
         "clsx": "^2.1.1",
         "node": "18.17.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-quill": "^2.0.0"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@changesets/cli": "^2.26.2",

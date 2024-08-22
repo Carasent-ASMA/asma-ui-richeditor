@@ -14,16 +14,20 @@ const meta = {
 export default meta
 export const Input1 = () => {
     const [val, setVal] = useState('')
+
     return (
         <div className='flex flex-col w-full gap-12'>
             <RichInput
+                // hideMenuBar
+                // noDefaultStyles
+                label='Test label'
                 helperText='Required Field'
                 // is_error
                 isRequired
                 dataTest='test'
-                onChange={(newVal) => setVal(newVal)}
+                onUpdate={(editor) => setVal(editor.editor.getText())}
                 placeholder='Type something'
-                value={val}
+                content={val}
             />
         </div>
     )
