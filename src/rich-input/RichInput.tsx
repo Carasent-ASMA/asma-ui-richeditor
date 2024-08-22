@@ -24,7 +24,7 @@ import './tiptap.css'
 
 export interface IRichInput extends UseEditorOptions {
     dataTest: string
-    inputRef?: MutableRefObject<Editor>
+    inputRef?: MutableRefObject<Editor | null>
     immediatelyRender?: boolean
     id?: string
     label?: string
