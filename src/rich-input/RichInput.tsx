@@ -114,7 +114,7 @@ const RichInput: FC<IRichInput> = ({
                 id={id}
                 className={clsx(
                     !noDefaultStyles && 'core-ui-rte',
-                    !disabled && !ghost && 'core-ui-rte-edit-mode',
+                    !noDefaultStyles && !disabled && !ghost && 'core-ui-rte-edit-mode',
                     ghost && 'core-ui-rte-ghost-mode',
                     is_error && 'core-ui-rte-error',
                     className,
