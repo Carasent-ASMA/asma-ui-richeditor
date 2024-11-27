@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react'
+import { EditSquareIcon, StyledButton, StyledInputField } from 'asma-core-ui'
 
 import { useState } from 'react'
 import { RichInput } from 'src/rich-input/RichInput'
@@ -13,21 +14,49 @@ const meta = {
 
 export default meta
 export const Input1 = () => {
-    const [val, setVal] = useState('')
+    const [content, setContent] = useState('<p>Default content</p>')
+    const [readOnly, setReadOnly] = useState(true)
+    const error = false
 
     return (
-        <div className='flex flex-col w-full gap-12'>
+        <div className='flex flex-col gap-4 w-[30vw]'>
+            <StyledButton
+                dataTest='toggle-editable'
+                variant='contained'
+                className='self-start'
+                onClick={() => setReadOnly(!readOnly)}
+            >
+                {readOnly ? 'Edit' : 'Close'}
+            </StyledButton>
+            <StyledInputField
+                size='small'
+                dataTest='none'
+                readOnly={readOnly}
+                required={!readOnly}
+                helperText={!readOnly && '* required'}
+                // label={'Private message'}
+                error={error}
+                placeholder={'Private message'}
+                InputProps={{
+                    endAdornment: !readOnly && <EditSquareIcon width={20} height={20} />,
+                }}
+            />
             <RichInput
-                // hideMenuBar
-                // noDefaultStyles
-                label='Test label'
-                helperText='Required Field'
-                // is_error
-                isRequired
-                dataTest='test'
-                onUpdate={(editor) => setVal(editor.editor.getText())}
-                placeholder='Type something'
-                content={val}
+                // hideToolbar
+                // noDefaultStyles={readOnly}
+                // title={'Title label'}
+                // label={'Group message'}
+                // toolbarDefaultVisible
+                placeholder={'Group message'}
+                helperText={'* required'}
+                error={error}
+                required
+                dataTest='custom-rte'
+                onUpdate={(e) => setContent(e.editor.getHTML())}
+                content={content}
+                readOnly={readOnly ? 'outlined' : undefined}
+                maxScrollableHeight={260}
+                locale={'en'}
             />
         </div>
     )

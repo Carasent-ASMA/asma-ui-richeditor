@@ -22,7 +22,8 @@
         "Roboto",
         "Scroller",
         "tailwindcss",
-        "tanstack"
+        "tanstack",
+        "tiptap"
     ],
     "ignorePaths": [
         "package-lock.json",

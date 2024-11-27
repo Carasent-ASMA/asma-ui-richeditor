@@ -1,0 +1,25 @@
+.toolbar {
+    width: 100%;
+    padding-block: 4px;
+    background-color: var(--colors-delta-10);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding-inline: 8px;
+    border-top: 1px solid var(--colors-delta-200);
+}
+.chevron-icon {
+    position: absolute;
+    right: 6px;
+    top: 8px;
+    pointer-events: none;
+    color: var(--colors-delta-700);
+}
+.link-input-field {
+    width: 568px;
+
+    @media (width <= 768px) {
+        width: 100%;
+    }
+}

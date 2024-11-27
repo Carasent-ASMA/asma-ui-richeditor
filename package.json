@@ -3,7 +3,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "version": "0.1.2",
+    "version": "0.1.2-alpha-stable",
     "type": "module",
     "files": [
         "dist/**/*",
@@ -40,7 +40,9 @@
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@fontsource/roboto": "^5.0.4",
+        "@iconify/react": "^5.0.2",
         "@mui/material": "^5.13.7",
+        "@tiptap/core": "^2.8.0",
         "@tiptap/extension-blockquote": "^2.6.5",
         "@tiptap/extension-bold": "^2.6.5",
         "@tiptap/extension-bullet-list": "^2.6.5",
@@ -50,6 +52,7 @@
         "@tiptap/extension-heading": "^2.6.5",
         "@tiptap/extension-horizontal-rule": "^2.6.5",
         "@tiptap/extension-italic": "^2.6.5",
+        "@tiptap/extension-link": "^2.8.0",
         "@tiptap/extension-list-item": "^2.6.5",
         "@tiptap/extension-ordered-list": "^2.6.5",
         "@tiptap/extension-paragraph": "^2.6.5",
@@ -57,11 +60,14 @@
         "@tiptap/extension-strike": "^2.6.5",
         "@tiptap/extension-text": "^2.6.5",
         "@tiptap/extension-text-style": "^2.6.5",
+        "@tiptap/extension-underline": "^2.8.0",
         "@tiptap/react": "^2.6.5",
         "clsx": "^2.1.1",
         "node": "18.17.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react-dom": "^18.2.0",
+        "tailwind-merge": "^2.5.4",
+        "tiptap-extension-font-size": "^1.2.0"
     },
     "devDependencies": {
         "@changesets/cli": "^2.26.2",
@@ -89,7 +95,7 @@
         "@typescript-eslint/eslint-plugin": "^5.59.0",
         "@typescript-eslint/parser": "^5.59.0",
         "@vitejs/plugin-react": "^4.0.0",
-        "asma-core-ui": "^3.0.71",
+        "asma-core-ui": "^3.0.116",
         "autoprefixer": "^10.4.14",
         "axe-playwright": "^1.2.3",
         "axios": "^1.6.8",

@@ -1,136 +1,140 @@
-import { useImperativeHandle, type FC, type MutableRefObject } from 'react'
+import { useEffect, useImperativeHandle, useState, type FC } from 'react'
 import clsx from 'clsx'
+import { EditorContent, useEditor } from '@tiptap/react'
+import { Toolbar } from './components/Toolbar'
 
-import { Editor, EditorContent, useEditor, type UseEditorOptions } from '@tiptap/react'
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
+import './styles/tiptap.css'
+import { StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
+import { Icon } from '@iconify/react'
+import type { CustomCSSProperties, IRichInput } from './interfaces/types'
+import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
+import { LinkDialog } from './components/LinkDialog'
 import Placeholder from '@tiptap/extension-placeholder'
-import Bold from '@tiptap/extension-bold'
-import Italic from '@tiptap/extension-italic'
-import Strike from '@tiptap/extension-strike'
-import Color from '@tiptap/extension-color'
-import TextStyle from '@tiptap/extension-text-style'
-import OrderedList from '@tiptap/extension-ordered-list'
-import ListItem from '@tiptap/extension-list-item'
-import Heading from '@tiptap/extension-heading'
-import BulletList from '@tiptap/extension-bullet-list'
-import Blockquote from '@tiptap/extension-blockquote'
-import HardBreak from '@tiptap/extension-hard-break'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import { MenuBar } from './MenuBar'
 
-import './tiptap.css'
-
-export interface IRichInput extends UseEditorOptions {
-    dataTest: string
-    inputRef?: MutableRefObject<Editor | null>
-    immediatelyRender?: boolean
-    id?: string
-    label?: string
-    placeholder?: string
-    className?: string
-    disabled?: boolean
-    is_error?: boolean
-    ghost?: boolean
-    helperText?: string
-    isRequired?: boolean
-    hideMenuBar?: boolean
-    noDefaultStyles?: boolean
-}
-
-const defaultExtensions = [Document, Paragraph, Text]
-const editModeExtensions = [
-    Bold,
-    Italic,
-    Strike,
-    Color,
-    TextStyle,
-    BulletList,
-    OrderedList,
-    ListItem,
-    Heading,
-    Blockquote,
-    HorizontalRule,
-    HardBreak,
-]
-
+/**
+ * ASMA RichInput - A rich text editor component.
+ *
+ * @param readOnly - Determines the display style in read-only mode.
+ * Options:
+ * - `'plain'`: Displays the editor with a white background and no borders.
+ * - `'outlined'`: Displays the editor with a gray background and visible borders.
+ */
 const RichInput: FC<IRichInput> = ({
     dataTest,
     id,
     inputRef,
     className,
+    editorClassName,
     disabled,
-    ghost,
-    is_error,
-    label,
+    readOnly,
+    error,
+    // label, // this in not implemented yet
     placeholder,
     helperText,
-    isRequired,
-    hideMenuBar,
+    required,
+    hideToolbar,
     noDefaultStyles,
     ...props
 }) => {
-    const editor = useEditor(
-        {
-            ...props,
-            extensions:
-                disabled || ghost || hideMenuBar
-                    ? [...defaultExtensions, Placeholder.configure({ placeholder }), ...(props.extensions || [])]
-                    : [
-                          ...defaultExtensions,
-                          ...editModeExtensions,
-                          Placeholder.configure({
-                              placeholder,
-                          }),
-                          ...(props.extensions || []),
-                      ],
-            shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
-            immediatelyRender: props.immediatelyRender || true,
-            editable: props.editable || (!disabled && !ghost),
-        },
-        [],
-    )
+    const editor = useEditor({
+        ...props,
+        extensions: [
+            Placeholder.configure({ placeholder }),
+            ...defaultExtensions,
+            ...editModeExtensions,
+            ...(props.extensions || []),
+        ],
+        shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
+        immediatelyRender: props.immediatelyRender || true,
+        editable: props.editable || (!disabled && !readOnly),
+    })
 
+    const [showToolbar, setShowToolbar] = useState(props.toolbarDefaultVisible)
+    const [linkDialogVisible, setLinkDialogVisible] = useState(false)
     useImperativeHandle(inputRef, () => editor)
 
-    if (!editor) {
-        return null
-    }
+    const [focused, setFocused] = useState(false)
+
+    useEffect(() => {
+        const handleFocus = () => setFocused(true)
+        const handleBlur = () => setFocused(false)
+
+        editor?.on('focus', handleFocus)
+        editor?.on('blur', handleBlur)
+
+        return () => {
+            editor?.off('focus', handleFocus)
+            editor?.off('blur', handleBlur)
+        }
+    }, [editor])
+
+    if (!editor) return null
 
     return (
-        <div className='relative'>
-            {label && (
-                <span
-                    className='text-custom-grey-06 mb-2 font-sans text-xs font-semibold leading-4'
-                    data-test={`label-${dataTest}`}
+        <>
+            <StyledFormControl className={className}>
+                {props.title && <p className='font-semibold text-base text-gray-700 mb-2'>{props.title}</p>}
+                <div
+                    className={clsx(
+                        'rte-wrapper',
+                        readOnly === 'outlined' && 'readonly-outlined',
+                        readOnly === 'plain' && 'readonly-plain',
+                        error && !focused && 'error-state',
+                        focused && !readOnly && (error ? 'error-focused-state' :'focused-state'),
+                    )}
                 >
-                    {label}
-                </span>
-            )}
+                    <EditorContent
+                        data-test={dataTest}
+                        id={id}
+                        className={clsx(
+                            'border-none rounded-none',
+                            !noDefaultStyles && 'core-ui-rte',
+                            !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
+                            !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                            editorClassName,
+                        )}
+                        editor={editor}
+                        onClick={() => editor?.chain().focus().run()}
+                        style={
+                            {
+                                '--max-scrollable-height': props.maxScrollableHeight
+                                    ? `${props.maxScrollableHeight}${
+                                          typeof props.maxScrollableHeight === 'number' ? 'px' : ''
+                                      }`
+                                    : 'none',
+                            } as CustomCSSProperties
+                        }
+                    />
+                    {!hideToolbar && !disabled && !readOnly && !showToolbar && (
+                        <Icon
+                            onClick={() => setShowToolbar(true)}
+                            className='cursor-pointer absolute bottom-2.5 right-4'
+                            icon='material-symbols:format-color-text'
+                            color='var(--colors-gray-700)'
+                            height={24}
+                            width={24}
+                        />
+                    )}
+                    {!hideToolbar && !disabled && !readOnly && showToolbar && (
+                        <Toolbar
+                            editor={editor}
+                            onClose={() => setShowToolbar(false)}
+                            error={error}
+                            focused={focused}
+                            openLinkDialog={() => setLinkDialogVisible(true)}
+                            locale={props.locale}
+                        />
+                    )}
+                </div>
 
-            {!hideMenuBar && !disabled && !ghost && <MenuBar editor={editor} />}
-            <EditorContent
-                id={id}
-                className={clsx(
-                    !noDefaultStyles && 'core-ui-rte',
-                    !noDefaultStyles && !disabled && !ghost && 'core-ui-rte-edit-mode',
-                    ghost && 'core-ui-rte-ghost-mode',
-                    is_error && 'core-ui-rte-error',
-                    className,
+                {(error || required) && !readOnly && (
+                    <StyledFormHelperText error={error} data-test={`error-${dataTest}`}>
+                        {helperText}
+                    </StyledFormHelperText>
                 )}
-                editor={editor}
-            />
-
-            {(is_error || isRequired) && (
-                <span
-                    className={clsx('core-ui-rte-helper-text', is_error && 'core-ui-rte-error')}
-                    data-test={`error-${dataTest}`}
-                >
-                    {helperText}
-                </span>
-            )}
-        </div>
+            </StyledFormControl>
+            <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={props.locale} />
+        </>
     )
 }
 
