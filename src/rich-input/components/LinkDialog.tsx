@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/react'
 import { StyledButton, StyledDialog, StyledInputField } from 'asma-core-ui'
 import React, { useLayoutEffect, useMemo, useState } from 'react'
-
+import styles from './LinkDialog.module.scss'
 import '../styles/toolbar.css'
 import type { ILocale } from '../interfaces/types'
 
@@ -50,7 +50,7 @@ export const LinkDialog: React.FC<{
             className={'z-[99]'}
             dialogTitle={<div className={'text-gray-700'}>{isNorsk ? 'Legg til lenke' : 'Add link'}</div>}
         >
-            <main className={'flex flex-col items-start justify-center p-0 gap-6 m-4 h-full'}>
+            <div className={styles['link-dialog-container']}>
                 <div className='link-input-field'>
                     <StyledInputField
                         autoFocus
@@ -89,7 +89,7 @@ export const LinkDialog: React.FC<{
                         {isNorsk ? 'Legg til lenke' : 'Add link'}
                     </StyledButton>
                 </div>
-            </main>
+            </div>
         </StyledDialog>
     )
 }
