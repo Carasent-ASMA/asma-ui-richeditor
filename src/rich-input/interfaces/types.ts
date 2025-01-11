@@ -10,7 +10,6 @@ export type ILocale = 'en' | 'no'
 export interface IRichInput extends UseEditorOptions {
     dataTest: string
     inputRef?: MutableRefObject<Editor | null>
-    immediatelyRender?: boolean
     id?: string
     // label?: string // TODO: implement same label behavior like in MUI
     title?: string

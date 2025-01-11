@@ -28,28 +28,44 @@ const RichInput: FC<IRichInput> = ({
     disabled,
     readOnly,
     error,
+    locale,
     // label, // this in not implemented yet
+    title,
     placeholder,
     helperText,
     required,
+    maxScrollableHeight,
+    toolbarDefaultVisible,
     hideToolbar,
     noDefaultStyles,
     ...props
 }) => {
-    const editor = useEditor({
-        ...props,
-        extensions: [
-            Placeholder.configure({ placeholder }),
-            ...defaultExtensions,
-            ...editModeExtensions,
-            ...(props.extensions || []),
+    const editor = useEditor(
+        {
+            ...props,
+            extensions: [
+                Placeholder.configure({ placeholder }),
+                ...defaultExtensions,
+                ...editModeExtensions,
+                ...(props.extensions || []),
+            ],
+            shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
+            immediatelyRender: props.immediatelyRender || true,
+            editable: props.editable || (!disabled && !readOnly),
+        },
+        //NOTE the dependency list doesn't accept the props object without creating a max call stack error
+        [
+            props.extensions,
+            props.shouldRerenderOnTransaction,
+            props.immediatelyRender,
+            props.editable,
+            disabled,
+            readOnly,
+            placeholder,
         ],
-        shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
-        immediatelyRender: props.immediatelyRender || true,
-        editable: props.editable || (!disabled && !readOnly),
-    })
+    )
 
-    const [showToolbar, setShowToolbar] = useState(props.toolbarDefaultVisible)
+    const [showToolbar, setShowToolbar] = useState(toolbarDefaultVisible)
     const [linkDialogVisible, setLinkDialogVisible] = useState(false)
     useImperativeHandle(inputRef, () => editor)
 
@@ -73,7 +89,7 @@ const RichInput: FC<IRichInput> = ({
     return (
         <>
             <StyledFormControl className={className}>
-                {props.title && <p className='font-semibold text-base text-gray-700 mb-2'>{props.title}</p>}
+                {title && <p className='font-semibold text-base text-gray-700 mb-2'>{title}</p>}
                 <div
                     className={clsx(
                         !noDefaultStyles && 'rte-wrapper',
@@ -97,10 +113,8 @@ const RichInput: FC<IRichInput> = ({
                         onClick={() => editor?.chain().focus().run()}
                         style={
                             {
-                                '--max-scrollable-height': props.maxScrollableHeight
-                                    ? `${props.maxScrollableHeight}${
-                                          typeof props.maxScrollableHeight === 'number' ? 'px' : ''
-                                      }`
+                                '--max-scrollable-height': maxScrollableHeight
+                                    ? `${maxScrollableHeight}${typeof maxScrollableHeight === 'number' ? 'px' : ''}`
                                     : 'none',
                             } as CustomCSSProperties
                         }
@@ -122,7 +136,7 @@ const RichInput: FC<IRichInput> = ({
                             error={error}
                             focused={focused}
                             openLinkDialog={() => setLinkDialogVisible(true)}
-                            locale={props.locale}
+                            locale={locale}
                         />
                     )}
                 </div>
@@ -133,7 +147,7 @@ const RichInput: FC<IRichInput> = ({
                     </StyledFormHelperText>
                 )}
             </StyledFormControl>
-            <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={props.locale} />
+            <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
         </>
     )
 }
