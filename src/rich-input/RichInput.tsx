@@ -76,11 +76,11 @@ const RichInput: FC<IRichInput> = ({
                 {props.title && <p className='font-semibold text-base text-gray-700 mb-2'>{props.title}</p>}
                 <div
                     className={clsx(
-                        'rte-wrapper',
+                        !noDefaultStyles && 'rte-wrapper',
                         readOnly === 'outlined' && 'readonly-outlined',
                         readOnly === 'plain' && 'readonly-plain',
                         error && !focused && 'error-state',
-                        focused && !readOnly && (error ? 'error-focused-state' :'focused-state'),
+                        focused && !readOnly && (error ? 'error-focused-state' : 'focused-state'),
                     )}
                 >
                     <EditorContent

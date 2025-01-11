@@ -12,9 +12,22 @@ const meta = {
 export default meta
 export const Input2 = () => {
     return (
-        <div className=''>
+        <div className='flex flex-col gap-4'>
             <RichInput dataTest='test' disabled onUpdate={() => undefined} content='Hello World' className='' />
-            <RichInput dataTest='test' readOnly='outlined' onUpdate={() => undefined} content='Hello World' className='' />
+            <RichInput
+                dataTest='test'
+                readOnly='outlined'
+                onUpdate={() => undefined}
+                content='Hello World'
+                className=''
+            />
+
+            <RichInput
+                dataTest='test'
+                content='Chat editor with no styles for customization'
+                noDefaultStyles
+                hideToolbar
+            />
         </div>
     )
 }
