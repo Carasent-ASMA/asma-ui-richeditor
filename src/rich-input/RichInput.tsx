@@ -59,6 +59,7 @@ const RichInput: FC<IRichInput> = ({
             props.shouldRerenderOnTransaction,
             props.immediatelyRender,
             props.editable,
+            props.content,
             disabled,
             readOnly,
             placeholder,
