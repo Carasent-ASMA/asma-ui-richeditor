@@ -3,7 +3,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "version": "0.1.7",
+    "version": "0.1.8",
     "type": "module",
     "files": [
         "dist/**/*",
@@ -15,6 +15,16 @@
     "types": "./dist/index.d.ts",
     "main": "./dist/asma-ui-richeditor.es.js",
     "module": "./dist/asma-ui-richeditor.es.js",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/asma-ui-richeditor.es.js"
+            }
+        },
+        "./dist/style.css": "./dist/style.css",
+        "./tw-configs/twConfigs.json": "./tw-configs/twConfigs.json"
+    },
     "scripts": {
         "dev": "vite",
         "build": "npx tsc && rm -rf ./dist && vite build",
@@ -95,7 +105,7 @@
         "@typescript-eslint/eslint-plugin": "^5.59.0",
         "@typescript-eslint/parser": "^5.59.0",
         "@vitejs/plugin-react": "^4.0.0",
-        "asma-core-ui": "^3.0.116",
+        "asma-core-ui": "^3.0.147",
         "autoprefixer": "^10.4.14",
         "axe-playwright": "^1.2.3",
         "axios": "^1.6.8",
@@ -128,12 +138,5 @@
     "resolutions": {
         "@types/node": "18.0.3",
         "node": "18.17.0"
-    },
-    "exports": {
-        ".": {
-            "import": "./dist/asma-ui-richeditor.es.js"
-        },
-        "./dist/style.css": "./dist/style.css",
-        "./tw-configs/twConfigs.json": "./tw-configs/twConfigs.json"
     }
 }
