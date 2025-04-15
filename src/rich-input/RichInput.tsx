@@ -1,4 +1,4 @@
-import { useEffect, useImperativeHandle, useState, type FC } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type FC } from 'react'
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
@@ -40,6 +40,8 @@ const RichInput: FC<IRichInput> = ({
     noDefaultStyles,
     ...props
 }) => {
+    const cursor = useRef<number>()
+
     const editor = useEditor(
         {
             ...props,
@@ -52,8 +54,13 @@ const RichInput: FC<IRichInput> = ({
             shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
             immediatelyRender: props.immediatelyRender || true,
             editable: props.editable || (!disabled && !readOnly),
+            onSelectionUpdate: (updateProps) => {
+                props.onSelectionUpdate?.(updateProps)
+                cursor.current = updateProps.editor.state.selection.anchor
+                updateProps.editor.commands.focus()
+            },
         },
-        //NOTE the dependency list doesn't accept the props object without creating a max call stack error
+        //NOTE: the dependency list doesn't accept the props object without creating a max call stack error
         [
             props.extensions,
             props.shouldRerenderOnTransaction,
@@ -65,6 +72,12 @@ const RichInput: FC<IRichInput> = ({
             placeholder,
         ],
     )
+
+    useEffect(() => {
+        if (cursor.current === undefined) return
+
+        editor?.commands.setTextSelection(cursor.current)
+    }, [props.content, editor])
 
     const [showToolbar, setShowToolbar] = useState(toolbarDefaultVisible)
     const [linkDialogVisible, setLinkDialogVisible] = useState(false)
