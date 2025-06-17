@@ -51,6 +51,10 @@ const RichInput: FC<IRichInput> = ({
                 ...editModeExtensions,
                 ...(props.extensions || []),
             ],
+            parseOptions: {
+                preserveWhitespace: true,
+                ...props.parseOptions,
+            },
             shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
             immediatelyRender: props.immediatelyRender || true,
             editable: props.editable || (!disabled && !readOnly),
