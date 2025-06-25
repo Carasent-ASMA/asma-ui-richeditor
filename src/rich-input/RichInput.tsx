@@ -10,7 +10,8 @@ import type { CustomCSSProperties, IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
 import { LinkDialog } from './components/LinkDialog'
 import Placeholder from '@tiptap/extension-placeholder'
-
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 /**
  * ASMA RichInput - A rich text editor component.
  *
@@ -79,7 +80,6 @@ const RichInput: FC<IRichInput> = ({
 
     useEffect(() => {
         if (cursor.current === undefined) return
-
         editor?.commands.setTextSelection(cursor.current)
     }, [props.content, editor])
 
@@ -88,6 +88,7 @@ const RichInput: FC<IRichInput> = ({
     useImperativeHandle(inputRef, () => editor)
 
     const [focused, setFocused] = useState(false)
+    const [emojiPickerVisible, setEmojiPickerVisible] = useState(false)
 
     useEffect(() => {
         const handleFocus = () => setFocused(true)
@@ -101,6 +102,13 @@ const RichInput: FC<IRichInput> = ({
             editor?.off('blur', handleBlur)
         }
     }, [editor])
+
+    const handleEmojiSelect = (emoji: any) => {
+        if (editor) {
+            editor.chain().focus().insertContent(emoji.native).run()
+        }
+        setEmojiPickerVisible(false)
+    }
 
     if (!editor) return null
 
@@ -154,6 +162,7 @@ const RichInput: FC<IRichInput> = ({
                             error={error}
                             focused={focused}
                             openLinkDialog={() => setLinkDialogVisible(true)}
+                            openEmojiPicker={() => setEmojiPickerVisible(true)}
                             locale={locale}
                         />
                     )}
@@ -165,7 +174,19 @@ const RichInput: FC<IRichInput> = ({
                     </StyledFormHelperText>
                 )}
             </StyledFormControl>
+
             <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
+
+            {emojiPickerVisible && (
+                <div
+                    className='fixed inset-0 bg-black/20 z-[9999] flex items-center justify-center'
+                    onClick={() => setEmojiPickerVisible(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <Picker theme='light' data={data} onEmojiSelect={handleEmojiSelect} locale={locale} />
+                    </div>
+                </div>
+            )}
         </>
     )
 }
