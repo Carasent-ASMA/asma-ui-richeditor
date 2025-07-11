@@ -7,7 +7,6 @@
     --colors-blue-300: #66b3d6;
     --colors-blue-400: #4da6cf;
     --colors-blue-500: #007cb5;
-    --colors-blue-500-rgb: 0 124 181;
     --colors-blue-600: #006696;
     --colors-blue-700: #005a83;
     --colors-blue-800: #00405e;
@@ -29,7 +28,6 @@
     --colors-gray-600: #626e7e;
     --colors-gray-700: #49525f;
     --colors-gray-800: #363e4a;
-    --colors-gray-700-rgb: 54 62 74;
     --colors-gray-900: #0b0c0f;
     --colors-gray-9000: #1a1d23;
     --colors-gray-10000: black;
@@ -41,7 +39,6 @@
     --colors-zinc-600: #4c4c4c;
     --colors-zinc-700: #4e4d4f;
     --colors-zinc-800: #343434;
-    --colors-zinc-700-rgb: 52 52 52;
     --colors-zinc-900: #0b0c0f;
     --colors-cardea--grey-01: 210deg 16% 95%;
     --colors-cardea--grey-02: 215deg 16% 85%;
@@ -56,7 +53,6 @@
     --colors-green-300: #adc6bc;
     --colors-green-400: #9cb2a9;
     --colors-green-500: #687771;
-    --colors-green-500-rgb: 104 119 113;
     --colors-green-600: #59635e;
     --colors-green-700: #474f4b;
     --colors-green-800: #353b38;
@@ -75,7 +71,6 @@
     --colors-jade-300: #60bdbd;
     --colors-jade-400: #1ca1a1;
     --colors-jade-500: #168181;
-    --colors-jade-500-rgb: 22 129 129;
     --colors-jade-600: #116161;
     --colors-jade-700: #0b4040;
     --colors-jade-800: #083030;
@@ -147,8 +142,6 @@
     --colors-theta-700: var(--colors-blue-600);
     --colors-theta-800: #ffffff;
     --colors-theta-hover: var(--colors-blue-700);
-    --rgb-accent: var(--colors-blue-500-rgb);
-    --rgb-color: var(--colors-gray-700-rgb);
     /* --colors-btn-bg-hover: var(--colors-slate-300);
     --colors-btn-bg-standart: var(--colors-slate-600);
     --colors-btn-bg-active: var(--colors-slate-800);
@@ -333,8 +326,6 @@
     --colors-theta-700: #ffffff;
     --colors-theta-800: #ffffff;
     --colors-theta-hover: #ffffff;
-    --rgb-accent: var(--colors-green-500-rgb);
-    --rgb-color: var(--colors-zinc-700-rgb);
     /* --colors-btn-bg-hover: var(--colors-gama-600);
     --colors-btn-bg-standart: var(--colors-gama-500);
     --colors-btn-bg-active: var(--colors-gama-600);
@@ -517,8 +508,6 @@
     --colors-link-text-standart: #ffffff;
     --colors-link-text-active: #ffffff;
     --colors-link-text-disabled: var(--colors-gray-200);
-    --rgb-accent: var(--colors-jade-500-rgb);
-    --rgb-color: var(--colors-gray-700-rgb);
     /* --colors-button-contained-common-text-color: #ffffff;
     --colors-button-contained-common-bg-color: var(--colors-gama-500);
     --colors-button-contained-common-border-color: var(--colors-gama-500);
