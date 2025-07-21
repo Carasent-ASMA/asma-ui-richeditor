@@ -9,6 +9,7 @@ export type ILocale = 'en' | 'no'
 
 export interface IRichInput extends UseEditorOptions {
     dataTest: string
+    attachmentsMenu?: React.ReactNode
     inputRef?: MutableRefObject<Editor | null>
     id?: string
     // label?: string // TODO: implement same label behavior like in MUI

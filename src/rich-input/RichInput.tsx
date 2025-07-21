@@ -2,15 +2,16 @@ import { useEffect, useImperativeHandle, useRef, useState, type FC } from 'react
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
-
+import styles from './styles/RichInput.module.scss'
 import './styles/tiptap.css'
 import { StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
 import { Icon } from '@iconify/react'
-import type { CustomCSSProperties, IRichInput } from './interfaces/types'
+import type { IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
 import { LinkDialog } from './components/LinkDialog'
 import Placeholder from '@tiptap/extension-placeholder'
-
+import data, { type Skin } from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 /**
  * ASMA RichInput - A rich text editor component.
  *
@@ -21,6 +22,7 @@ import Placeholder from '@tiptap/extension-placeholder'
  */
 const RichInput: FC<IRichInput> = ({
     dataTest,
+    attachmentsMenu,
     id,
     inputRef,
     className,
@@ -79,7 +81,6 @@ const RichInput: FC<IRichInput> = ({
 
     useEffect(() => {
         if (cursor.current === undefined) return
-
         editor?.commands.setTextSelection(cursor.current)
     }, [props.content, editor])
 
@@ -88,6 +89,7 @@ const RichInput: FC<IRichInput> = ({
     useImperativeHandle(inputRef, () => editor)
 
     const [focused, setFocused] = useState(false)
+    const [emojiPickerVisible, setEmojiPickerVisible] = useState(false)
 
     useEffect(() => {
         const handleFocus = () => setFocused(true)
@@ -102,6 +104,14 @@ const RichInput: FC<IRichInput> = ({
         }
     }, [editor])
 
+    const handleEmojiSelect = (emoji: Skin) => {
+        if (editor) {
+            editor.chain().focus().insertContent(emoji.native).run()
+        }
+        setEmojiPickerVisible(false)
+    }
+    const isFieldEmpty = editor?.isEmpty
+    const showError = !readOnly && error && isFieldEmpty
     if (!editor) return null
 
     return (
@@ -113,40 +123,43 @@ const RichInput: FC<IRichInput> = ({
                         !noDefaultStyles && 'rte-wrapper',
                         readOnly === 'outlined' && 'readonly-outlined',
                         readOnly === 'plain' && 'readonly-plain',
-                        error && !focused && 'error-state',
-                        focused && !readOnly && (error ? 'error-focused-state' : 'focused-state'),
+                        !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
+                        !readOnly && !showError && focused && 'focused-state',
                     )}
                 >
-                    <EditorContent
-                        data-test={dataTest}
-                        id={id}
-                        className={clsx(
-                            'border-none rounded-none',
-                            !noDefaultStyles && 'core-ui-rte',
-                            !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
-                            !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
-                            editorClassName,
-                        )}
-                        editor={editor}
-                        onClick={() => editor?.chain().focus().run()}
-                        style={
-                            {
-                                '--max-scrollable-height': maxScrollableHeight
-                                    ? `${maxScrollableHeight}${typeof maxScrollableHeight === 'number' ? 'px' : ''}`
-                                    : 'none',
-                            } as CustomCSSProperties
-                        }
-                    />
-                    {!hideToolbar && !disabled && !readOnly && !showToolbar && (
-                        <Icon
-                            onClick={() => setShowToolbar(true)}
-                            className='cursor-pointer absolute bottom-2.5 right-4'
-                            icon='material-symbols:format-color-text'
-                            color='var(--colors-gray-700)'
-                            height={24}
-                            width={24}
+                    <div className='relative'>
+                        <EditorContent
+                            data-test={dataTest}
+                            id={id}
+                            className={clsx(
+                                'border-none rounded-none w-full',
+                                showToolbar ? 'h-[40px]' : 'h-[80px]',
+                                !noDefaultStyles && 'core-ui-rte',
+                                !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
+                                !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                                editorClassName,
+                                showToolbar && 'displace-text',
+                            )}
+                            editor={editor}
+                            onClick={() => editor?.chain().focus().run()}
                         />
-                    )}
+
+                        {!hideToolbar && !disabled && !readOnly && (
+                            <div className='absolute top-1 right-1 bottom-1 flex flex-col gap-4 items-center z-10 m-1'>
+                                {!showToolbar && (
+                                    <Icon
+                                        onClick={() => setShowToolbar(true)}
+                                        className={styles['iconButton']}
+                                        icon='material-symbols:format-color-text'
+                                        color='var(--colors-gray-700)'
+                                        height={24}
+                                        width={24}
+                                    />
+                                )}
+                                {attachmentsMenu}
+                            </div>
+                        )}
+                    </div>
                     {!hideToolbar && !disabled && !readOnly && showToolbar && (
                         <Toolbar
                             editor={editor}
@@ -154,18 +167,31 @@ const RichInput: FC<IRichInput> = ({
                             error={error}
                             focused={focused}
                             openLinkDialog={() => setLinkDialogVisible(true)}
+                            openEmojiPicker={() => setEmojiPickerVisible(true)}
                             locale={locale}
                         />
                     )}
                 </div>
 
-                {(error || required) && !readOnly && (
-                    <StyledFormHelperText error={error} data-test={`error-${dataTest}`}>
+                {showError && helperText && (
+                    <StyledFormHelperText error data-test={`error-${dataTest}`}>
                         {helperText}
                     </StyledFormHelperText>
                 )}
             </StyledFormControl>
+
             <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
+
+            {emojiPickerVisible && (
+                <div
+                    className='fixed inset-0 bg-black/20 z-[99999] flex items-center justify-center'
+                    onClick={() => setEmojiPickerVisible(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <Picker theme='light' data={data} onEmojiSelect={handleEmojiSelect} locale={locale} />
+                    </div>
+                </div>
+            )}
         </>
     )
 }

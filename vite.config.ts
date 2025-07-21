@@ -4,7 +4,6 @@ import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 import tsConfigPaths from 'vite-tsconfig-paths'
 import terser from '@rollup/plugin-terser'
-import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import * as packageJson from './package.json'
 
 // https://vitejs.dev/config/
@@ -18,7 +17,6 @@ export default defineConfig({
             insertTypesEntry: true,
             exclude: ['node_modules/**/*', 'src/stories/**', 'src/**/*.stories.tsx', 'src/components/**/makeData.ts'],
         }),
-        cssInjectedByJsPlugin(),
     ],
     build: {
         lib: {

@@ -40,7 +40,13 @@ export const Input2 = () => {
                 toggle placeholder values
             </StyledButton>
 
-            <RichInput dataTest='test' disabled onUpdate={() => undefined} content='Hello World' className='' />
+            <RichInput
+                dataTest='test'
+                disabled
+                onUpdate={() => undefined}
+                content='Hello World'
+                className=''
+            />
             <RichInput
                 dataTest='test'
                 readOnly='outlined'

@@ -1,10 +1,16 @@
 import { Editor } from '@tiptap/react'
-import { DotsVerticalIcon, LinkOutlineIcon, StyledButton, StyledMenuItem } from 'asma-core-ui'
+import {
+    DotsVerticalIcon,
+    LinkOutlineIcon,
+    StyledButton,
+    StyledMenuItem,
+    StyledPopover,
+    StyledTooltip,
+} from 'asma-core-ui'
 import '../styles/toolbar.css'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Popover } from '@mui/material'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import type { ILocale } from '../interfaces/types'
 import { CustomMenuItem } from 'src/rich-input/components/CustomMenuItem'
@@ -16,14 +22,18 @@ export const Toolbar = ({
     error,
     focused,
     openLinkDialog,
+    openEmojiPicker,
     locale,
+    emojiButtonRef,
 }: {
     editor: Editor
     onClose: () => void
     error?: boolean
     focused: boolean
     openLinkDialog: () => void
+    openEmojiPicker: () => void
     locale?: ILocale
+    emojiButtonRef?: React.RefObject<HTMLSpanElement>
 }) => {
     const [visibleButtons, setVisibleButtons] = useState<number>(0)
     const toolbarRef = useRef<HTMLDivElement | null>(null)
@@ -60,62 +70,82 @@ export const Toolbar = ({
 
                 if (Number(visibleButtons) < 8) {
                     newHiddenButtons.push(
-                        <StyledMenuItem
-                            className='flex items-center justify-center'
-                            key='link'
-                            onClick={openLinkDialog}
-                            selected={editor.isActive('link')}
-                        >
-                            <LinkOutlineIcon />
-                        </StyledMenuItem>,
+                        <StyledTooltip key='link' title='Link' placement='top' arrow>
+                            <span>
+                                <StyledMenuItem
+                                    className='flex items-center justify-center'
+                                    key='link'
+                                    onClick={openLinkDialog}
+                                    selected={editor.isActive('link')}
+                                >
+                                    <LinkOutlineIcon />
+                                </StyledMenuItem>
+                            </span>
+                        </StyledTooltip>,
                     )
                 }
                 if (Number(visibleButtons) < 7) {
                     newHiddenButtons.push(
-                        <StyledMenuItem
-                            className='flex items-center justify-center'
-                            key='italic'
-                            onClick={() => editor.chain().focus().toggleItalic().run()}
-                            selected={editor.isActive('italic')}
-                        >
-                            <Icon icon='material-symbols:format-italic' height={20} />
-                        </StyledMenuItem>,
+                        <StyledTooltip key='italic' title='Italic' placement='top' arrow>
+                            <span>
+                                <StyledMenuItem
+                                    className='flex items-center justify-center'
+                                    key='italic'
+                                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                                    selected={editor.isActive('italic')}
+                                >
+                                    <Icon icon='material-symbols:format-italic' height={20} />
+                                </StyledMenuItem>
+                            </span>
+                        </StyledTooltip>,
                     )
                 }
                 if (Number(visibleButtons) < 6) {
                     newHiddenButtons.push(
-                        <StyledMenuItem
-                            className='flex items-center justify-center'
-                            key='bold'
-                            onClick={() => editor.chain().focus().toggleBold().run()}
-                            selected={editor.isActive('bold')}
-                        >
-                            <Icon icon='ooui:bold-b' />
-                        </StyledMenuItem>,
+                        <StyledTooltip key='bold' title='Bold' placement='top' arrow>
+                            <span>
+                                <StyledMenuItem
+                                    className='flex items-center justify-center'
+                                    key='bold'
+                                    onClick={() => editor.chain().focus().toggleBold().run()}
+                                    selected={editor.isActive('bold')}
+                                >
+                                    <Icon icon='ooui:bold-b' />
+                                </StyledMenuItem>
+                            </span>
+                        </StyledTooltip>,
                     )
                 }
                 if (Number(visibleButtons) < 5) {
                     newHiddenButtons.push(
-                        <StyledMenuItem
-                            className='flex items-center justify-center'
-                            key='ordered'
-                            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                            selected={editor.isActive('orderedList')}
-                        >
-                            <Icon icon='mdi:format-list-numbered' fontSize={20} />
-                        </StyledMenuItem>,
+                        <StyledTooltip key='ordered' title='Ordered list' placement='top' arrow>
+                            <span>
+                                <StyledMenuItem
+                                    className='flex items-center justify-center'
+                                    key='ordered'
+                                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                                    selected={editor.isActive('orderedList')}
+                                >
+                                    <Icon icon='mdi:format-list-numbered' fontSize={20} />
+                                </StyledMenuItem>
+                            </span>
+                        </StyledTooltip>,
                     )
                 }
                 if (Number(visibleButtons) < 4) {
                     newHiddenButtons.push(
-                        <StyledMenuItem
-                            className='flex items-center justify-center'
-                            key='bullet'
-                            onClick={() => editor.chain().focus().toggleBulletList().run()}
-                            selected={editor.isActive('bulletList')}
-                        >
-                            <Icon icon='mdi:format-list-bulleted' fontSize={20} />
-                        </StyledMenuItem>,
+                        <StyledTooltip key='bullet' title='Bullet list' placement='top' arrow>
+                            <span>
+                                <StyledMenuItem
+                                    className='flex items-center justify-center'
+                                    key='bullet'
+                                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                                    selected={editor.isActive('bulletList')}
+                                >
+                                    <Icon icon='mdi:format-list-bulleted' fontSize={20} />
+                                </StyledMenuItem>
+                            </span>
+                        </StyledTooltip>,
                     )
                 }
 
@@ -137,112 +167,163 @@ export const Toolbar = ({
             <div className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })} ref={toolbarRef}>
                 <div className='flex flex-row items-center gap-1'>
                     {visibleButtons >= 1 && (
-                        <StyledButton
-                            dataTest='richeditor-h1-button'
-                            size='small'
-                            variant={editor.isActive('heading', { level: 1 }) ? 'text' : 'textGray'}
-                            onClick={() => {
-                                editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
-                                editor.chain().focus().toggleHeading({ level: 1 }).run()
-                            }}
-                        >
-                            <Icon icon='bi:type-h1' />
-                        </StyledButton>
+                        <StyledTooltip arrow title='Emojis' placement='top'>
+                            <span ref={emojiButtonRef}>
+                                <StyledButton
+                                    dataTest='richeditor-emoji-button'
+                                    size='small'
+                                    variant='textGray'
+                                    onClick={openEmojiPicker}
+                                    style={{ minWidth: 32, padding: 0 }}
+                                >
+                                    <Icon icon='mdi:emoticon-outline' fontSize={20} />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 2 && (
-                        <StyledButton
-                            dataTest='richeditor-h2-button'
-                            size='small'
-                            variant={editor.isActive('heading', { level: 2 }) ? 'text' : 'textGray'}
-                            onClick={() => {
-                                editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
-                                editor.chain().focus().toggleHeading({ level: 2 }).run()
-                            }}
-                        >
-                            <Icon icon='bi:type-h2' />
-                        </StyledButton>
+                        <StyledTooltip title='Heading 1' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-h1-button'
+                                    size='small'
+                                    variant={editor.isActive('heading', { level: 1 }) ? 'text' : 'textGray'}
+                                    onClick={() => {
+                                        editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
+                                        editor.chain().focus().toggleHeading({ level: 1 }).run()
+                                    }}
+                                >
+                                    <Icon icon='bi:type-h1' />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 3 && (
-                        <FontSizeSelect editor={editor}>
-                            <CustomMenuItem value='small'>{isNorsk ? 'Liten' : 'Small'}</CustomMenuItem>
-                            <CustomMenuItem value='normal'>{'Normal'}</CustomMenuItem>
-                            <CustomMenuItem value='large'>{isNorsk ? 'Stor' : 'Large'}</CustomMenuItem>
-                            <CustomMenuItem value='huge'>{isNorsk ? 'Enorm' : 'Huge'}</CustomMenuItem>
-                        </FontSizeSelect>
+                        <StyledTooltip title='Heading 2' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-h2-button'
+                                    size='small'
+                                    variant={editor.isActive('heading', { level: 2 }) ? 'text' : 'textGray'}
+                                    onClick={() => {
+                                        editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
+                                        editor.chain().focus().toggleHeading({ level: 2 }).run()
+                                    }}
+                                >
+                                    <Icon icon='bi:type-h2' />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 4 && (
-                        <StyledButton
-                            dataTest='richeditor-bullet-list-button'
-                            size='small'
-                            variant={editor.isActive('bulletList') ? 'text' : 'textGray'}
-                            onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        >
-                            <Icon icon='mdi:format-list-bulleted' fontSize={20} />
-                        </StyledButton>
+                        <StyledTooltip title='Font size' placement='top' arrow>
+                            <span>
+                                <FontSizeSelect editor={editor}>
+                                    <CustomMenuItem value='small'>{isNorsk ? 'Liten' : 'Small'}</CustomMenuItem>
+                                    <CustomMenuItem value='normal'>{'Normal'}</CustomMenuItem>
+                                    <CustomMenuItem value='large'>{isNorsk ? 'Stor' : 'Large'}</CustomMenuItem>
+                                    <CustomMenuItem value='huge'>{isNorsk ? 'Enorm' : 'Huge'}</CustomMenuItem>
+                                </FontSizeSelect>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 5 && (
-                        <StyledButton
-                            dataTest='richeditor-ordered-list-button'
-                            size='small'
-                            variant={editor.isActive('orderedList') ? 'text' : 'textGray'}
-                            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        >
-                            <Icon icon='mdi:format-list-numbered' fontSize={20} />
-                        </StyledButton>
+                        <StyledTooltip title='Bullet list' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-bullet-list-button'
+                                    size='small'
+                                    variant={editor.isActive('bulletList') ? 'text' : 'textGray'}
+                                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                                >
+                                    <Icon icon='mdi:format-list-bulleted' fontSize={20} />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 6 && (
-                        <StyledButton
-                            dataTest='richeditor-bold-button'
-                            size='small'
-                            variant={editor.isActive('bold') ? 'text' : 'textGray'}
-                            onClick={() => editor.chain().focus().toggleBold().run()}
-                        >
-                            <Icon icon='ooui:bold-b' />
-                        </StyledButton>
+                        <StyledTooltip title='Ordered list' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-ordered-list-button'
+                                    size='small'
+                                    variant={editor.isActive('orderedList') ? 'text' : 'textGray'}
+                                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                                >
+                                    <Icon icon='mdi:format-list-numbered' fontSize={20} />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 7 && (
-                        <StyledButton
-                            dataTest='richeditor-italic-button'
-                            size='small'
-                            variant={editor.isActive('italic') ? 'text' : 'textGray'}
-                            onClick={() => editor.chain().focus().toggleItalic().run()}
-                        >
-                            <Icon icon='material-symbols:format-italic' height={20} />
-                        </StyledButton>
+                        <StyledTooltip title='Bold' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-bold-button'
+                                    size='small'
+                                    variant={editor.isActive('bold') ? 'text' : 'textGray'}
+                                    onClick={() => editor.chain().focus().toggleBold().run()}
+                                >
+                                    <Icon icon='ooui:bold-b' />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {visibleButtons >= 8 && (
-                        <StyledButton
-                            dataTest='richeditor-link-button'
-                            size='small'
-                            variant={editor.isActive('link') ? 'text' : 'textGray'}
-                            onClick={openLinkDialog}
-                        >
-                            <LinkOutlineIcon />
-                        </StyledButton>
+                        <StyledTooltip title='Italic' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-italic-button'
+                                    size='small'
+                                    variant={editor.isActive('italic') ? 'text' : 'textGray'}
+                                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                                >
+                                    <Icon icon='material-symbols:format-italic' height={20} />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
+                    )}
+                    {visibleButtons >= 9 && (
+                        <StyledTooltip title='Link' placement='top' arrow>
+                            <span>
+                                <StyledButton
+                                    dataTest='richeditor-link-button'
+                                    size='small'
+                                    variant={editor.isActive('link') ? 'text' : 'textGray'}
+                                    onClick={openLinkDialog}
+                                >
+                                    <LinkOutlineIcon />
+                                </StyledButton>
+                            </span>
+                        </StyledTooltip>
                     )}
                     {actionsVisible && (
                         <>
-                            <StyledButton
-                                size='small'
-                                dataTest='richeditor-more-menu-button'
-                                variant='text'
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
-                                    handleOpen(e)
-                                }}
-                                onMouseDown={(e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
-                                }}
-                                onMouseUp={(e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
-                                }}
-                            >
-                                <DotsVerticalIcon className='text-delta-800' width={20} height={20} />
-                            </StyledButton>
-                            <Popover
+                            <StyledTooltip title='More' placement='top' arrow>
+                                <span>
+                                    <StyledButton
+                                        size='small'
+                                        dataTest='richeditor-more-menu-button'
+                                        variant='text'
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                            handleOpen(e)
+                                        }}
+                                        onMouseDown={(e) => {
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                        }}
+                                        onMouseUp={(e) => {
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                        }}
+                                    >
+                                        <DotsVerticalIcon className='text-delta-800' width={20} height={20} />
+                                    </StyledButton>
+                                </span>
+                            </StyledTooltip>
+                            <StyledPopover
                                 open={open}
                                 anchorEl={anchorEl}
                                 onClose={handleClose}
@@ -257,7 +338,7 @@ export const Toolbar = ({
                                 }}
                             >
                                 {hiddenButtons}
-                            </Popover>
+                            </StyledPopover>
                         </>
                     )}
                 </div>

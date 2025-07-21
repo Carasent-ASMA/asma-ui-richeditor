@@ -49,7 +49,7 @@ export const Input1 = () => {
                 // toolbarDefaultVisible
                 placeholder={'Group message'}
                 helperText={'* required'}
-                error={error}
+                error={true}
                 required
                 dataTest='custom-rte'
                 onUpdate={(e) => setContent(e.editor.getHTML())}
