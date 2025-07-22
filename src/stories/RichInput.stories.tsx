@@ -3,6 +3,7 @@ import { EditSquareIcon, StyledButton, StyledInputField } from 'asma-core-ui'
 
 import { useState } from 'react'
 import { RichInput } from 'src/rich-input/RichInput'
+import { AttachmentsMenu } from './AttachmentsMenuExample'
 
 const meta = {
     title: '*/RichInput',
@@ -50,6 +51,7 @@ export const Input1 = () => {
                 placeholder={'Group message'}
                 helperText={'* required'}
                 error={true}
+                attachmentsMenu={<AttachmentsMenu />}
                 required
                 dataTest='custom-rte'
                 onUpdate={(e) => setContent(e.editor.getHTML())}

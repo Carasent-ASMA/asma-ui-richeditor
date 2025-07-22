@@ -1,6 +1,9 @@
+@use 'asma-core-ui/dist/style.css';
+@import 'normalize.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @font-face {
     font-family: 'Roboto';
     src: url('./font/Roboto-Thin.ttf') format('truetype');
@@ -83,4 +86,19 @@
     src: url('./font/Roboto-BlackItalic.ttf') format('truetype');
     font-weight: 900;
     font-style: italic;
+}
+
+.EmojiPickerReact {
+    .epr-body {
+        --epr-emoji-hover-color: var(--colors-gama-100);
+        --epr-focus-bg-color: var(--colors-gama-100);
+    }
+
+    .epr-emoji-category-label {
+        --epr-category-label-text-color: var(--colors-delta-700);
+    }
+
+    .epr-btn {
+        --epr-category-icon-active-color: var(--colors-gama-500);
+    }
 }

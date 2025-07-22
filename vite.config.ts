@@ -28,11 +28,11 @@ export default defineConfig({
         rollupOptions: {
             external: [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)],
             output: {
-                globals: {
-                    react: 'React',
-                    'react/jsx-runtime': 'react/jsx-runtime',
-                    'react-dom': 'ReactDOM',
-                },
+                // globals: {
+                //     react: 'React',
+                //     'react/jsx-runtime': 'react/jsx-runtime',
+                //     'react-dom': 'ReactDOM',
+                // },
                 plugins: [terser()],
             },
         },

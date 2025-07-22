@@ -2,16 +2,15 @@ import { useEffect, useImperativeHandle, useRef, useState, type FC } from 'react
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
-import styles from './styles/RichInput.module.scss'
 import './styles/tiptap.css'
-import { StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
+import { StyledDialog, StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
 import { LinkDialog } from './components/LinkDialog'
 import Placeholder from '@tiptap/extension-placeholder'
-import data, { type Skin } from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
+import EmojiPicker from 'emoji-picker-react'
+
 /**
  * ASMA RichInput - A rich text editor component.
  *
@@ -104,12 +103,6 @@ const RichInput: FC<IRichInput> = ({
         }
     }, [editor])
 
-    const handleEmojiSelect = (emoji: Skin) => {
-        if (editor) {
-            editor.chain().focus().insertContent(emoji.native).run()
-        }
-        setEmojiPickerVisible(false)
-    }
     const isFieldEmpty = editor?.isEmpty
     const showError = !readOnly && error && isFieldEmpty
     if (!editor) return null
@@ -117,7 +110,7 @@ const RichInput: FC<IRichInput> = ({
     return (
         <>
             <StyledFormControl className={className}>
-                {title && <p className='font-semibold text-base text-gray-700 mb-2'>{title}</p>}
+                {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
                 <div
                     className={clsx(
                         !noDefaultStyles && 'rte-wrapper',
@@ -127,13 +120,12 @@ const RichInput: FC<IRichInput> = ({
                         !readOnly && !showError && focused && 'focused-state',
                     )}
                 >
-                    <div className='relative'>
+                    <div className='flex'>
                         <EditorContent
                             data-test={dataTest}
                             id={id}
                             className={clsx(
                                 'border-none rounded-none w-full',
-                                showToolbar ? 'h-[40px]' : 'h-[80px]',
                                 !noDefaultStyles && 'core-ui-rte',
                                 !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
                                 !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
@@ -145,15 +137,12 @@ const RichInput: FC<IRichInput> = ({
                         />
 
                         {!hideToolbar && !disabled && !readOnly && (
-                            <div className='absolute top-1 right-1 bottom-1 flex flex-col gap-4 items-center z-10 m-1'>
+                            <div className='flex flex-col items-end justify-end gap-2 m-1'>
                                 {!showToolbar && (
                                     <Icon
                                         onClick={() => setShowToolbar(true)}
-                                        className={styles['iconButton']}
+                                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6 m-1'
                                         icon='material-symbols:format-color-text'
-                                        color='var(--colors-gray-700)'
-                                        height={24}
-                                        width={24}
                                     />
                                 )}
                                 {attachmentsMenu}
@@ -182,16 +171,25 @@ const RichInput: FC<IRichInput> = ({
 
             <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
 
-            {emojiPickerVisible && (
-                <div
-                    className='fixed inset-0 bg-black/20 z-[99999] flex items-center justify-center'
-                    onClick={() => setEmojiPickerVisible(false)}
-                >
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Picker theme='light' data={data} onEmojiSelect={handleEmojiSelect} locale={locale} />
-                    </div>
-                </div>
-            )}
+            <StyledDialog
+                dataTest='emoji-picker-dialog'
+                open={emojiPickerVisible}
+                showCloseIcon={false}
+                onClose={() => setEmojiPickerVisible(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: '8px',
+                    },
+                }}
+            >
+                <EmojiPicker
+                    open={emojiPickerVisible}
+                    onEmojiClick={({ emoji }) => {
+                        editor?.chain().focus().insertContent(emoji).run()
+                        setEmojiPickerVisible(false)
+                    }}
+                />
+            </StyledDialog>
         </>
     )
 }
