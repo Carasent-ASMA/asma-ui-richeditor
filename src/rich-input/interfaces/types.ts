@@ -24,7 +24,7 @@ export interface IRichInput extends UseEditorOptions {
     required?: boolean
     hideToolbar?: boolean
     noDefaultStyles?: boolean
-    maxScrollableHeight?: number | string
+    maxScrollableHeight?: number
     toolbarDefaultVisible?: boolean
     locale?: ILocale
 }

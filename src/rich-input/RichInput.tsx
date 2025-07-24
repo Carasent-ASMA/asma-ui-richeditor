@@ -120,12 +120,11 @@ const RichInput: FC<IRichInput> = ({
                         !readOnly && !showError && focused && 'focused-state',
                     )}
                 >
-                    <div className='flex'>
+                    <div className='flex justify-between'>
                         <EditorContent
                             data-test={dataTest}
                             id={id}
                             className={clsx(
-                                'border-none rounded-none w-full',
                                 !noDefaultStyles && 'core-ui-rte',
                                 !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
                                 !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
@@ -134,6 +133,9 @@ const RichInput: FC<IRichInput> = ({
                             )}
                             editor={editor}
                             onClick={() => editor?.chain().focus().run()}
+                            style={
+                                { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
+                            }
                         />
 
                         {!hideToolbar && !disabled && !readOnly && (

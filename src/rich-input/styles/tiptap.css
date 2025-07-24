@@ -9,6 +9,7 @@
 
 .core-ui-rte {
     overflow: hidden;
+    width: 100%;
 }
 .core-ui-rte a {
     text-decoration: underline;
@@ -75,7 +76,7 @@
     }
 }
 .core-ui-rte.displace-text .tiptap {
-    padding-right: 40px;
+    padding-right: 16px;
 }
 .core-ui-rte.edit-mode .tiptap {
     min-height: 40px;
@@ -164,4 +165,4 @@
 }
 .emoji-mart-bar {
     background: rgb(17, 97, 97) !important;
-  }
+}
