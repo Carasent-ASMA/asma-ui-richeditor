@@ -20,7 +20,7 @@ export const Input1 = () => {
     const error = false
 
     return (
-        <div className='flex flex-col gap-4 w-[30vw]'>
+        <div className='flex flex-col gap-4'>
             <StyledButton
                 dataTest='toggle-editable'
                 variant='contained'
@@ -54,11 +54,15 @@ export const Input1 = () => {
                 attachmentsMenu={<AttachmentsMenu />}
                 required
                 dataTest='custom-rte'
-                onUpdate={(e) => setContent(e.editor.getHTML())}
+                onUpdate={({ editor }) => setContent(editor.getHTML())}
                 content={content}
                 readOnly={readOnly ? 'outlined' : undefined}
                 maxScrollableHeight={260}
                 locale={'en'}
+                attachments={[
+                    { key: '1', label: 'label 1', dataTest: 'one' },
+                    { key: '2', label: 'label 2', dataTest: 'two' },
+                ]}
             />
         </div>
     )

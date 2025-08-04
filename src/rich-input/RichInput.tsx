@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
 import './styles/tiptap.css'
-import { StyledDialog, StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
+import { StyledChip, StyledDialog, StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
@@ -39,6 +39,8 @@ const RichInput: FC<IRichInput> = ({
     toolbarDefaultVisible,
     hideToolbar,
     noDefaultStyles,
+    attachments,
+    replyModeComponent,
     ...props
 }) => {
     const cursor = useRef<number>()
@@ -65,23 +67,19 @@ const RichInput: FC<IRichInput> = ({
                 updateProps.editor.commands.focus()
             },
         },
-        //NOTE: the dependency list doesn't accept the props object without creating a max call stack error
-        [
-            props.extensions,
-            props.shouldRerenderOnTransaction,
-            props.immediatelyRender,
-            props.editable,
-            props.content,
-            disabled,
-            readOnly,
-            placeholder,
-        ],
+
+        [props.shouldRerenderOnTransaction, props.immediatelyRender, placeholder],
     )
 
     useEffect(() => {
+        editor?.setEditable(props.editable || (!disabled && !readOnly))
+    }, [readOnly, disabled, props.editable, editor])
+
+    useEffect(() => {
         if (cursor.current === undefined) return
+
         editor?.commands.setTextSelection(cursor.current)
-    }, [props.content, editor])
+    }, [props.content?.length, editor])
 
     const [showToolbar, setShowToolbar] = useState(toolbarDefaultVisible)
     const [linkDialogVisible, setLinkDialogVisible] = useState(false)
@@ -120,6 +118,7 @@ const RichInput: FC<IRichInput> = ({
                         !readOnly && !showError && focused && 'focused-state',
                     )}
                 >
+                    {replyModeComponent}
                     <div className='flex justify-between'>
                         <EditorContent
                             data-test={dataTest}
@@ -151,6 +150,15 @@ const RichInput: FC<IRichInput> = ({
                             </div>
                         )}
                     </div>
+
+                    {!!attachments?.length && (
+                        <div className='p-2 flex flex-wrap items-center gap-2'>
+                            {attachments.map((props) => (
+                                <StyledChip {...props} />
+                            ))}
+                        </div>
+                    )}
+
                     {!hideToolbar && !disabled && !readOnly && showToolbar && (
                         <Toolbar
                             editor={editor}

@@ -1,3 +1,4 @@
+import type { ChipProps } from '@mui/material'
 import type { Editor, UseEditorOptions } from '@tiptap/react'
 import type { MutableRefObject } from 'react'
 
@@ -10,6 +11,7 @@ export type ILocale = 'en' | 'no'
 export interface IRichInput extends UseEditorOptions {
     dataTest: string
     attachmentsMenu?: React.ReactNode
+    replyModeComponent?: React.ReactNode
     inputRef?: MutableRefObject<Editor | null>
     id?: string
     // label?: string // TODO: implement same label behavior like in MUI
@@ -27,4 +29,5 @@ export interface IRichInput extends UseEditorOptions {
     maxScrollableHeight?: number
     toolbarDefaultVisible?: boolean
     locale?: ILocale
+    attachments?: (ChipProps & { key: string; dataTest: string })[]
 }
