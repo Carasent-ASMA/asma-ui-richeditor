@@ -136,6 +136,7 @@ const RichInput: FC<IRichInput> = ({
 
                     {!hideToolbar && !disabled && !readOnly && (
                         <div className='flex flex-col items-end justify-end gap-2 m-1'>
+                            {attachmentsMenu}
                             {!showToolbar && (
                                 <Icon
                                     onMouseDown={(e) => {
@@ -146,7 +147,6 @@ const RichInput: FC<IRichInput> = ({
                                     icon='material-symbols:format-color-text'
                                 />
                             )}
-                            {attachmentsMenu}
                         </div>
                     )}
                 </div>
@@ -192,8 +192,12 @@ const RichInput: FC<IRichInput> = ({
                         editor?.chain().focus().insertContent(emoji).run()
                         setEmojiPickerVisible(false)
                     }}
+                    allowExpandReactions={false}
                     autoFocusSearch={false}
                     className='w-full min-w-[350px]'
+                    previewConfig={{
+                        showPreview: false,
+                    }}
                 />
             </StyledDialog>
         </StyledFormControl>

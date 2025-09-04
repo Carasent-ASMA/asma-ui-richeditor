@@ -75,7 +75,10 @@ export const Toolbar = ({
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
                                     key='link'
-                                    onClick={openLinkDialog}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        openLinkDialog()
+                                    }}
                                     selected={editor.isActive('link')}
                                 >
                                     <LinkOutlineIcon />
@@ -91,7 +94,10 @@ export const Toolbar = ({
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
                                     key='italic'
-                                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleItalic().run()
+                                    }}
                                     selected={editor.isActive('italic')}
                                 >
                                     <Icon icon='material-symbols:format-italic' height={20} />
@@ -107,7 +113,10 @@ export const Toolbar = ({
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
                                     key='bold'
-                                    onClick={() => editor.chain().focus().toggleBold().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBold().run()
+                                    }}
                                     selected={editor.isActive('bold')}
                                 >
                                     <Icon icon='ooui:bold-b' />
@@ -123,7 +132,10 @@ export const Toolbar = ({
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
                                     key='ordered'
-                                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleOrderedList().run()
+                                    }}
                                     selected={editor.isActive('orderedList')}
                                 >
                                     <Icon icon='mdi:format-list-numbered' fontSize={20} />
@@ -139,7 +151,10 @@ export const Toolbar = ({
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
                                     key='bullet'
-                                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBulletList().run()
+                                    }}
                                     selected={editor.isActive('bulletList')}
                                 >
                                     <Icon icon='mdi:format-list-bulleted' fontSize={20} />
@@ -191,7 +206,8 @@ export const Toolbar = ({
                                     dataTest='richeditor-h1-button'
                                     size='small'
                                     variant={editor.isActive('heading', { level: 1 }) ? 'text' : 'textGray'}
-                                    onClick={() => {
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
                                         editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
                                         editor.chain().focus().toggleHeading({ level: 1 }).run()
                                     }}
@@ -208,7 +224,8 @@ export const Toolbar = ({
                                     dataTest='richeditor-h2-button'
                                     size='small'
                                     variant={editor.isActive('heading', { level: 2 }) ? 'text' : 'textGray'}
-                                    onClick={() => {
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
                                         editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
                                         editor.chain().focus().toggleHeading({ level: 2 }).run()
                                     }}
@@ -237,7 +254,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-bullet-list-button'
                                     size='small'
                                     variant={editor.isActive('bulletList') ? 'text' : 'textGray'}
-                                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBulletList().run()
+                                    }}
                                 >
                                     <Icon icon='mdi:format-list-bulleted' fontSize={20} />
                                 </StyledButton>
@@ -251,7 +271,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-ordered-list-button'
                                     size='small'
                                     variant={editor.isActive('orderedList') ? 'text' : 'textGray'}
-                                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleOrderedList().run()
+                                    }}
                                 >
                                     <Icon icon='mdi:format-list-numbered' fontSize={20} />
                                 </StyledButton>
@@ -265,7 +288,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-bold-button'
                                     size='small'
                                     variant={editor.isActive('bold') ? 'text' : 'textGray'}
-                                    onClick={() => editor.chain().focus().toggleBold().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBold().run()
+                                    }}
                                 >
                                     <Icon icon='ooui:bold-b' />
                                 </StyledButton>
@@ -279,7 +305,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-italic-button'
                                     size='small'
                                     variant={editor.isActive('italic') ? 'text' : 'textGray'}
-                                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleItalic().run()
+                                    }}
                                 >
                                     <Icon icon='material-symbols:format-italic' height={20} />
                                 </StyledButton>
@@ -293,7 +322,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-link-button'
                                     size='small'
                                     variant={editor.isActive('link') ? 'text' : 'textGray'}
-                                    onClick={openLinkDialog}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        openLinkDialog()
+                                    }}
                                 >
                                     <LinkOutlineIcon />
                                 </StyledButton>
@@ -308,14 +340,10 @@ export const Toolbar = ({
                                         size='small'
                                         dataTest='richeditor-more-menu-button'
                                         variant='text'
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            e.preventDefault()
-                                            handleOpen(e)
-                                        }}
                                         onMouseDown={(e) => {
                                             e.stopPropagation()
                                             e.preventDefault()
+                                            handleOpen(e)
                                         }}
                                         onMouseUp={(e) => {
                                             e.stopPropagation()
@@ -330,7 +358,10 @@ export const Toolbar = ({
                                 open={open}
                                 anchorEl={anchorEl}
                                 onClose={handleClose}
-                                onClick={handleClose}
+                                onMouseDown={(e) => {
+                                    e.preventDefault()
+                                    handleClose()
+                                }}
                                 anchorOrigin={{
                                     horizontal: 'center',
                                     vertical: 'bottom',
@@ -345,7 +376,15 @@ export const Toolbar = ({
                         </>
                     )}
                 </div>
-                <StyledButton dataTest='richeditor-close-toolbar-button' size='small' variant='text' onClick={onClose}>
+                <StyledButton
+                    dataTest='richeditor-close-toolbar-button'
+                    size='small'
+                    variant='text'
+                    onMouseDown={(e) => {
+                        e.preventDefault()
+                        onClose()
+                    }}
+                >
                     {isNorsk ? 'Lukk' : 'Close'}
                 </StyledButton>
             </div>
