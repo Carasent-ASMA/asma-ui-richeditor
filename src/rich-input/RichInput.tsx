@@ -106,91 +106,85 @@ const RichInput: FC<IRichInput> = ({
     if (!editor) return null
 
     return (
-        <>
-            <StyledFormControl className={className}>
-                {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
-                <div
-                    className={clsx(
-                        !noDefaultStyles && 'rte-wrapper',
-                        readOnly === 'outlined' && 'readonly-outlined',
-                        readOnly === 'plain' && 'readonly-plain',
-                        !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
-                        !readOnly && !showError && focused && 'focused-state',
-                    )}
-                >
-                    {replyModeComponent}
-                    <div className='flex justify-between'>
-                        <EditorContent
-                            data-test={dataTest}
-                            id={id}
-                            className={clsx(
-                                !noDefaultStyles && 'core-ui-rte',
-                                !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
-                                !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
-                                editorClassName,
-                                showToolbar && 'displace-text',
-                            )}
-                            editor={editor}
-                            onClick={() => editor?.chain().focus().run()}
-                            style={
-                                { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
-                            }
-                        />
-
-                        {!hideToolbar && !disabled && !readOnly && (
-                            <div className='flex flex-col items-end justify-end gap-2 m-1'>
-                                {!showToolbar && (
-                                    <Icon
-                                        onClick={() => setShowToolbar(true)}
-                                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6 m-1'
-                                        icon='material-symbols:format-color-text'
-                                    />
-                                )}
-                                {attachmentsMenu}
-                            </div>
+        <StyledFormControl className={className}>
+            {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
+            <div
+                className={clsx(
+                    !noDefaultStyles && 'rte-wrapper',
+                    readOnly === 'outlined' && 'readonly-outlined',
+                    readOnly === 'plain' && 'readonly-plain',
+                    !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
+                    !readOnly && !showError && focused && 'focused-state',
+                )}
+            >
+                {replyModeComponent}
+                <div className='flex justify-between'>
+                    <EditorContent
+                        data-test={dataTest}
+                        id={id}
+                        className={clsx(
+                            !noDefaultStyles && 'core-ui-rte',
+                            !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
+                            !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                            editorClassName,
+                            showToolbar && 'displace-text',
                         )}
-                    </div>
+                        editor={editor}
+                        onClick={() => editor?.chain().focus().run()}
+                        style={{ '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties}
+                    />
 
-                    {!!attachments?.length && (
-                        <div className='p-2 flex flex-wrap items-center gap-2'>
-                            {attachments.map((props) => (
-                                <StyledChip {...props} />
-                            ))}
+                    {!hideToolbar && !disabled && !readOnly && (
+                        <div className='flex flex-col items-end justify-end gap-2 m-1'>
+                            {!showToolbar && (
+                                <Icon
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        setShowToolbar(true)
+                                    }}
+                                    className='cursor-pointer text-delta-700 h-6 w-6 min-w-6 m-1'
+                                    icon='material-symbols:format-color-text'
+                                />
+                            )}
+                            {attachmentsMenu}
                         </div>
-                    )}
-
-                    {!hideToolbar && !disabled && !readOnly && showToolbar && (
-                        <Toolbar
-                            editor={editor}
-                            onClose={() => setShowToolbar(false)}
-                            error={error}
-                            focused={focused}
-                            openLinkDialog={() => setLinkDialogVisible(true)}
-                            openEmojiPicker={() => setEmojiPickerVisible(true)}
-                            locale={locale}
-                        />
                     )}
                 </div>
 
-                {showError && helperText && (
-                    <StyledFormHelperText error data-test={`error-${dataTest}`}>
-                        {helperText}
-                    </StyledFormHelperText>
+                {!!attachments?.length && (
+                    <div className='p-2 flex flex-wrap items-center gap-2'>
+                        {attachments.map((props) => (
+                            <StyledChip {...props} />
+                        ))}
+                    </div>
                 )}
-            </StyledFormControl>
+
+                {!hideToolbar && !disabled && !readOnly && showToolbar && (
+                    <Toolbar
+                        editor={editor}
+                        onClose={() => setShowToolbar(false)}
+                        error={error}
+                        focused={focused}
+                        openLinkDialog={() => setLinkDialogVisible(true)}
+                        openEmojiPicker={() => setEmojiPickerVisible(true)}
+                        locale={locale}
+                    />
+                )}
+            </div>
+
+            {showError && helperText && (
+                <StyledFormHelperText error data-test={`error-${dataTest}`}>
+                    {helperText}
+                </StyledFormHelperText>
+            )}
 
             <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
 
             <StyledDialog
                 dataTest='emoji-picker-dialog'
                 open={emojiPickerVisible}
-                showCloseIcon={false}
                 onClose={() => setEmojiPickerVisible(false)}
-                PaperProps={{
-                    sx: {
-                        borderRadius: '8px',
-                    },
-                }}
+                dialogTitle={<span className='pb-4'>Emoji</span>}
             >
                 <EmojiPicker
                     open={emojiPickerVisible}
@@ -198,9 +192,11 @@ const RichInput: FC<IRichInput> = ({
                         editor?.chain().focus().insertContent(emoji).run()
                         setEmojiPickerVisible(false)
                     }}
+                    autoFocusSearch={false}
+                    className='w-full min-w-[350px]'
                 />
             </StyledDialog>
-        </>
+        </StyledFormControl>
     )
 }
 

@@ -89,6 +89,8 @@
 }
 
 .EmojiPickerReact {
+    --epr-picker-border-radius: 0px !important;
+    --epr-picker-border-color: white !important;
     .epr-body {
         --epr-emoji-hover-color: var(--colors-gama-100);
         --epr-focus-bg-color: var(--colors-gama-100);

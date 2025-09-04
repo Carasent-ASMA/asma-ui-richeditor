@@ -60,7 +60,7 @@ export const Toolbar = ({
                     { width: isNorsk ? 374 : 378, buttons: 5 },
                     { width: isNorsk ? 416 : 420, buttons: 6 },
                     { width: isNorsk ? 416 : 420, buttons: 7 },
-                    { width: Infinity, buttons: 8 },
+                    { width: Infinity, buttons: 9 },
                 ]
 
                 const visibleButtons = buttonVisibilityMap.find((item) => width < item.width)?.buttons
@@ -173,7 +173,10 @@ export const Toolbar = ({
                                     dataTest='richeditor-emoji-button'
                                     size='small'
                                     variant='textGray'
-                                    onClick={openEmojiPicker}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        openEmojiPicker()
+                                    }}
                                     style={{ minWidth: 32, padding: 0 }}
                                 >
                                     <Icon icon='mdi:emoticon-outline' fontSize={20} />
