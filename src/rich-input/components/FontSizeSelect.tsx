@@ -1,9 +1,11 @@
 import { Icon } from '@iconify/react'
-import { StyledInputField, type TextFieldProps } from 'asma-core-ui'
-import React, { useLayoutEffect, useState, type ChangeEvent } from 'react'
+import { StyledButton, StyledPopover, StyledTooltip, type TextFieldProps } from 'asma-core-ui'
+import React, { useLayoutEffect, useState } from 'react'
 
 import '../styles/toolbar.css'
 import type { Editor } from '@tiptap/core'
+import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
+import { CustomMenuItem } from './CustomMenuItem'
 
 const fontSizeMap: { [key: string]: string } = {
     small: '10px',
@@ -12,15 +14,16 @@ const fontSizeMap: { [key: string]: string } = {
     huge: '32px',
 }
 
-export const FontSizeSelect = (props: TextFieldProps & { editor: Editor }) => {
-    const { editor } = props
+export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk: boolean }) => {
+    const { editor, isNorsk } = props
     const [selectedSize, setSelectedSize] = useState<string>('normal')
 
-    const handleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const selectedSize = event.target.value
-        editor.chain().focus().setMark('textStyle', { fontSize: fontSizeMap[selectedSize] }).run()
-        setSelectedSize(selectedSize)
+    const handleFontSizeChange = (size: string) => {
+        editor.chain().focus().setMark('textStyle', { fontSize: fontSizeMap[size] }).run()
+        setSelectedSize(size)
     }
+
+    const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
 
     useLayoutEffect(() => {
         const { from, to } = editor.state.selection
@@ -36,38 +39,90 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor }) => {
     }, [editor.state.selection, editor.state.doc])
 
     return (
-        <StyledInputField
-            {...props}
-            select
-            size='small'
-            dataTest='font-size-select'
-            onChange={handleFontSizeChange}
-            value={selectedSize}
-            SelectProps={{ IconComponent: () => null }}
-            InputProps={{
-                endAdornment: <Icon icon='tabler:caret-up-down-filled' className='chevron-icon' />,
-            }}
-            sx={{
-                '.MuiSelect-select': {
-                    border: 'none',
-                    padding: 0,
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'var(--colors-delta-700)',
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                },
-                '.MuiOutlinedInput-root': {
-                    height: '32px',
-                    width: '75px',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                        border: 'none',
-                    },
-                },
-            }}
-        >
-            {props.children}
-        </StyledInputField>
+        <>
+            <StyledTooltip title='Font size' placement='top' arrow>
+                <span>
+                    <StyledButton
+                        size='small'
+                        dataTest='richeditor-more-menu-button'
+                        variant='textGray'
+                        onMouseDown={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
+                            handleOpen(e)
+                        }}
+                        className='font-normal capitalize'
+                        onMouseUp={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
+                        }}
+                        endIcon={<Icon icon='tabler:caret-up-down-filled' fontSize={20} />}
+                    >
+                        {selectedSize}
+                    </StyledButton>
+                </span>
+            </StyledTooltip>
+            <StyledPopover
+                disablePortal
+                disableEnforceFocus
+                disableAutoFocus
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                onMouseDown={(e) => {
+                    e.preventDefault()
+                    handleClose()
+                }}
+                anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <CustomMenuItem
+                    value='small'
+                    selected={selectedSize === 'small'}
+                    onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleFontSizeChange('small')
+                    }}
+                >
+                    {isNorsk ? 'Liten' : 'Small'}
+                </CustomMenuItem>
+                <CustomMenuItem
+                    value='normal'
+                    selected={selectedSize === 'normal'}
+                    onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleFontSizeChange('normal')
+                    }}
+                >
+                    Normal
+                </CustomMenuItem>
+                <CustomMenuItem
+                    value='large'
+                    selected={selectedSize === 'large'}
+                    onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleFontSizeChange('large')
+                    }}
+                >
+                    {isNorsk ? 'Stor' : 'Large'}
+                </CustomMenuItem>
+                <CustomMenuItem
+                    value='huge'
+                    selected={selectedSize === 'huge'}
+                    onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleFontSizeChange('huge')
+                    }}
+                >
+                    {isNorsk ? 'Enorm' : 'Huge'}
+                </CustomMenuItem>
+            </StyledPopover>
+        </>
     )
 }

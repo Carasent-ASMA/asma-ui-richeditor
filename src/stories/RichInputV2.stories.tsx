@@ -27,8 +27,6 @@ export default meta
 export const Input2 = () => {
     const [placeholder, setPlaceholder] = useState('test')
 
-    console.log(placeholder)
-
     return (
         <div className='flex flex-col gap-4'>
             <StyledButton
@@ -40,13 +38,7 @@ export const Input2 = () => {
                 toggle placeholder values
             </StyledButton>
 
-            <RichInput
-                dataTest='test'
-                disabled
-                onUpdate={() => undefined}
-                content='Hello World'
-                className=''
-            />
+            <RichInput dataTest='test' disabled onUpdate={() => undefined} content='Hello World' className='' />
             <RichInput
                 dataTest='test'
                 readOnly='outlined'

@@ -13,7 +13,6 @@ import clsx from 'clsx'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import type { ILocale } from '../interfaces/types'
-import { CustomMenuItem } from 'src/rich-input/components/CustomMenuItem'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
 
 export const Toolbar = ({
@@ -235,18 +234,7 @@ export const Toolbar = ({
                             </span>
                         </StyledTooltip>
                     )}
-                    {visibleButtons >= 4 && (
-                        <StyledTooltip title='Font size' placement='top' arrow>
-                            <span>
-                                <FontSizeSelect editor={editor}>
-                                    <CustomMenuItem value='small'>{isNorsk ? 'Liten' : 'Small'}</CustomMenuItem>
-                                    <CustomMenuItem value='normal'>{'Normal'}</CustomMenuItem>
-                                    <CustomMenuItem value='large'>{isNorsk ? 'Stor' : 'Large'}</CustomMenuItem>
-                                    <CustomMenuItem value='huge'>{isNorsk ? 'Enorm' : 'Huge'}</CustomMenuItem>
-                                </FontSizeSelect>
-                            </span>
-                        </StyledTooltip>
-                    )}
+                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} isNorsk={isNorsk} />}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title='Bullet list' placement='top' arrow>
                             <span>
@@ -357,6 +345,7 @@ export const Toolbar = ({
                             <StyledPopover
                                 disablePortal
                                 disableEnforceFocus
+                                disableAutoFocus
                                 open={open}
                                 anchorEl={anchorEl}
                                 onClose={handleClose}
