@@ -355,6 +355,8 @@ export const Toolbar = ({
                                 </span>
                             </StyledTooltip>
                             <StyledPopover
+                                disablePortal
+                                disableEnforceFocus
                                 open={open}
                                 anchorEl={anchorEl}
                                 onClose={handleClose}
