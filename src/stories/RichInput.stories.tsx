@@ -29,6 +29,14 @@ export const Input1 = () => {
             >
                 {readOnly ? 'Edit' : 'Close'}
             </StyledButton>
+            <StyledButton
+                dataTest='toggle-editable'
+                variant='contained'
+                className='self-start'
+                onClick={() => setContent('<p>Handled externally</p>')}
+            >
+                External content handler
+            </StyledButton>
             <StyledInputField
                 size='small'
                 dataTest='none'

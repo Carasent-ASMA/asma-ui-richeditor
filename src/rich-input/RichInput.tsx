@@ -72,6 +72,13 @@ const RichInput: FC<IRichInput> = ({
     )
 
     useEffect(() => {
+        if (!editor) return
+        if (props.content !== editor.getHTML()) {
+            editor.commands.setContent(props.content || '', false) // second arg=false to avoid resetting selection
+        }
+    }, [props.content, editor])
+
+    useEffect(() => {
         editor?.setEditable(props.editable || (!disabled && !readOnly))
     }, [readOnly, disabled, props.editable, editor])
 
