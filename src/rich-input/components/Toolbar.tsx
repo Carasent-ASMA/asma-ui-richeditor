@@ -14,6 +14,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
+import { useTranslations } from './useTranslations'
 
 export const Toolbar = ({
     editor,
@@ -36,6 +37,8 @@ export const Toolbar = ({
 }) => {
     const [visibleButtons, setVisibleButtons] = useState<number>(0)
     const toolbarRef = useRef<HTMLDivElement | null>(null)
+
+    const t = useTranslations(locale)
 
     const isNorsk = useMemo(() => locale === 'no', [locale])
 
@@ -69,7 +72,7 @@ export const Toolbar = ({
 
                 if (Number(visibleButtons) < 8) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='link' title='Link' placement='top' arrow>
+                        <StyledTooltip key='link' title={t.link} placement='top' arrow>
                             <span>
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
@@ -88,7 +91,7 @@ export const Toolbar = ({
                 }
                 if (Number(visibleButtons) < 7) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='italic' title='Italic' placement='top' arrow>
+                        <StyledTooltip key='italic' title={t.italic} placement='top' arrow>
                             <span>
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
@@ -107,7 +110,7 @@ export const Toolbar = ({
                 }
                 if (Number(visibleButtons) < 6) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='bold' title='Bold' placement='top' arrow>
+                        <StyledTooltip key='bold' title={t.bold} placement='top' arrow>
                             <span>
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
@@ -126,7 +129,7 @@ export const Toolbar = ({
                 }
                 if (Number(visibleButtons) < 5) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='ordered' title='Ordered list' placement='top' arrow>
+                        <StyledTooltip key='ordered' title={t.ordered_list} placement='top' arrow>
                             <span>
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
@@ -145,7 +148,7 @@ export const Toolbar = ({
                 }
                 if (Number(visibleButtons) < 4) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='bullet' title='Bullet list' placement='top' arrow>
+                        <StyledTooltip key='bullet' title={t.bullet_list} placement='top' arrow>
                             <span>
                                 <StyledMenuItem
                                     className='flex items-center justify-center'
@@ -181,7 +184,7 @@ export const Toolbar = ({
             <div className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })} ref={toolbarRef}>
                 <div className='flex flex-row items-center gap-1'>
                     {visibleButtons >= 1 && (
-                        <StyledTooltip arrow title='Emojis' placement='top'>
+                        <StyledTooltip arrow title={t.emojis} placement='top'>
                             <span ref={emojiButtonRef}>
                                 <StyledButton
                                     dataTest='richeditor-emoji-button'
@@ -199,7 +202,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 2 && (
-                        <StyledTooltip title='Heading 1' placement='top' arrow>
+                        <StyledTooltip title={t.heading1} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-h1-button'
@@ -217,7 +220,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 3 && (
-                        <StyledTooltip title='Heading 2' placement='top' arrow>
+                        <StyledTooltip title={t.heading2} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-h2-button'
@@ -236,7 +239,7 @@ export const Toolbar = ({
                     )}
                     {visibleButtons >= 4 && <FontSizeSelect editor={editor} isNorsk={isNorsk} />}
                     {visibleButtons >= 5 && (
-                        <StyledTooltip title='Bullet list' placement='top' arrow>
+                        <StyledTooltip title={t.bullet_list} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-bullet-list-button'
@@ -253,7 +256,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 6 && (
-                        <StyledTooltip title='Ordered list' placement='top' arrow>
+                        <StyledTooltip title={t.ordered_list} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-ordered-list-button'
@@ -270,7 +273,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 7 && (
-                        <StyledTooltip title='Bold' placement='top' arrow>
+                        <StyledTooltip title={t.bold} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-bold-button'
@@ -287,7 +290,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 8 && (
-                        <StyledTooltip title='Italic' placement='top' arrow>
+                        <StyledTooltip title={t.italic} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-italic-button'
@@ -304,7 +307,7 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 9 && (
-                        <StyledTooltip title='Link' placement='top' arrow>
+                        <StyledTooltip title={t.link} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-link-button'
@@ -322,7 +325,7 @@ export const Toolbar = ({
                     )}
                     {actionsVisible && (
                         <>
-                            <StyledTooltip title='More' placement='top' arrow>
+                            <StyledTooltip title={t.more} placement='top' arrow>
                                 <span>
                                     <StyledButton
                                         size='small'
@@ -376,7 +379,7 @@ export const Toolbar = ({
                         onClose()
                     }}
                 >
-                    {isNorsk ? 'Lukk' : 'Close'}
+                    {t.close}
                 </StyledButton>
             </div>
         </>
