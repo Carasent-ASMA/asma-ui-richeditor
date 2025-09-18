@@ -237,7 +237,7 @@ export const Toolbar = ({
                             </span>
                         </StyledTooltip>
                     )}
-                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} isNorsk={isNorsk} />}
+                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} isNorsk={isNorsk} locale={locale} />}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title={t.bullet_list} placement='top' arrow>
                             <span>

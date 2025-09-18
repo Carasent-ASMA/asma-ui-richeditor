@@ -6,6 +6,8 @@ import '../styles/toolbar.css'
 import type { Editor } from '@tiptap/core'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import { CustomMenuItem } from './CustomMenuItem'
+import { useTranslations } from './useTranslations'
+import type { ILocale } from '../interfaces/types'
 
 const fontSizeMap: { [key: string]: string } = {
     small: '10px',
@@ -14,8 +16,8 @@ const fontSizeMap: { [key: string]: string } = {
     huge: '32px',
 }
 
-export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk: boolean }) => {
-    const { editor, isNorsk } = props
+export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk: boolean; locale?: ILocale }) => {
+    const { editor, isNorsk, locale } = props
     const [selectedSize, setSelectedSize] = useState<string>('normal')
 
     const handleFontSizeChange = (size: string) => {
@@ -38,9 +40,11 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk
         })
     }, [editor.state.selection, editor.state.doc])
 
+    const t = useTranslations(locale)
+
     return (
         <>
-            <StyledTooltip title='Font size' placement='top' arrow>
+            <StyledTooltip title={t.font_size} placement='top' arrow>
                 <span>
                     <StyledButton
                         size='small'

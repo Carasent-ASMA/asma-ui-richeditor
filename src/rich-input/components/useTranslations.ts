@@ -13,6 +13,7 @@ const translations = {
         close: 'Close',
         ordered_list: 'Ordered list',
         bullet_list: 'Bullet list',
+        font_size: 'Font size',
     },
     no: {
         emojis: 'Emojier',
@@ -25,6 +26,7 @@ const translations = {
         close: 'Lukk',
         ordered_list: 'Nummerert liste',
         bullet_list: 'Punktliste',
+        font_size: 'Skriftstørrelse',
     },
 }
 
