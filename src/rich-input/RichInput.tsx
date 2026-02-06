@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
 import './styles/tiptap.css'
-import { StyledChip, StyledDialog, StyledFormControl, StyledFormHelperText } from 'asma-core-ui'
+import { ErrorOutlineIcon, StyledChip, StyledDialog, StyledFormControl } from 'asma-core-ui'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
@@ -179,10 +179,16 @@ const RichInput: FC<IRichInput> = ({
                 )}
             </div>
 
-            {showError && helperText && (
-                <StyledFormHelperText error data-test={`error-${dataTest}`}>
+            {helperText && (
+                <div
+                    className={clsx(
+                        'text-sm mt-1',
+                        showError ? 'flex items-center gap-1 text-red-600' : 'mx-[14px] text-gray-500',
+                    )}
+                >
+                    {showError && <ErrorOutlineIcon width={20} height={20} className='min-w-5' />}
                     {helperText}
-                </StyledFormHelperText>
+                </div>
             )}
 
             <LinkDialog open={linkDialogVisible} setOpen={setLinkDialogVisible} editor={editor} locale={locale} />
