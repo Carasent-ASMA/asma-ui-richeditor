@@ -1,0 +1,14 @@
+name: Build and Publish
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    publish:
+        uses: Carasent-ASMA/asma-modules/.github/workflows/reusable-publish.yml@master
+        with:
+            publish: trueå
+            package_name: "asma-ui-richeditor"
+        secrets: inherit
