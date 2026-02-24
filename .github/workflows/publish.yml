@@ -9,6 +9,6 @@ jobs:
     publish:
         uses: Carasent-ASMA/asma-modules/.github/workflows/reusable-publish.yml@master
         with:
-            publish: trueå
+            publish_npm: false
             package_name: "asma-ui-richeditor"
         secrets: inherit
