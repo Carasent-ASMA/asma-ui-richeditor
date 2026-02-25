@@ -1,5 +1,7 @@
 # How to create and use the Design System
 
+> **Performance test**: Verifying 20-worker parallel AI + push operations ⚡
+
 ## Component composition.
 
 - When creating components that consists of several components, each component should be styled.
