@@ -1,6 +1,7 @@
 # How to create and use the Design System
 
 > **Performance test**: Verifying 20-worker parallel AI + push operations ⚡
+> **Update 2**: Testing with GitHub Actions workflow access configured! 🏗️
 
 ## Component composition.
 
