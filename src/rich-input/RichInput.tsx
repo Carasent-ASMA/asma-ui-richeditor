@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
 import './styles/tiptap.css'
-import { ErrorOutlineIcon, StyledChip, StyledDialog, StyledFormControl } from 'asma-core-ui'
+import { ErrorOutlineIcon, StyledButton, StyledChip, StyledDialog, StyledFormControl } from 'asma-core-ui'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
 import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
@@ -112,6 +112,9 @@ const RichInput: FC<IRichInput> = ({
     const showError = !readOnly && error && isFieldEmpty
     if (!editor) return null
 
+    const lines = editor.getJSON().content?.length ?? 0
+    const showFormatButton = showToolbar ? lines > 1 : true
+
     return (
         <StyledFormControl className={className}>
             {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
@@ -142,16 +145,21 @@ const RichInput: FC<IRichInput> = ({
                     />
 
                     {!hideToolbar && !disabled && !readOnly && (
-                        <div className='flex flex-col items-end justify-end gap-2 m-1'>
+                        <div className={clsx('flex items-center justify-end m-1', lines > 1 ? 'flex-col' : '')}>
                             {attachmentsMenu}
-                            {!showToolbar && (
-                                <Icon
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        setShowToolbar(true)
-                                    }}
-                                    className='cursor-pointer text-delta-700 h-6 w-6 min-w-6 m-1'
-                                    icon='material-symbols:format-color-text'
+                            {showFormatButton && (
+                                <StyledButton
+                                    dataTest='richeditor-format-button'
+                                    className={clsx(lines > 1 ? 'order-last' : 'order-first')}
+                                    size='large'
+                                    variant='textGray'
+                                    onClick={() => setShowToolbar(!showToolbar)}
+                                    startIcon={
+                                        <Icon
+                                            className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                                            icon='material-symbols:format-color-text'
+                                        />
+                                    }
                                 />
                             )}
                         </div>

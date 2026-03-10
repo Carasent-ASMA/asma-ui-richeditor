@@ -51,19 +51,19 @@ export const Input1 = () => {
                 </StyledButton>
             </div>
             <div className='flex flex-col gap-4'>
-                <StyledInputField
-                    size='small'
-                    dataTest='none'
-                    readOnly={readOnly}
-                    required={!readOnly}
-                    helperText={!readOnly && '* required'}
-                    // label={'Private message'}
-                    error={error}
-                    placeholder={'Private message'}
-                    InputProps={{
-                        endAdornment: !readOnly && <EditSquareIcon width={20} height={20} />,
-                    }}
-                />
+                {/* <StyledInputField */}
+                {/*     size='small' */}
+                {/*     dataTest='none' */}
+                {/*     readOnly={readOnly} */}
+                {/*     required={!readOnly} */}
+                {/*     helperText={!readOnly && '* required'} */}
+                {/*     // label={'Private message'} */}
+                {/*     error={error} */}
+                {/*     placeholder={'Private message'} */}
+                {/*     InputProps={{ */}
+                {/*         endAdornment: !readOnly && <EditSquareIcon width={20} height={20} />, */}
+                {/*     }} */}
+                {/* /> */}
                 <RichInput
                     // hideToolbar
                     // noDefaultStyles={readOnly}
