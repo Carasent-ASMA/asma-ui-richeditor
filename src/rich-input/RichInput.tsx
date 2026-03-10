@@ -145,7 +145,7 @@ const RichInput: FC<IRichInput> = ({
                     />
 
                     {!hideToolbar && !disabled && !readOnly && (
-                        <div className={clsx('flex items-center justify-end m-1', lines > 1 ? 'flex-col' : '')}>
+                        <div className={clsx('flex items-center justify-end', lines > 1 ? 'flex-col' : '')}>
                             {attachmentsMenu}
                             {showFormatButton && (
                                 <StyledButton
