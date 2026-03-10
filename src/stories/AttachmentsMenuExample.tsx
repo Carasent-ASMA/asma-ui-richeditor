@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { StyledButton } from 'asma-core-ui'
 
 const handleDocumentUploadFromComputer = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -30,20 +31,30 @@ export const AttachmentsMenu = ({
 
     return (
         <>
-            <label htmlFor={inputId}>
-                <Icon className='cursor-pointer text-delta-700 h-6 w-6 min-w-6 m-1' icon='ic:baseline-attach-file' />
-                <input
-                    hidden
-                    multiple
-                    type='file'
-                    id={inputId}
-                    onChange={(e) => {
-                        const attachments = handleDocumentUploadFromComputer(e)
-                        attachments.forEach(uploadAttachment)
-                        e.target.value = ''
-                    }}
-                />
-            </label>
+            <StyledButton
+                dataTest='attachments-button'
+                size='large'
+                variant='textGray'
+                startIcon={
+                    <label htmlFor={inputId}>
+                        <Icon
+                            className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                            icon='ic:baseline-attach-file'
+                        />
+                        <input
+                            hidden
+                            multiple
+                            type='file'
+                            id={inputId}
+                            onChange={(e) => {
+                                const attachments = handleDocumentUploadFromComputer(e)
+                                attachments.forEach(uploadAttachment)
+                                e.target.value = ''
+                            }}
+                        />
+                    </label>
+                }
+            />
 
             <Menu
                 anchorEl={anchorEl}
