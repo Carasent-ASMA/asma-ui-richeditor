@@ -1,4 +1,4 @@
-import { useEffect, useImperativeHandle, useRef, useState, type FC } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type FC, useCallback, useLayoutEffect } from 'react'
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
@@ -10,6 +10,8 @@ import { defaultExtensions, editModeExtensions } from './helpers/EditorExtension
 import { LinkDialog } from './components/LinkDialog'
 import Placeholder from '@tiptap/extension-placeholder'
 import EmojiPicker from 'emoji-picker-react'
+
+const SINGLE_LINE_TOOLBAR_WIDTH = 80
 
 /**
  * ASMA RichInput - A rich text editor component.
@@ -34,7 +36,7 @@ const RichInput: FC<IRichInput> = ({
     title,
     placeholder,
     helperText,
-    required,
+    // required,
     maxScrollableHeight,
     toolbarDefaultVisible,
     hideToolbar,
@@ -44,6 +46,13 @@ const RichInput: FC<IRichInput> = ({
     ...props
 }) => {
     const cursor = useRef<number>()
+
+    const wrapperRef = useRef<HTMLDivElement | null>(null)
+    const mirrorRef = useRef<HTMLDivElement | null>(null)
+    const rafRef = useRef<number | null>(null)
+    const baselineHeightRef = useRef<number | null>(null)
+
+    const [isMultiLine, setIsMultiLine] = useState(false)
 
     const editor = useEditor(
         {
@@ -66,10 +75,82 @@ const RichInput: FC<IRichInput> = ({
                 cursor.current = updateProps.editor.state.selection.anchor
                 updateProps.editor.commands.focus()
             },
+            onUpdate: () => {
+                scheduleMeasure()
+            },
         },
 
         [props.shouldRerenderOnTransaction, props.immediatelyRender, placeholder],
     )
+
+    const measure = useCallback(() => {
+        if (!editor || !wrapperRef.current || !mirrorRef.current) return
+
+        const editorEl = editor.view.dom
+        const mirror = mirrorRef.current
+
+        // Use a stable ancestor width
+        const stableWidthSource = wrapperRef.current.parentElement ?? wrapperRef.current
+        const targetWidth = Math.max(0, stableWidthSource.clientWidth - SINGLE_LINE_TOOLBAR_WIDTH)
+
+        console.log('targetWidth: ', targetWidth)
+
+        mirror.className = editorEl.className
+
+        const editorStyle = window.getComputedStyle(editorEl)
+
+        Object.assign(mirror.style, {
+            width: `${targetWidth}px`,
+            position: 'absolute',
+            left: '-99999px',
+            top: '0',
+            visibility: 'hidden',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+            boxSizing: 'border-box',
+            font: editorStyle.font,
+            lineHeight: editorStyle.lineHeight,
+            letterSpacing: editorStyle.letterSpacing,
+            padding: editorStyle.padding,
+        })
+
+        if (baselineHeightRef.current == null) {
+            mirror.innerHTML = '<p><br /></p>'
+            baselineHeightRef.current = mirror.scrollHeight
+        }
+
+        mirror.innerHTML = editorEl.innerHTML || '<p><br /></p>'
+        const contentHeight = mirror.scrollHeight
+
+        const nextIsMultiLine = contentHeight > (baselineHeightRef.current ?? 0) + 2
+
+        setIsMultiLine((prev) => (prev === nextIsMultiLine ? prev : nextIsMultiLine))
+    }, [editor])
+
+    const scheduleMeasure = useCallback(() => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+        rafRef.current = requestAnimationFrame(() => {
+            rafRef.current = requestAnimationFrame(measure)
+        })
+    }, [measure])
+
+    useLayoutEffect(() => {
+        if (!editor) return
+
+        scheduleMeasure()
+
+        const ro = new ResizeObserver(() => {
+            scheduleMeasure()
+        })
+
+        if (wrapperRef.current) ro.observe(wrapperRef.current)
+
+        return () => {
+            ro.disconnect()
+            if (rafRef.current) cancelAnimationFrame(rafRef.current)
+        }
+    }, [editor, scheduleMeasure])
 
     useEffect(() => {
         if (!editor) return
@@ -99,7 +180,6 @@ const RichInput: FC<IRichInput> = ({
         const handleFocus = () => setFocused(true)
         const handleBlur = () => setFocused(false)
 
-        editor?.on('focus', handleFocus)
         editor?.on('blur', handleBlur)
 
         return () => {
@@ -112,13 +192,13 @@ const RichInput: FC<IRichInput> = ({
     const showError = !readOnly && error && isFieldEmpty
     if (!editor) return null
 
-    const lines = editor.getJSON().content?.length ?? 0
-    const showFormatButton = showToolbar ? lines > 1 : true
+    const showFormatButton = showToolbar ? isMultiLine : true
 
     return (
         <StyledFormControl className={className}>
             {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
             <div
+                ref={wrapperRef}
                 className={clsx(
                     !noDefaultStyles && 'rte-wrapper',
                     readOnly === 'outlined' && 'readonly-outlined',
@@ -128,29 +208,45 @@ const RichInput: FC<IRichInput> = ({
                 )}
             >
                 {replyModeComponent}
-                <div className='flex justify-between'>
-                    <EditorContent
-                        data-test={dataTest}
-                        id={id}
-                        className={clsx(
-                            !noDefaultStyles && 'core-ui-rte',
-                            !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
-                            !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
-                            editorClassName,
-                            showToolbar && 'displace-text',
-                        )}
-                        editor={editor}
-                        onClick={() => editor?.chain().focus().run()}
-                        style={{ '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties}
-                    />
+
+                <div
+                    ref={mirrorRef}
+                    aria-hidden
+                    className='pointer-events-none invisible absolute left-[-99999px] top-0'
+                />
+
+                <div className='flex gap-2'>
+                    <div className='flex-1 min-w-0'>
+                        <EditorContent
+                            data-test={dataTest}
+                            id={id}
+                            className={clsx(
+                                !noDefaultStyles && 'core-ui-rte',
+                                !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
+                                !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                                editorClassName,
+                                showToolbar && 'displace-text',
+                            )}
+                            editor={editor}
+                            onClick={() => editor?.chain().focus().run()}
+                            style={
+                                { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
+                            }
+                        />
+                    </div>
 
                     {!hideToolbar && !disabled && !readOnly && (
-                        <div className={clsx('flex items-center justify-end', lines > 1 ? 'flex-col' : '')}>
+                        <div
+                            className={clsx(
+                                'flex shrink-0 items-center justify-end',
+                                isMultiLine ? 'flex-col w-10' : 'w-20',
+                            )}
+                        >
                             {attachmentsMenu}
                             {showFormatButton && (
                                 <StyledButton
                                     dataTest='richeditor-format-button'
-                                    className={clsx(lines > 1 ? 'order-last' : 'order-first')}
+                                    className={clsx(isMultiLine ? 'order-last' : 'order-first')}
                                     size='large'
                                     variant='textGray'
                                     onClick={() => setShowToolbar(!showToolbar)}
