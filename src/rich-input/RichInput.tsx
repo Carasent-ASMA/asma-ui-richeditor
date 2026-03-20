@@ -93,8 +93,6 @@ const RichInput: FC<IRichInput> = ({
         const stableWidthSource = wrapperRef.current.parentElement ?? wrapperRef.current
         const targetWidth = Math.max(0, stableWidthSource.clientWidth - SINGLE_LINE_TOOLBAR_WIDTH)
 
-        console.log('targetWidth: ', targetWidth)
-
         mirror.className = editorEl.className
 
         const editorStyle = window.getComputedStyle(editorEl)
