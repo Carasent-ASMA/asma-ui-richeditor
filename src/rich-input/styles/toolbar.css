@@ -6,7 +6,7 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
-    padding-inline: 8px;
+    padding-inline: 4px;
     border-top: 1px solid var(--colors-delta-200);
 }
 .chevron-icon {
@@ -23,3 +23,4 @@
         width: 100%;
     }
 }
+
