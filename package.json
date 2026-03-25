@@ -3,7 +3,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "version": "0.1.30",
+    "version": "0.0.0",
     "type": "module",
     "files": [
         "dist/**/*",
@@ -24,6 +24,9 @@
         },
         "./dist/style.css": "./dist/style.css",
         "./tw-configs/twConfigs.json": "./tw-configs/twConfigs.json"
+    },
+    "repository": {
+        "url": "https://github.com:Carasent-ASMA/asma-ui-richeditor.git"
     },
     "scripts": {
         "dev": "vite",
