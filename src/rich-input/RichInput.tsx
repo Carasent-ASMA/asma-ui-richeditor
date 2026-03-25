@@ -35,6 +35,7 @@ const RichInput: FC<IRichInput> = ({
     // label, // this in not implemented yet
     title,
     placeholder,
+    placeholderCallback,
     helperText,
     // required,
     maxScrollableHeight,
@@ -58,7 +59,9 @@ const RichInput: FC<IRichInput> = ({
         {
             ...props,
             extensions: [
-                Placeholder.configure({ placeholder }),
+                Placeholder.configure({
+                    placeholder: placeholderCallback ? placeholderCallback : placeholder,
+                }),
                 ...defaultExtensions,
                 ...editModeExtensions,
                 ...(props.extensions || []),
@@ -70,6 +73,14 @@ const RichInput: FC<IRichInput> = ({
             shouldRerenderOnTransaction: props.shouldRerenderOnTransaction || false,
             immediatelyRender: props.immediatelyRender || true,
             editable: props.editable || (!disabled && !readOnly),
+            onBlur: (blurProps) => {
+                props.onBlur?.(blurProps)
+                setFocused(false)
+            },
+            onFocus: (focusProps) => {
+                props.onFocus?.(focusProps)
+                setFocused(true)
+            },
             onSelectionUpdate: (updateProps) => {
                 props.onSelectionUpdate?.(updateProps)
                 cursor.current = updateProps.editor.state.selection.anchor
@@ -80,8 +91,7 @@ const RichInput: FC<IRichInput> = ({
                 scheduleMeasure()
             },
         },
-
-        [props.shouldRerenderOnTransaction, props.immediatelyRender, placeholder],
+        [props.shouldRerenderOnTransaction, props.immediatelyRender],
     )
 
     const measure = useCallback(() => {
@@ -174,18 +184,6 @@ const RichInput: FC<IRichInput> = ({
 
     const [focused, setFocused] = useState(false)
     const [emojiPickerVisible, setEmojiPickerVisible] = useState(false)
-
-    useEffect(() => {
-        const handleFocus = () => setFocused(true)
-        const handleBlur = () => setFocused(false)
-
-        editor?.on('blur', handleBlur)
-
-        return () => {
-            editor?.off('focus', handleFocus)
-            editor?.off('blur', handleBlur)
-        }
-    }, [editor])
 
     const isFieldEmpty = editor?.isEmpty
     const showError = !readOnly && error && isFieldEmpty

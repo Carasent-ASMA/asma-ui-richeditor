@@ -15,10 +15,12 @@ const meta = {
 
 export default meta
 export const Input1 = () => {
-    const [content, setContent] = useState('<p>Default content</p>')
+    // const [content, setContent] = useState('<p>Default content</p>')
+    const [content, setContent] = useState('')
     const [readOnly, setReadOnly] = useState(true)
     const error = false
     const [locale, setLocale] = useState<'en' | 'no'>('en')
+    const [isFocused, setIsFocused] = useState(false)
 
     return (
         <div className='flex flex-col gap-4'>
@@ -71,7 +73,12 @@ export const Input1 = () => {
                     // label={'Group message'}
                     // toolbarDefaultVisible
 
-                    placeholder={'Group message'}
+                    placeholder='Test without conditional'
+                    placeholderCallback={({ editor }) => {
+                        return !editor.isFocused ? 'Group message' : ''
+                    }}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     helperText={'* required'}
                     error={true}
                     attachmentsMenu={<AttachmentsMenu />}

@@ -17,6 +17,10 @@ export interface IRichInput extends UseEditorOptions {
     // label?: string // TODO: implement same label behavior like in MUI
     title?: string
     placeholder?: string
+    /**
+     * @description Use this to pass a dynamic placeholder that requires some derived state like isFocused
+     */
+    placeholderCallback?: (PlaceholderProps: { editor: Editor; pos: number; hasAnchor: boolean }) => string
     className?: string
     editorClassName?: string
     disabled?: boolean
