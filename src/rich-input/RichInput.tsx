@@ -75,7 +75,8 @@ const RichInput: FC<IRichInput> = ({
                 cursor.current = updateProps.editor.state.selection.anchor
                 updateProps.editor.commands.focus()
             },
-            onUpdate: () => {
+            onUpdate: (updateProps) => {
+                props.onUpdate?.(updateProps)
                 scheduleMeasure()
             },
         },
