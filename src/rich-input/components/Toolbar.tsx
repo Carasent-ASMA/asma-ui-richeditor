@@ -334,6 +334,7 @@ export const Toolbar = ({
                                         size='large'
                                         dataTest='richeditor-more-menu-button'
                                         variant='text'
+                                        style={{ minWidth: 40, maxWidth: 40 }}
                                         onMouseDown={(e) => {
                                             e.stopPropagation()
                                             e.preventDefault()
@@ -343,9 +344,10 @@ export const Toolbar = ({
                                             e.stopPropagation()
                                             e.preventDefault()
                                         }}
-                                    >
-                                        <DotsVerticalIcon className='text-delta-800' width={20} height={20} />
-                                    </StyledButton>
+                                        startIcon={
+                                            <DotsVerticalIcon className='text-delta-800' width={20} height={20} />
+                                        }
+                                    />
                                 </span>
                             </StyledTooltip>
                             <StyledPopover
@@ -358,14 +360,6 @@ export const Toolbar = ({
                                 onMouseDown={(e) => {
                                     e.preventDefault()
                                     handleClose()
-                                }}
-                                anchorOrigin={{
-                                    horizontal: 'center',
-                                    vertical: 'bottom',
-                                }}
-                                transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'right',
                                 }}
                             >
                                 {hiddenButtons}
