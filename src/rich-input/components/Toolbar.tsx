@@ -179,8 +179,6 @@ export const Toolbar = ({
 
     const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
 
-    console.log('visibleButtons: ', visibleButtons)
-
     return (
         <>
             <div className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })} ref={toolbarRef}>
