@@ -1,5 +1,5 @@
 import type { MenuItemProps } from '@mui/material'
-import { StyledMenuItem } from 'asma-core-ui'
+import { StyledMenuItem } from 'asma-ui-core'
 import React from 'react'
 
 export const CustomMenuItem = (props: MenuItemProps) => {

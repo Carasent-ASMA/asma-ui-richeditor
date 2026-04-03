@@ -110,7 +110,7 @@
         "@typescript-eslint/eslint-plugin": "^5.59.0",
         "@typescript-eslint/parser": "^5.59.0",
         "@vitejs/plugin-react": "^4.0.0",
-        "asma-core-ui": "^3.1.43",
+        "asma-ui-core": "^3.3.7",
         "autoprefixer": "^10.4.14",
         "axe-playwright": "^1.2.3",
         "axios": "^1.6.8",
