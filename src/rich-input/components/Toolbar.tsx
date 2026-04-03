@@ -6,7 +6,7 @@ import {
     StyledMenuItem,
     StyledPopover,
     StyledTooltip,
-} from 'asma-core-ui'
+} from 'asma-ui-core'
 import '../styles/toolbar.css'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'

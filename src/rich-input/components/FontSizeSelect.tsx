@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { StyledButton, StyledPopover, StyledTooltip, type TextFieldProps } from 'asma-core-ui'
+import { StyledButton, StyledPopover, StyledTooltip, type TextFieldProps } from 'asma-ui-core'
 import React, { useLayoutEffect, useState } from 'react'
 
 import '../styles/toolbar.css'
