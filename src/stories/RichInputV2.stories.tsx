@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react'
-import { StyledButton } from 'asma-core-ui'
+import { StyledButton } from 'asma-ui-core'
 import { useState } from 'react'
 import { RichInput } from 'src/rich-input/RichInput'
 

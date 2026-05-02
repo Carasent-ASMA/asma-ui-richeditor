@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react'
-import { StyledButton, StyledDialog, StyledInputField } from 'asma-core-ui'
+import { StyledButton, StyledDialog, StyledInputField } from 'asma-ui-core'
 import React, { useLayoutEffect, useMemo, useState } from 'react'
 import styles from './LinkDialog.module.scss'
 import '../styles/toolbar.css'

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { StyledButton } from 'asma-core-ui'
+import { StyledButton } from 'asma-ui-core'
 
 const handleDocumentUploadFromComputer = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
