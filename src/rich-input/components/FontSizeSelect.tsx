@@ -47,7 +47,7 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk
             <StyledTooltip title={t.font_size} placement='top' arrow>
                 <span>
                     <StyledButton
-                        size='small'
+                        size='large'
                         dataTest='richeditor-more-menu-button'
                         variant='textGray'
                         onMouseDown={(e) => {

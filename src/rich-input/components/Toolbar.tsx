@@ -50,18 +50,18 @@ export const Toolbar = ({
             if (toolbarRef.current) {
                 const width = toolbarRef.current.clientWidth
 
-                if (width < (isNorsk ? 416 : 420)) setActionsVisible(true)
+                if (width < (isNorsk ? 514 : 520)) setActionsVisible(true)
                 else setActionsVisible(false)
 
                 const buttonVisibilityMap = [
                     // { width: 156, buttons: 0 },
                     // { width: 192, buttons: 1 },
                     // { width: 270, buttons: 2 },
-                    { width: isNorsk ? 296 : 300, buttons: 3 },
-                    { width: isNorsk ? 340 : 342, buttons: 4 },
-                    { width: isNorsk ? 374 : 378, buttons: 5 },
-                    { width: isNorsk ? 416 : 420, buttons: 6 },
-                    { width: isNorsk ? 416 : 420, buttons: 7 },
+                    { width: isNorsk ? 334 : 340, buttons: 3 },
+                    { width: isNorsk ? 380 : 383, buttons: 4 },
+                    { width: isNorsk ? 424 : 430, buttons: 5 },
+                    { width: isNorsk ? 469 : 475, buttons: 6 },
+                    { width: isNorsk ? 514 : 520, buttons: 7 },
                     { width: Infinity, buttons: 9 },
                 ]
 
@@ -70,7 +70,7 @@ export const Toolbar = ({
 
                 const newHiddenButtons = []
 
-                if (Number(visibleButtons) < 8) {
+                if (Number(visibleButtons) < 9) {
                     newHiddenButtons.push(
                         <StyledTooltip key='link' title={t.link} placement='top' arrow>
                             <span>
@@ -89,7 +89,7 @@ export const Toolbar = ({
                         </StyledTooltip>,
                     )
                 }
-                if (Number(visibleButtons) < 7) {
+                if (Number(visibleButtons) < 8) {
                     newHiddenButtons.push(
                         <StyledTooltip key='italic' title={t.italic} placement='top' arrow>
                             <span>
@@ -108,7 +108,7 @@ export const Toolbar = ({
                         </StyledTooltip>,
                     )
                 }
-                if (Number(visibleButtons) < 6) {
+                if (Number(visibleButtons) < 7) {
                     newHiddenButtons.push(
                         <StyledTooltip key='bold' title={t.bold} placement='top' arrow>
                             <span>
@@ -127,7 +127,7 @@ export const Toolbar = ({
                         </StyledTooltip>,
                     )
                 }
-                if (Number(visibleButtons) < 5) {
+                if (Number(visibleButtons) < 6) {
                     newHiddenButtons.push(
                         <StyledTooltip key='ordered' title={t.ordered_list} placement='top' arrow>
                             <span>
@@ -146,7 +146,7 @@ export const Toolbar = ({
                         </StyledTooltip>,
                     )
                 }
-                if (Number(visibleButtons) < 4) {
+                if (Number(visibleButtons) < 5) {
                     newHiddenButtons.push(
                         <StyledTooltip key='bullet' title={t.bullet_list} placement='top' arrow>
                             <span>
