@@ -46,7 +46,7 @@ const RichInput: FC<IRichInput> = ({
     replyModeComponent,
     ...props
 }) => {
-    const cursor = useRef<number>()
+    const cursor = useRef<number | undefined>(undefined)
 
     const wrapperRef = useRef<HTMLDivElement | null>(null)
     const mirrorRef = useRef<HTMLDivElement | null>(null)

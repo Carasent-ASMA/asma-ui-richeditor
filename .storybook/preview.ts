@@ -1,44 +1,29 @@
-import { useEffect, useGlobals } from '@storybook/addons'
-import { withThemeByClassName } from '@storybook/addon-styling'
+import type { Preview } from '@storybook/react-vite'
+import { withThemeByDataAttribute } from '@storybook/addon-themes'
 import '../src/styles/index.scss'
 
-export const parameters = {
-    // themes: {
-    //     default: 'default',
-    //     list: [
-    //         { name: 'default', class: 'theme-default', color: 'blue' },
-    //         { name: 'fretex', class: 'theme-fretex', color: 'red' },
-    //         { name: 'greenish', class: 'theme-greenish', color: 'green' },
-    //     ],
-    // },
-    actions: { argTypesRegex: '^on[A-Z].*' },
-    controls: {
-        expanded: true, // Adds the description and default columns
-        matchers: {
-            color: /(background|color)$/i,
-            date: /Date$/,
+const preview: Preview = {
+    parameters: {
+        actions: { argTypesRegex: '^on[A-Z].*' },
+        controls: {
+            expanded: true,
+            matchers: {
+                color: /(background|color)$/i,
+                date: /Date$/,
+            },
         },
     },
+    decorators: [
+        withThemeByDataAttribute({
+            themes: {
+                default: 'default',
+                fretex: 'fretex',
+                greenish: 'greenish',
+            },
+            defaultTheme: 'greenish',
+            attributeName: 'data-theme',
+        }),
+    ],
 }
 
-export const useTheme = (StoryFn) => {
-    const [globals] = useGlobals()
-
-    useEffect(() => {
-        document.body.setAttribute('data-theme', globals.theme)
-    }, [globals])
-
-    return StoryFn()
-}
-
-export const decorators = [
-    useTheme,
-    withThemeByClassName({
-        themes: {
-            default: 'default',
-            fretex: 'fretex',
-            greenish: 'greenish',
-        },
-        defaultTheme: 'greenish',
-    }),
-]
+export default preview
