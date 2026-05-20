@@ -10,7 +10,7 @@ import {
 import '../styles/toolbar.css'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
@@ -33,7 +33,7 @@ export const Toolbar = ({
     openLinkDialog: () => void
     openEmojiPicker: () => void
     locale?: ILocale
-    emojiButtonRef?: React.RefObject<HTMLSpanElement>
+    emojiButtonRef?: RefObject<HTMLSpanElement>
 }) => {
     const [visibleButtons, setVisibleButtons] = useState<number>(0)
     const toolbarRef = useRef<HTMLDivElement | null>(null)
@@ -43,7 +43,7 @@ export const Toolbar = ({
     const isNorsk = useMemo(() => locale === 'no', [locale])
 
     const [actionsVisible, setActionsVisible] = useState(false)
-    const [hiddenButtons, setHiddenButtons] = useState<Array<JSX.Element>>([])
+    const [hiddenButtons, setHiddenButtons] = useState<Array<ReactElement>>([])
 
     useLayoutEffect(() => {
         const observer = new ResizeObserver(() => {

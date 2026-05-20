@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react'
-import { EditSquareIcon, StyledButton, StyledInputField, StyledMenu, StyledMenuItem } from 'asma-ui-core'
+import { StyledButton } from 'asma-ui-core'
 
 import { useState } from 'react'
 import { RichInput } from 'src/rich-input/RichInput'
@@ -18,9 +18,7 @@ export const Input1 = () => {
     // const [content, setContent] = useState('<p>Default content</p>')
     const [content, setContent] = useState('')
     const [readOnly, setReadOnly] = useState(true)
-    const error = false
     const [locale, setLocale] = useState<'en' | 'no'>('en')
-    const [isFocused, setIsFocused] = useState(false)
 
     return (
         <div className='flex flex-col gap-4'>
@@ -77,8 +75,6 @@ export const Input1 = () => {
                     placeholderCallback={({ editor }) => {
                         return !editor.isFocused ? 'Group message' : ''
                     }}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
                     helperText={'* required'}
                     error={true}
                     attachmentsMenu={<AttachmentsMenu />}

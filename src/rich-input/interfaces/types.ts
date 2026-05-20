@@ -1,6 +1,6 @@
 import type { ChipProps } from '@mui/material'
 import type { Editor, UseEditorOptions } from '@tiptap/react'
-import type { MutableRefObject } from 'react'
+import type { RefObject } from 'react'
 
 export interface CustomCSSProperties extends React.CSSProperties {
     '--max-scrollable-height'?: string
@@ -12,7 +12,7 @@ export interface IRichInput extends UseEditorOptions {
     dataTest: string
     attachmentsMenu?: React.ReactNode
     replyModeComponent?: React.ReactNode
-    inputRef?: MutableRefObject<Editor | null>
+    inputRef?: RefObject<Editor | null>
     id?: string
     // label?: string // TODO: implement same label behavior like in MUI
     title?: string

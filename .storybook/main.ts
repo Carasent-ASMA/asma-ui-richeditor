@@ -1,19 +1,27 @@
 import type { StorybookConfig } from '@storybook/react-vite'
-import { env } from '../configs/env'
+import remarkGfm from 'remark-gfm'
+
+const env = {
+    STORYBOOK_PROXY_SECRET: process.env.STORYBOOK_PROXY_SECRET ?? '',
+    STORYBOOK_PROXY_ENDPOINT: process.env.STORYBOOK_PROXY_ENDPOINT ?? '',
+}
 
 const config: StorybookConfig = {
     stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
     addons: [
         '@storybook/addon-a11y',
         '@storybook/addon-links',
-        '@storybook/addon-essentials',
-        '@storybook/addon-interactions',
-        '@storybook/addon-styling',
-        '@storybook/addons',
-        '@storybook/manager-api',
-        'storybook-addon-themes',
-        '@storybook/preset-create-react-app',
-        '@storybook/addon-mdx-gfm',
+        '@storybook/addon-themes',
+        {
+            name: '@storybook/addon-docs',
+            options: {
+                mdxPluginOptions: {
+                    mdxCompileOptions: {
+                        remarkPlugins: [remarkGfm],
+                    },
+                },
+            },
+        },
     ],
     framework: {
         name: '@storybook/react-vite',
