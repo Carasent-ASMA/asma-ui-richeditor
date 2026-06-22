@@ -1,7 +1,9 @@
+packages: []
+
 allowBuilds:
-  '@parcel/watcher': true
-  '@swc/core': true
-  esbuild: true
-  node: true
-  playwright: true
-  unrs-resolver: true
+    '@parcel/watcher': true
+    '@swc/core': true
+    esbuild: true
+    node: true
+    playwright: true
+    unrs-resolver: true
