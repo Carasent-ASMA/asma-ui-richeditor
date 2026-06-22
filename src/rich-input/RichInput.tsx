@@ -185,8 +185,7 @@ const RichInput: FC<IRichInput> = ({
     const [focused, setFocused] = useState(false)
     const [emojiPickerVisible, setEmojiPickerVisible] = useState(false)
 
-    const isFieldEmpty = editor?.isEmpty
-    const showError = !readOnly && error && isFieldEmpty
+    const showError = !readOnly && error
     if (!editor) return null
 
     const showFormatButton = showToolbar ? isMultiLine : true
