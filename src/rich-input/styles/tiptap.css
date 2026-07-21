@@ -150,6 +150,10 @@
     outline-offset: -2px;
 }
 
+.ProseMirror {
+    font-size: 16px;
+}
+
 /*Remove default focus state from tiptap*/
 .ProseMirror:focus {
     outline: none;
