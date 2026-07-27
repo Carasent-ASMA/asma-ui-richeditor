@@ -21,7 +21,7 @@ export default defineConfig({
             exclude: ['node_modules/**/*', 'src/stories/**', 'src/**/*.stories.tsx', 'src/components/**/makeData.ts'],
         }),
         esmExternalRequirePlugin({
-            external: ['react', 'vue', /^node:/],
+            external: ['react', 'react-dom', 'react/jsx-runtime', 'asma-ui-core', /^node:/],
         }),
     ],
     resolve: {
