@@ -14,7 +14,8 @@
 .core-ui-rte a {
     text-decoration: underline;
     cursor: pointer;
-    color: var(--colors-gama-400);
+    color: var(--colors-gama-600);
+    font-weight: 600;
     transition: color 0.3s ease-in;
 }
 .core-ui-rte a:hover {

@@ -5,6 +5,7 @@ import { Toolbar } from './components/Toolbar'
 import './styles/tiptap.css'
 import {
     ErrorOutlineIcon,
+    LoadingIcon,
     StyledButton,
     StyledChip,
     StyledDialog,
@@ -13,10 +14,12 @@ import {
 } from 'asma-ui-core'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
-import { defaultExtensions, editModeExtensions } from './helpers/EditorExtensions'
 import { LinkDialog } from './components/LinkDialog'
-import Placeholder from '@tiptap/extension-placeholder'
 import EmojiPicker from 'emoji-picker-react'
+import { Placeholder } from '@tiptap/extensions'
+import Image from '@tiptap/extension-image'
+import Youtube from '@tiptap/extension-youtube'
+import { resolveDefaultExtensions } from './helpers/EditorExtensions'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
 
@@ -51,6 +54,10 @@ const RichInput: FC<IRichInput> = ({
     noDefaultStyles,
     attachments,
     replyModeComponent,
+    enableImageUpload,
+    onImageUpload,
+    onImageUploadError,
+    enableYoutube,
     ...props
 }) => {
     const cursor = useRef<number | undefined>(undefined)
@@ -69,8 +76,26 @@ const RichInput: FC<IRichInput> = ({
                 Placeholder.configure({
                     placeholder: placeholderCallback ? placeholderCallback : placeholder,
                 }),
-                ...defaultExtensions,
-                ...editModeExtensions,
+                ...resolveDefaultExtensions(),
+                ...(enableImageUpload
+                    ? [
+                          Image.configure({
+                              inline: true,
+                              allowBase64: false, // Prevent base64 bloat, force URLs
+                          }),
+                      ]
+                    : []),
+                ...(enableYoutube
+                    ? [
+                          Youtube.configure({
+                              addPasteHandler: true,
+                              controls: true,
+                              nocookie: true,
+                              width: 640,
+                              height: 480,
+                          }),
+                      ]
+                    : []),
                 ...(props.extensions || []),
             ],
             parseOptions: {
@@ -99,6 +124,40 @@ const RichInput: FC<IRichInput> = ({
             },
         },
         [props.shouldRerenderOnTransaction, props.immediatelyRender],
+    )
+
+    const imageInputRef = useRef<HTMLInputElement | null>(null)
+    const [isUploadingImage, setIsUploadingImage] = useState(false)
+
+    const handleImageUpload = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const files = e.target.files
+            if (!files || !editor) return
+
+            if (!onImageUpload) {
+                console.error('RichInput: "onImageUpload" prop is required when "enableImageUpload" is true.')
+                e.target.value = ''
+                return
+            }
+
+            setIsUploadingImage(true)
+            const fileArray = Array.from(files)
+
+            for (const file of fileArray) {
+                try {
+                    const fileUrl = await onImageUpload(file)
+                    editor.commands.setImage({ src: fileUrl, alt: file.name })
+                } catch (error) {
+                    console.error('Failed to upload:', file.name, error)
+                    if (onImageUploadError) {
+                        onImageUploadError(error instanceof Error ? error : new Error(String(error)), file)
+                    }
+                }
+            }
+            setIsUploadingImage(false)
+            e.target.value = ''
+        },
+        [editor, onImageUpload, onImageUploadError],
     )
 
     const measure = useCallback(() => {
@@ -171,7 +230,7 @@ const RichInput: FC<IRichInput> = ({
     useEffect(() => {
         if (!editor) return
         if (props.content !== editor.getHTML()) {
-            editor.commands.setContent(props.content || '', false) // second arg=false to avoid resetting selection
+            editor.commands.setContent(props.content || '', { emitUpdate: false }) // second arg=false to avoid resetting selection
         }
     }, [props.content, editor])
 
@@ -245,7 +304,36 @@ const RichInput: FC<IRichInput> = ({
                                 isMultiLine ? 'flex-col w-10' : 'w-20',
                             )}
                         >
-                            {attachmentsMenu}
+                            {enableImageUpload ? (
+                                <>
+                                    <input
+                                        type='file'
+                                        ref={imageInputRef}
+                                        hidden
+                                        multiple
+                                        accept='image/*'
+                                        onChange={handleImageUpload}
+                                    />
+                                    <StyledButton
+                                        dataTest='rich-editor-image-upload'
+                                        size='large'
+                                        variant='textGray'
+                                        onClick={() => imageInputRef.current?.click()}
+                                        startIcon={
+                                            isUploadingImage ? (
+                                                <LoadingIcon width={20} height={20} />
+                                            ) : (
+                                                <Icon
+                                                    className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                                                    icon='ic:baseline-attach-file'
+                                                />
+                                            )
+                                        }
+                                    />
+                                </>
+                            ) : (
+                                attachmentsMenu
+                            )}
                             {showFormatButton && (
                                 <StyledButton
                                     dataTest='richeditor-format-button'
