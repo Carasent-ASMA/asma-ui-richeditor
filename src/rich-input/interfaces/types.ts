@@ -34,9 +34,9 @@ export interface IRichInput extends UseEditorOptions {
     toolbarDefaultVisible?: boolean
     locale?: ILocale
     attachments?: (ChipProps & { key: string; dataTest: string })[]
-    enableImageUpload?: boolean // Enables image/gif upload via storage microservice
+    enableImageUpload?: boolean
     /**
-     * Function to handle the actual file upload to your storage microservice.
+     * Function to handle the actual file upload to the storage microservice.
      * Receives the raw File object, returns a Promise that resolves to the final URL.
      * @param file - The image file selected by the user.
      * @returns Promise<string> - The absolute URL to the uploaded image.
@@ -64,7 +64,7 @@ export interface IRichInput extends UseEditorOptions {
      */
     onImageUploadError?: (error: Error, file?: File) => void
     /**
-     * @description Enables YouTube embed button in toolbar
+     * @description Enables YouTube extension for handling YouTube links
      */
     enableYoutube?: boolean
 }
