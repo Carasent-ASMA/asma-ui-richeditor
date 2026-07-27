@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, esmExternalRequirePlugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
@@ -19,6 +19,9 @@ export default defineConfig({
         dts({
             insertTypesEntry: true,
             exclude: ['node_modules/**/*', 'src/stories/**', 'src/**/*.stories.tsx', 'src/components/**/makeData.ts'],
+        }),
+        esmExternalRequirePlugin({
+            external: ['react', 'vue', /^node:/],
         }),
     ],
     resolve: {
