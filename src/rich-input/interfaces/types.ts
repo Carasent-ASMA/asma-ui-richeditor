@@ -34,4 +34,37 @@ export interface IRichInput extends UseEditorOptions {
     toolbarDefaultVisible?: boolean
     locale?: ILocale
     attachments?: (ChipProps & { key: string; dataTest: string })[]
+    enableImageUpload?: boolean // Enables image/gif upload via storage microservice
+    /**
+     * Function to handle the actual file upload to your storage microservice.
+     * Receives the raw File object, returns a Promise that resolves to the final URL.
+     * @param file - The image file selected by the user.
+     * @returns Promise<string> - The absolute URL to the uploaded image.
+     *
+     * @example
+     * const handleImageUpload = async (file: File): Promise<string> => {
+     *   const formData = new FormData();
+     *   formData.append('file', file);
+     *   const response = await axios.post('/api/upload', formData);
+     *   return response.data.url; // e.g., "https://cdn.example.com/uploads/abc.png"
+     * }
+     */
+    onImageUpload?: (file: File) => Promise<string>
+    /**
+     * Callback function triggered when an image upload fails.
+     * Use this to display user-facing error messages (toasts, snackbars, etc.)
+     *
+     * @param error - The error that occurred during upload
+     * @param file - The file that failed to upload (optional)
+     *
+     * @example
+     * const handleImageUploadError = (error: Error, file?: File) => {
+     *   processServerError(`Failed to upload ${file?.name || 'image'}: ${error.message}`);
+     * };
+     */
+    onImageUploadError?: (error: Error, file?: File) => void
+    /**
+     * @description Enables YouTube embed button in toolbar
+     */
+    enableYoutube?: boolean
 }
