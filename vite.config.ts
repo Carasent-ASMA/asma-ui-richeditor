@@ -3,9 +3,6 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 import terser from '@rollup/plugin-terser'
-import * as packageJson from './package.json'
-
-const externalPackages = [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)]
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -32,7 +29,6 @@ export default defineConfig({
             fileName: (format) => `asma-ui-richeditor.${format}.js`,
         },
         rolldownOptions: {
-            external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
             plugins: [
                 esmExternalRequirePlugin({
                     external: [
