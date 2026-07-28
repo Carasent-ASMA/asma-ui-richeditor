@@ -34,18 +34,18 @@ export default defineConfig({
         rolldownOptions: {
             external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
             plugins: [
-                // esmExternalRequirePlugin({
-                //     external: [
-                //         'react',
-                //         'react-dom',
-                //         'react/jsx-runtime',
-                //         'asma-ui-core',
-                //         '@emotion/react',
-                //         '@emotion/styled',
-                //         '@mui/material',
-                //         /^node:/,
-                //     ],
-                // }),
+                esmExternalRequirePlugin({
+                    external: [
+                        'react',
+                        'react-dom',
+                        'react/jsx-runtime',
+                        'asma-ui-core',
+                        '@emotion/react',
+                        '@emotion/styled',
+                        '@mui/material',
+                        /^node:/,
+                    ],
+                }),
                 terser(),
             ],
         },
