@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 import terser from '@rollup/plugin-terser'
-// import * as packageJson from './package.json'
+import * as packageJson from './package.json'
 
-// const externalPackages = [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)]
+const externalPackages = [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)]
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -32,24 +32,22 @@ export default defineConfig({
             fileName: (format) => `asma-ui-richeditor.${format}.js`,
         },
         rolldownOptions: {
-            // external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
+            external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
             plugins: [
-                esmExternalRequirePlugin({
-                    external: ['react', 'react-dom', 'react/jsx-runtime', 'asma-ui-core', /^node:/],
-                }),
+                // esmExternalRequirePlugin({
+                //     external: [
+                //         'react',
+                //         'react-dom',
+                //         'react/jsx-runtime',
+                //         'asma-ui-core',
+                //         '@emotion/react',
+                //         '@emotion/styled',
+                //         '@mui/material',
+                //         /^node:/,
+                //     ],
+                // }),
                 terser(),
             ],
         },
-        // rollupOptions: {
-        //     external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
-        //     output: {
-        //         // globals: {
-        //         //     react: 'React',
-        //         //     'react/jsx-runtime': 'react/jsx-runtime',
-        //         //     'react-dom': 'ReactDOM',
-        //         // },
-        //         plugins: [terser()],
-        //     },
-        // },
     },
 })
