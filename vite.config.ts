@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 import terser from '@rollup/plugin-terser'
-import * as packageJson from './package.json'
+// import * as packageJson from './package.json'
 
-const externalPackages = [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)]
+// const externalPackages = [...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.devDependencies)]
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,9 +20,6 @@ export default defineConfig({
             insertTypesEntry: true,
             exclude: ['node_modules/**/*', 'src/stories/**', 'src/**/*.stories.tsx', 'src/components/**/makeData.ts'],
         }),
-        esmExternalRequirePlugin({
-            external: ['react', 'react-dom', 'react/jsx-runtime', 'asma-ui-core', /^node:/],
-        }),
     ],
     resolve: {
         tsconfigPaths: true,
@@ -34,16 +31,25 @@ export default defineConfig({
             formats: ['es'],
             fileName: (format) => `asma-ui-richeditor.${format}.js`,
         },
-        rollupOptions: {
-            external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
-            output: {
-                // globals: {
-                //     react: 'React',
-                //     'react/jsx-runtime': 'react/jsx-runtime',
-                //     'react-dom': 'ReactDOM',
-                // },
-                plugins: [terser()],
-            },
+        rolldownOptions: {
+            // external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
+            plugins: [
+                esmExternalRequirePlugin({
+                    external: ['react', 'react-dom', 'react/jsx-runtime', 'asma-ui-core', /^node:/],
+                }),
+                terser(),
+            ],
         },
+        // rollupOptions: {
+        //     external: (id) => externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
+        //     output: {
+        //         // globals: {
+        //         //     react: 'React',
+        //         //     'react/jsx-runtime': 'react/jsx-runtime',
+        //         //     'react-dom': 'ReactDOM',
+        //         // },
+        //         plugins: [terser()],
+        //     },
+        // },
     },
 })
