@@ -55,9 +55,11 @@ const RichInput: FC<IRichInput> = ({
     attachments,
     replyModeComponent,
     enableImageUpload,
+    imageOptions,
     onImageUpload,
     onImageUploadError,
     enableYoutube,
+    youtubeOptions,
     ...props
 }) => {
     const cursor = useRef<number | undefined>(undefined)
@@ -82,6 +84,7 @@ const RichInput: FC<IRichInput> = ({
                           Image.configure({
                               inline: true,
                               allowBase64: false, // Prevent base64 bloat, force URLs
+                              ...imageOptions,
                           }),
                       ]
                     : []),
@@ -93,6 +96,7 @@ const RichInput: FC<IRichInput> = ({
                               nocookie: true,
                               width: 640,
                               height: 480,
+                              ...youtubeOptions,
                           }),
                       ]
                     : []),

@@ -1,6 +1,8 @@
 import type { ChipProps } from '@mui/material'
 import type { Editor, UseEditorOptions } from '@tiptap/react'
+import type { YoutubeOptions } from '@tiptap/extension-youtube'
 import type { RefObject } from 'react'
+import type { ImageOptions } from '@tiptap/extension-image'
 
 export interface CustomCSSProperties extends React.CSSProperties {
     '--max-scrollable-height'?: string
@@ -36,6 +38,10 @@ export interface IRichInput extends UseEditorOptions {
     attachments?: (ChipProps & { key: string; dataTest: string })[]
     enableImageUpload?: boolean
     /**
+     * @description Options for the image plugin
+     */
+    imageOptions?: Partial<ImageOptions>
+    /**
      * Function to handle the actual file upload to the storage microservice.
      * Receives the raw File object, returns a Promise that resolves to the final URL.
      * @param file - The image file selected by the user.
@@ -67,4 +73,8 @@ export interface IRichInput extends UseEditorOptions {
      * @description Enables YouTube extension for handling YouTube links
      */
     enableYoutube?: boolean
+    /**
+     * @description Options for the youtube plugin
+     */
+    youtubeOptions?: Partial<YoutubeOptions>
 }
