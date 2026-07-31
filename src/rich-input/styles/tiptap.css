@@ -171,3 +171,16 @@
 .emoji-mart-bar {
     background: rgb(17, 97, 97) !important;
 }
+
+iframe {
+    min-width: 200px;
+    min-height: 200px;
+    display: block;
+    outline: 0px solid transparent;
+}
+
+div[data-youtube-video] > iframe {
+    cursor: move;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+}
