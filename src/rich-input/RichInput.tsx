@@ -94,8 +94,6 @@ const RichInput: FC<IRichInput> = ({
                               addPasteHandler: true,
                               controls: true,
                               nocookie: true,
-                              width: 640,
-                              height: 480,
                               ...youtubeOptions,
                           }),
                       ]
