@@ -45,6 +45,8 @@ export const Toolbar = ({
     const [actionsVisible, setActionsVisible] = useState(false)
     const [hiddenButtons, setHiddenButtons] = useState<Array<ReactElement>>([])
 
+    const emptySelection = editor.state.selection.empty
+
     useLayoutEffect(() => {
         const observer = new ResizeObserver(() => {
             if (toolbarRef.current) {
@@ -72,16 +74,22 @@ export const Toolbar = ({
 
                 if (Number(visibleButtons) < 9) {
                     newHiddenButtons.push(
-                        <StyledTooltip key='link' title={t.link} placement='top' arrow>
+                        <StyledTooltip
+                            key='link'
+                            title={emptySelection ? t.empty_selection_link : t.link}
+                            placement='top'
+                            arrow
+                        >
                             <span>
                                 <StyledMenuItem
-                                    className='flex items-center justify-center'
                                     key='link'
+                                    className='flex items-center justify-center'
+                                    disabled={emptySelection}
+                                    selected={editor.isActive('link')}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
                                         openLinkDialog()
                                     }}
-                                    selected={editor.isActive('link')}
                                 >
                                     <LinkOutlineIcon />
                                 </StyledMenuItem>
@@ -175,7 +183,18 @@ export const Toolbar = ({
         }
 
         return () => observer.disconnect()
-    }, [editor, openLinkDialog, isNorsk])
+    }, [
+        editor,
+        openLinkDialog,
+        emptySelection,
+        isNorsk,
+        t.bold,
+        t.bullet_list,
+        t.empty_selection_link,
+        t.italic,
+        t.link,
+        t.ordered_list,
+    ])
 
     const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
 
@@ -310,18 +329,20 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 9 && (
-                        <StyledTooltip title={t.link} placement='top' arrow>
+                        <StyledTooltip title={emptySelection ? t.empty_selection_link : t.link} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-link-button'
+                                    className={emptySelection ? 'cursor-not-allowed' : ''}
+                                    disabled={emptySelection}
                                     size='large'
                                     variant={editor.isActive('link') ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
+                                    startIcon={<LinkOutlineIcon width={24} height={24} />}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
                                         openLinkDialog()
                                     }}
-                                    startIcon={<LinkOutlineIcon width={24} height={24} />}
                                 />
                             </span>
                         </StyledTooltip>

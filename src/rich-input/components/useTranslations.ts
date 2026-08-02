@@ -14,6 +14,7 @@ const translations = {
         ordered_list: 'Ordered list',
         bullet_list: 'Bullet list',
         font_size: 'Font size',
+        empty_selection_link: 'Select text first to add a link',
     },
     no: {
         emojis: 'Emojier',
@@ -27,6 +28,7 @@ const translations = {
         ordered_list: 'Nummerert liste',
         bullet_list: 'Punktliste',
         font_size: 'Skriftstørrelse',
+        empty_selection_link: 'Velg tekst først for å legge til en lenke',
     },
 }
 
