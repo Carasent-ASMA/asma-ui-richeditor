@@ -1,7 +1,6 @@
 import type { Editor } from '@tiptap/react'
-import { StyledButton, StyledDialog, StyledInputField } from 'asma-ui-core'
+import { StyledButton, StyledDialog, StyledDialogContent, StyledInputField } from 'asma-ui-core'
 import React, { useLayoutEffect, useMemo, useState } from 'react'
-import styles from './LinkDialog.module.scss'
 import '../styles/toolbar.css'
 import type { ILocale } from '../interfaces/types'
 
@@ -50,7 +49,7 @@ export const LinkDialog: React.FC<{
             className={'z-[99]'}
             dialogTitle={<div className={'text-gray-700'}>{isNorsk ? 'Legg til lenke' : 'Add link'}</div>}
         >
-            <div className={styles['link-dialog-container']}>
+            <StyledDialogContent className='border-y border-solid border-delta-200 mt-4'>
                 <div className='link-input-field'>
                     <StyledInputField
                         autoFocus
@@ -58,37 +57,33 @@ export const LinkDialog: React.FC<{
                         className='w-full'
                         dataTest={'link-input-field'}
                         size={'small'}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                minHeight: 64,
-                                alignItems: 'start',
-                            },
-                        }}
+                        minRows={2}
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                     />
                 </div>
-                <div className={'flex gap-2 p-0 w-full justify-end'}>
-                    <StyledButton
-                        dataTest={'delete-customer-reject-button'}
-                        size={'medium'}
-                        variant={'outlined'}
-                        onClick={() => {
-                            setOpen(false)
-                            setUrl('')
-                        }}
-                    >
-                        {isNorsk ? 'Avbryt' : 'Cancel'}
-                    </StyledButton>
-                    <StyledButton
-                        dataTest={'delete-customer-confirm-button'}
-                        size={'medium'}
-                        variant={'contained'}
-                        onClick={makeLink}
-                    >
-                        {isNorsk ? 'Legg til lenke' : 'Add link'}
-                    </StyledButton>
-                </div>
+            </StyledDialogContent>
+
+            <div className='flex justify-end gap-2 p-4'>
+                <StyledButton
+                    dataTest={'delete-customer-reject-button'}
+                    size={'medium'}
+                    variant={'outlined'}
+                    onClick={() => {
+                        setOpen(false)
+                        setUrl('')
+                    }}
+                >
+                    {isNorsk ? 'Avbryt' : 'Cancel'}
+                </StyledButton>
+                <StyledButton
+                    dataTest={'delete-customer-confirm-button'}
+                    size={'medium'}
+                    variant={'contained'}
+                    onClick={makeLink}
+                >
+                    {isNorsk ? 'Legg til lenke' : 'Add link'}
+                </StyledButton>
             </div>
         </StyledDialog>
     )
