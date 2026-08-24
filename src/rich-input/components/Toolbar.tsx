@@ -1,4 +1,4 @@
-import { Editor } from '@tiptap/react'
+import { Editor, useEditorState } from '@tiptap/react'
 import {
     DotsVerticalIcon,
     LinkOutlineIcon,
@@ -45,7 +45,28 @@ export const Toolbar = ({
     const [actionsVisible, setActionsVisible] = useState(false)
     const [hiddenButtons, setHiddenButtons] = useState<Array<ReactElement>>([])
 
-    const emptySelection = editor.state.selection.empty
+    const {
+        emptySelection,
+        isBold,
+        isBulletList,
+        isH1,
+        isH2,
+        isItalic,
+        isLink,
+        isOrderedList,
+    } = useEditorState({
+        editor,
+        selector: ({ editor }) => ({
+            emptySelection: editor.state.selection.empty,
+            isBold: editor.isActive('bold'),
+            isBulletList: editor.isActive('bulletList'),
+            isH1: editor.isActive('heading', { level: 1 }),
+            isH2: editor.isActive('heading', { level: 2 }),
+            isItalic: editor.isActive('italic'),
+            isLink: editor.isActive('link'),
+            isOrderedList: editor.isActive('orderedList'),
+        }),
+    })
 
     useLayoutEffect(() => {
         const observer = new ResizeObserver(() => {
@@ -85,7 +106,7 @@ export const Toolbar = ({
                                     key='link'
                                     className='flex items-center justify-center'
                                     disabled={emptySelection}
-                                    selected={editor.isActive('link')}
+                                    selected={isLink}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
                                         openLinkDialog()
@@ -108,7 +129,7 @@ export const Toolbar = ({
                                         e.preventDefault()
                                         editor.chain().focus().toggleItalic().run()
                                     }}
-                                    selected={editor.isActive('italic')}
+                                    selected={isItalic}
                                 >
                                     <Icon icon='material-symbols:format-italic' height={20} />
                                 </StyledMenuItem>
@@ -127,7 +148,7 @@ export const Toolbar = ({
                                         e.preventDefault()
                                         editor.chain().focus().toggleBold().run()
                                     }}
-                                    selected={editor.isActive('bold')}
+                                    selected={isBold}
                                 >
                                     <Icon icon='ooui:bold-b' />
                                 </StyledMenuItem>
@@ -146,7 +167,7 @@ export const Toolbar = ({
                                         e.preventDefault()
                                         editor.chain().focus().toggleOrderedList().run()
                                     }}
-                                    selected={editor.isActive('orderedList')}
+                                    selected={isOrderedList}
                                 >
                                     <Icon icon='mdi:format-list-numbered' fontSize={20} />
                                 </StyledMenuItem>
@@ -165,7 +186,7 @@ export const Toolbar = ({
                                         e.preventDefault()
                                         editor.chain().focus().toggleBulletList().run()
                                     }}
-                                    selected={editor.isActive('bulletList')}
+                                    selected={isBulletList}
                                 >
                                     <Icon icon='mdi:format-list-bulleted' fontSize={20} />
                                 </StyledMenuItem>
@@ -187,6 +208,11 @@ export const Toolbar = ({
         editor,
         openLinkDialog,
         emptySelection,
+        isBold,
+        isBulletList,
+        isItalic,
+        isLink,
+        isOrderedList,
         isNorsk,
         t.bold,
         t.bullet_list,
@@ -226,7 +252,7 @@ export const Toolbar = ({
                                     dataTest='richeditor-h1-button'
                                     className='text-delta-700 text-sm font-semibold'
                                     size='large'
-                                    variant={editor.isActive('heading', { level: 1 }) ? 'text' : 'textGray'}
+                                    variant={isH1 ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40, padding: 0 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -246,7 +272,7 @@ export const Toolbar = ({
                                     dataTest='richeditor-h2-button'
                                     className='text-delta-700 text-sm font-semibold'
                                     size='large'
-                                    variant={editor.isActive('heading', { level: 2 }) ? 'text' : 'textGray'}
+                                    variant={isH2 ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40, padding: 0 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -266,7 +292,7 @@ export const Toolbar = ({
                                 <StyledButton
                                     dataTest='richeditor-bullet-list-button'
                                     size='large'
-                                    variant={editor.isActive('bulletList') ? 'text' : 'textGray'}
+                                    variant={isBulletList ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -283,7 +309,7 @@ export const Toolbar = ({
                                 <StyledButton
                                     dataTest='richeditor-ordered-list-button'
                                     size='large'
-                                    variant={editor.isActive('orderedList') ? 'text' : 'textGray'}
+                                    variant={isOrderedList ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -300,7 +326,7 @@ export const Toolbar = ({
                                 <StyledButton
                                     dataTest='richeditor-bold-button'
                                     size='large'
-                                    variant={editor.isActive('bold') ? 'text' : 'textGray'}
+                                    variant={isBold ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -317,7 +343,7 @@ export const Toolbar = ({
                                 <StyledButton
                                     dataTest='richeditor-italic-button'
                                     size='large'
-                                    variant={editor.isActive('italic') ? 'text' : 'textGray'}
+                                    variant={isItalic ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
                                         e.preventDefault()
@@ -336,7 +362,7 @@ export const Toolbar = ({
                                     className={emptySelection ? 'cursor-not-allowed' : ''}
                                     disabled={emptySelection}
                                     size='large'
-                                    variant={editor.isActive('link') ? 'text' : 'textGray'}
+                                    variant={isLink ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     startIcon={<LinkOutlineIcon width={24} height={24} />}
                                     onMouseDown={(e) => {
