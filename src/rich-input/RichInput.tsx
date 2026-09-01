@@ -14,6 +14,7 @@ import {
 } from 'asma-ui-core'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
+import { FloatingLabel } from './components/FloatingLabel'
 import { LinkDialog } from './components/LinkDialog'
 import EmojiPicker from 'emoji-picker-react'
 import { Placeholder } from '@tiptap/extensions'
@@ -42,7 +43,7 @@ const RichInput: FC<IRichInput> = ({
     readOnly,
     error,
     locale,
-    // label, // this in not implemented yet
+    label,
     title,
     placeholder,
     placeholderCallback,
@@ -70,13 +71,23 @@ const RichInput: FC<IRichInput> = ({
     const baselineHeightRef = useRef<number | null>(null)
 
     const [isMultiLine, setIsMultiLine] = useState(false)
+    const [isEmpty, setIsEmpty] = useState(true)
 
     const editor = useEditor(
         {
             ...props,
             extensions: [
                 Placeholder.configure({
-                    placeholder: placeholderCallback ? placeholderCallback : placeholder,
+                    // With a floating label the resting label occupies the placeholder spot, so the
+                    // configured placeholder only shows once the editor is focused (MUI behavior).
+                    placeholder: label
+                        ? (placeholderProps) =>
+                              placeholderProps.editor.isFocused
+                                  ? (placeholderCallback?.(placeholderProps) ?? placeholder ?? '')
+                                  : ''
+                        : placeholderCallback
+                          ? placeholderCallback
+                          : placeholder,
                 }),
                 ...resolveDefaultExtensions(),
                 ...(enableImageUpload
@@ -120,8 +131,13 @@ const RichInput: FC<IRichInput> = ({
                 cursor.current = updateProps.editor.state.selection.anchor
                 updateProps.editor.commands.focus()
             },
+            onCreate: (createProps) => {
+                props.onCreate?.(createProps)
+                setIsEmpty(createProps.editor.isEmpty)
+            },
             onUpdate: (updateProps) => {
                 props.onUpdate?.(updateProps)
+                setIsEmpty(updateProps.editor.isEmpty)
                 scheduleMeasure()
             },
         },
@@ -233,6 +249,7 @@ const RichInput: FC<IRichInput> = ({
         if (!editor) return
         if (props.content !== editor.getHTML()) {
             editor.commands.setContent(props.content || '', { emitUpdate: false }) // second arg=false to avoid resetting selection
+            setIsEmpty(editor.isEmpty)
         }
     }, [props.content, editor])
 
@@ -261,6 +278,20 @@ const RichInput: FC<IRichInput> = ({
     return (
         <StyledFormControl className={className}>
             {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
+            {/* Positioning context for the floating label — the field wrapper clips overflow, so the
+                shrunk label must live on a sibling layer above its top border. */}
+            {label && readOnly !== 'plain' && (
+                <div className='relative'>
+                    <FloatingLabel
+                        label={label}
+                        shrink={focused || !isEmpty}
+                        focused={focused}
+                        error={!!showError}
+                        disabled={disabled}
+                        readOnly={!!readOnly}
+                    />
+                </div>
+            )}
             <div
                 ref={wrapperRef}
                 className={clsx(

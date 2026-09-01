@@ -16,7 +16,11 @@ export interface IRichInput extends UseEditorOptions {
     replyModeComponent?: React.ReactNode
     inputRef?: RefObject<Editor | null>
     id?: string
-    // label?: string // TODO: implement same label behavior like in MUI
+    /**
+     * @description MUI-style floating label: rests inside the empty field, shrinks onto the top
+     * border once the editor is focused or has content (Figma DS "Rich text editor", node 20571-30699).
+     */
+    label?: string
     title?: string
     placeholder?: string
     /**
