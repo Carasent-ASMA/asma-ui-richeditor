@@ -27,8 +27,6 @@ export default defineConfig({
             name: 'asma-ui-richeditor',
             formats: ['es'],
             fileName: (format) => `asma-ui-richeditor.${format}.js`,
-            // package.json declares "./dist/style.css" in both exports and files; without this the
-            // asset is named after lib.name and consumers cannot reach the stylesheet at all.
             cssFileName: 'style',
         },
         rolldownOptions: {
