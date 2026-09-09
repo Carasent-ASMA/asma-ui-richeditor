@@ -27,6 +27,7 @@ export default defineConfig({
             name: 'asma-ui-richeditor',
             formats: ['es'],
             fileName: (format) => `asma-ui-richeditor.${format}.js`,
+            cssFileName: 'style',
         },
         rolldownOptions: {
             plugins: [
