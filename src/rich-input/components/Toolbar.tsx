@@ -3,17 +3,18 @@ import {
     DotsVerticalIcon,
     LinkOutlineIcon,
     StyledButton,
-    StyledMenuItem,
     StyledPopover,
     StyledTooltip,
 } from 'asma-ui-core'
 import '../styles/toolbar.css'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import { useLayoutEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react'
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
+import { getOverflowMenuBreakpoint, getVisibleButtonCount } from './toolbar.helpers'
+import { ToolbarOverflowItem } from './ToolbarOverflowItem'
 import { useTranslations } from './useTranslations'
 
 export const Toolbar = ({
@@ -40,10 +41,9 @@ export const Toolbar = ({
 
     const t = useTranslations(locale)
 
-    const isNorsk = useMemo(() => locale === 'no', [locale])
+    const isNorsk = locale === 'no'
 
     const [actionsVisible, setActionsVisible] = useState(false)
-    const [hiddenButtons, setHiddenButtons] = useState<Array<ReactElement>>([])
 
     const {
         emptySelection,
@@ -68,161 +68,83 @@ export const Toolbar = ({
         }),
     })
 
+    /**
+     * Only measures. The overflow entries themselves are derived during render so they always
+     * reflect the current editor state instead of whatever it was when the last resize fired.
+     */
     useLayoutEffect(() => {
+        const toolbar = toolbarRef.current
+
+        if (!toolbar) return
+
         const observer = new ResizeObserver(() => {
-            if (toolbarRef.current) {
-                const width = toolbarRef.current.clientWidth
+            const width = toolbar.clientWidth
 
-                if (width < (isNorsk ? 514 : 520)) setActionsVisible(true)
-                else setActionsVisible(false)
-
-                const buttonVisibilityMap = [
-                    // { width: 156, buttons: 0 },
-                    // { width: 192, buttons: 1 },
-                    // { width: 270, buttons: 2 },
-                    { width: isNorsk ? 334 : 340, buttons: 3 },
-                    { width: isNorsk ? 380 : 383, buttons: 4 },
-                    { width: isNorsk ? 424 : 430, buttons: 5 },
-                    { width: isNorsk ? 469 : 475, buttons: 6 },
-                    { width: isNorsk ? 514 : 520, buttons: 7 },
-                    { width: Infinity, buttons: 9 },
-                ]
-
-                const visibleButtons = buttonVisibilityMap.find((item) => width < item.width)?.buttons
-                setVisibleButtons(visibleButtons !== undefined ? visibleButtons : 8)
-
-                const newHiddenButtons = []
-
-                if (Number(visibleButtons) < 9) {
-                    newHiddenButtons.push(
-                        <StyledTooltip
-                            key='link'
-                            title={emptySelection ? t.empty_selection_link : t.link}
-                            placement='top'
-                            arrow
-                        >
-                            <span>
-                                <StyledMenuItem
-                                    key='link'
-                                    className='flex items-center justify-center'
-                                    disabled={emptySelection}
-                                    selected={isLink}
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        openLinkDialog()
-                                    }}
-                                >
-                                    <LinkOutlineIcon />
-                                </StyledMenuItem>
-                            </span>
-                        </StyledTooltip>,
-                    )
-                }
-                if (Number(visibleButtons) < 8) {
-                    newHiddenButtons.push(
-                        <StyledTooltip key='italic' title={t.italic} placement='top' arrow>
-                            <span>
-                                <StyledMenuItem
-                                    className='flex items-center justify-center'
-                                    key='italic'
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        editor.chain().focus().toggleItalic().run()
-                                    }}
-                                    selected={isItalic}
-                                >
-                                    <Icon icon='material-symbols:format-italic' height={20} />
-                                </StyledMenuItem>
-                            </span>
-                        </StyledTooltip>,
-                    )
-                }
-                if (Number(visibleButtons) < 7) {
-                    newHiddenButtons.push(
-                        <StyledTooltip key='bold' title={t.bold} placement='top' arrow>
-                            <span>
-                                <StyledMenuItem
-                                    className='flex items-center justify-center'
-                                    key='bold'
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        editor.chain().focus().toggleBold().run()
-                                    }}
-                                    selected={isBold}
-                                >
-                                    <Icon icon='ooui:bold-b' />
-                                </StyledMenuItem>
-                            </span>
-                        </StyledTooltip>,
-                    )
-                }
-                if (Number(visibleButtons) < 6) {
-                    newHiddenButtons.push(
-                        <StyledTooltip key='ordered' title={t.ordered_list} placement='top' arrow>
-                            <span>
-                                <StyledMenuItem
-                                    className='flex items-center justify-center'
-                                    key='ordered'
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        editor.chain().focus().toggleOrderedList().run()
-                                    }}
-                                    selected={isOrderedList}
-                                >
-                                    <Icon icon='mdi:format-list-numbered' fontSize={20} />
-                                </StyledMenuItem>
-                            </span>
-                        </StyledTooltip>,
-                    )
-                }
-                if (Number(visibleButtons) < 5) {
-                    newHiddenButtons.push(
-                        <StyledTooltip key='bullet' title={t.bullet_list} placement='top' arrow>
-                            <span>
-                                <StyledMenuItem
-                                    className='flex items-center justify-center'
-                                    key='bullet'
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        editor.chain().focus().toggleBulletList().run()
-                                    }}
-                                    selected={isBulletList}
-                                >
-                                    <Icon icon='mdi:format-list-bulleted' fontSize={20} />
-                                </StyledMenuItem>
-                            </span>
-                        </StyledTooltip>,
-                    )
-                }
-
-                setHiddenButtons(newHiddenButtons)
-            }
+            setActionsVisible(width < getOverflowMenuBreakpoint(isNorsk))
+            setVisibleButtons(getVisibleButtonCount(width, isNorsk))
         })
 
-        if (toolbarRef.current) {
-            observer.observe(toolbarRef.current)
-        }
+        observer.observe(toolbar)
 
         return () => observer.disconnect()
-    }, [
-        editor,
-        openLinkDialog,
-        emptySelection,
-        isBold,
-        isBulletList,
-        isItalic,
-        isLink,
-        isOrderedList,
-        isNorsk,
-        t.bold,
-        t.bullet_list,
-        t.empty_selection_link,
-        t.italic,
-        t.link,
-        t.ordered_list,
-    ])
+    }, [isNorsk])
 
     const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
+
+    /** Buttons that no longer fit, in the same order they drop out of the toolbar. */
+    const overflowItems = [
+        visibleButtons < 9 && (
+            <ToolbarOverflowItem
+                key='link'
+                title={emptySelection ? t.empty_selection_link : t.link}
+                disabled={emptySelection}
+                selected={isLink}
+                onSelect={openLinkDialog}
+            >
+                <LinkOutlineIcon />
+            </ToolbarOverflowItem>
+        ),
+        visibleButtons < 8 && (
+            <ToolbarOverflowItem
+                key='italic'
+                title={t.italic}
+                selected={isItalic}
+                onSelect={() => editor.chain().focus().toggleItalic().run()}
+            >
+                <Icon icon='material-symbols:format-italic' height={20} />
+            </ToolbarOverflowItem>
+        ),
+        visibleButtons < 7 && (
+            <ToolbarOverflowItem
+                key='bold'
+                title={t.bold}
+                selected={isBold}
+                onSelect={() => editor.chain().focus().toggleBold().run()}
+            >
+                <Icon icon='ooui:bold-b' />
+            </ToolbarOverflowItem>
+        ),
+        visibleButtons < 6 && (
+            <ToolbarOverflowItem
+                key='ordered'
+                title={t.ordered_list}
+                selected={isOrderedList}
+                onSelect={() => editor.chain().focus().toggleOrderedList().run()}
+            >
+                <Icon icon='mdi:format-list-numbered' fontSize={20} />
+            </ToolbarOverflowItem>
+        ),
+        visibleButtons < 5 && (
+            <ToolbarOverflowItem
+                key='bullet'
+                title={t.bullet_list}
+                selected={isBulletList}
+                onSelect={() => editor.chain().focus().toggleBulletList().run()}
+            >
+                <Icon icon='mdi:format-list-bulleted' fontSize={20} />
+            </ToolbarOverflowItem>
+        ),
+    ].filter(Boolean)
 
     return (
         <>
@@ -409,7 +331,7 @@ export const Toolbar = ({
                                     handleClose()
                                 }}
                             >
-                                {hiddenButtons}
+                                {overflowItems}
                             </StyledPopover>
                         </>
                     )}
