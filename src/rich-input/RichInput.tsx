@@ -48,7 +48,7 @@ const RichInput: FC<IRichInput> = ({
     placeholder,
     placeholderCallback,
     helperText,
-    // required,
+    required,
     maxScrollableHeight,
     toolbarDefaultVisible,
     hideToolbar,
@@ -313,7 +313,9 @@ const RichInput: FC<IRichInput> = ({
                 <div className='flex gap-2'>
                     <div className='flex-1 min-w-0'>
                         <EditorContent
+                            aria-required={required ? true : undefined}
                             data-test={dataTest}
+                            data-testid={dataTest}
                             id={id}
                             className={clsx(
                                 !noDefaultStyles && 'core-ui-rte',
