@@ -21,6 +21,8 @@ export interface IRichInput extends UseEditorOptions {
      * border once the editor is focused or has content (Figma DS "Rich text editor", node 20571-30699).
      */
     label?: string
+    /** Accessible name for the editable editor host. Takes precedence over `label`. */
+    'aria-label'?: string
     title?: string
     placeholder?: string
     /**

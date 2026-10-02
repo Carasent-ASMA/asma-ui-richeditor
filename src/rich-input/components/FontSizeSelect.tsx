@@ -5,7 +5,7 @@ import React, { useLayoutEffect, useState } from 'react'
 import '../styles/toolbar.css'
 import type { Editor } from '@tiptap/core'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
-import { CustomMenuItem } from './CustomMenuItem'
+import { useListboxTriggerKeyboard } from '../hooks/useListboxTriggerKeyboard.hook'
 import { useTranslations } from './useTranslations'
 import type { ILocale } from '../interfaces/types'
 
@@ -16,16 +16,36 @@ const fontSizeMap: { [key: string]: string } = {
     huge: '32px',
 }
 
-export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk: boolean; locale?: ILocale }) => {
-    const { editor, isNorsk, locale } = props
+const fontSizes = ['small', 'normal', 'large', 'huge'] as const
+
+export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?: ILocale }) => {
+    const { editor, locale } = props
     const [selectedSize, setSelectedSize] = useState<string>('normal')
+    const t = useTranslations(locale)
+    const menuId = 'richinput-font-size-menu'
 
     const handleFontSizeChange = (size: string) => {
         editor.chain().focus().setMark('textStyle', { fontSize: fontSizeMap[size] }).run()
         setSelectedSize(size)
     }
 
-    const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
+    const { anchorEl, open, handleClose, openFromElement } = useToggleMenuVisibility()
+
+    const selectedIndex = Math.max(fontSizes.indexOf(selectedSize as (typeof fontSizes)[number]), 0)
+
+    const { activeIndex, keyboardActive, openFromPointer, handleKeyDown } = useListboxTriggerKeyboard({
+        isOpen: open,
+        itemCount: fontSizes.length,
+        getInitialActiveIndex: () => selectedIndex,
+        onOpen: openFromElement,
+        onClose: handleClose,
+        onSelect: (index, { close }) => {
+            handleFontSizeChange(fontSizes[index] ?? 'normal')
+            if (close) handleClose()
+        },
+    })
+
+    const activeOptionId = `${menuId}-${fontSizes[activeIndex] ?? 'normal'}`
 
     useLayoutEffect(() => {
         const { from, to } = editor.state.selection
@@ -40,25 +60,36 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk
         })
     }, [editor.state.selection, editor.state.doc])
 
-    const t = useTranslations(locale)
-
     return (
         <>
             <StyledTooltip title={t.font_size} placement='top' arrow>
                 <span>
                     <StyledButton
                         size='large'
-                        dataTest='richeditor-more-menu-button'
+                        dataTest='richeditor-font-size-select'
                         variant='textGray'
-                        onMouseDown={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            handleOpen(e)
+                        role='combobox'
+                        aria-label={t.font_size}
+                        aria-haspopup='listbox'
+                        aria-expanded={open}
+                        aria-controls={open ? menuId : undefined}
+                        aria-activedescendant={open ? activeOptionId : undefined}
+                        onMouseDown={(event) => {
+                            event.stopPropagation()
+                            event.preventDefault()
+                            openFromPointer(event.currentTarget)
                         }}
+                        onClick={(event) => {
+                            if (event.detail !== 0) return
+                            event.stopPropagation()
+                            event.preventDefault()
+                            openFromPointer(event.currentTarget)
+                        }}
+                        onKeyDown={handleKeyDown}
                         className='font-normal capitalize'
-                        onMouseUp={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
+                        onMouseUp={(event) => {
+                            event.stopPropagation()
+                            event.preventDefault()
                         }}
                         endIcon={<Icon icon='tabler:caret-up-down-filled' fontSize={20} />}
                     >
@@ -73,10 +104,6 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
-                onMouseDown={(e) => {
-                    e.preventDefault()
-                    handleClose()
-                }}
                 anchorOrigin={{
                     horizontal: 'center',
                     vertical: 'bottom',
@@ -86,46 +113,38 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; isNorsk
                     horizontal: 'right',
                 }}
             >
-                <CustomMenuItem
-                    value='small'
-                    selected={selectedSize === 'small'}
-                    onMouseDown={(e) => {
-                        e.preventDefault()
-                        handleFontSizeChange('small')
-                    }}
-                >
-                    {isNorsk ? 'Liten' : 'Small'}
-                </CustomMenuItem>
-                <CustomMenuItem
-                    value='normal'
-                    selected={selectedSize === 'normal'}
-                    onMouseDown={(e) => {
-                        e.preventDefault()
-                        handleFontSizeChange('normal')
-                    }}
-                >
-                    Normal
-                </CustomMenuItem>
-                <CustomMenuItem
-                    value='large'
-                    selected={selectedSize === 'large'}
-                    onMouseDown={(e) => {
-                        e.preventDefault()
-                        handleFontSizeChange('large')
-                    }}
-                >
-                    {isNorsk ? 'Stor' : 'Large'}
-                </CustomMenuItem>
-                <CustomMenuItem
-                    value='huge'
-                    selected={selectedSize === 'huge'}
-                    onMouseDown={(e) => {
-                        e.preventDefault()
-                        handleFontSizeChange('huge')
-                    }}
-                >
-                    {isNorsk ? 'Enorm' : 'Huge'}
-                </CustomMenuItem>
+                <ul id={menuId} role='listbox' aria-label={t.font_size} className='m-0 list-none p-0'>
+                    {fontSizes.map((size, index) => {
+                        const selected = selectedSize === size
+                        const active = keyboardActive && activeIndex === index
+
+                        return (
+                            <li
+                                key={size}
+                                id={`${menuId}-${size}`}
+                                role='option'
+                                aria-selected={selected}
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => {
+                                    handleFontSizeChange(size)
+                                    handleClose()
+                                }}
+                                className={[
+                                    'relative flex min-h-10 cursor-pointer items-center px-4 py-2 text-sm leading-5 text-delta-700 hover:bg-delta-50',
+                                    selected ? 'bg-gama-50' : '',
+                                ].join(' ')}
+                            >
+                                {active && (
+                                    <span
+                                        aria-hidden='true'
+                                        className='pointer-events-none absolute inset-y-0 left-0 border-l-[3px] border-l-solid border-gama-500'
+                                    />
+                                )}
+                                {t[size]}
+                            </li>
+                        )
+                    })}
+                </ul>
             </StyledPopover>
         </>
     )
