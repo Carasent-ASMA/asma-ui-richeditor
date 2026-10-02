@@ -11,6 +11,7 @@ import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
+import { useListboxTriggerKeyboard } from '../hooks/useListboxTriggerKeyboard.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
 import { getOverflowMenuBreakpoint, getVisibleButtonCount } from './toolbar.helpers'
@@ -24,6 +25,8 @@ export const Toolbar = ({
     focused,
     openLinkDialog,
     openEmojiPicker,
+    linkDialogOpen,
+    emojiPickerOpen,
     locale,
     emojiButtonRef,
 }: {
@@ -33,6 +36,8 @@ export const Toolbar = ({
     focused: boolean
     openLinkDialog: () => void
     openEmojiPicker: () => void
+    linkDialogOpen: boolean
+    emojiPickerOpen: boolean
     locale?: ILocale
     emojiButtonRef?: RefObject<HTMLSpanElement>
 }) => {
@@ -77,74 +82,99 @@ export const Toolbar = ({
 
         if (!toolbar) return
 
-        const observer = new ResizeObserver(() => {
+        const updateVisibleActions = () => {
             const width = toolbar.clientWidth
 
             setActionsVisible(width < getOverflowMenuBreakpoint(isNorsk))
             setVisibleButtons(getVisibleButtonCount(width, isNorsk))
-        })
+        }
 
+        updateVisibleActions()
+
+        const observer = new ResizeObserver(updateVisibleActions)
         observer.observe(toolbar)
 
         return () => observer.disconnect()
     }, [isNorsk])
 
-    const { anchorEl, open, handleClose, handleOpen } = useToggleMenuVisibility()
+    const { anchorEl, open, handleClose, openFromElement } = useToggleMenuVisibility()
+    const overflowMenuId = 'richinput-overflow-menu'
 
     /** Buttons that no longer fit, in the same order they drop out of the toolbar. */
     const overflowItems = [
-        visibleButtons < 9 && (
-            <ToolbarOverflowItem
-                key='link'
-                title={emptySelection ? t.empty_selection_link : t.link}
-                disabled={emptySelection}
-                selected={isLink}
-                onSelect={openLinkDialog}
-            >
-                <LinkOutlineIcon />
-            </ToolbarOverflowItem>
-        ),
-        visibleButtons < 8 && (
-            <ToolbarOverflowItem
-                key='italic'
-                title={t.italic}
-                selected={isItalic}
-                onSelect={() => editor.chain().focus().toggleItalic().run()}
-            >
-                <Icon icon='material-symbols:format-italic' height={20} />
-            </ToolbarOverflowItem>
-        ),
-        visibleButtons < 7 && (
-            <ToolbarOverflowItem
-                key='bold'
-                title={t.bold}
-                selected={isBold}
-                onSelect={() => editor.chain().focus().toggleBold().run()}
-            >
-                <Icon icon='ooui:bold-b' />
-            </ToolbarOverflowItem>
-        ),
-        visibleButtons < 6 && (
-            <ToolbarOverflowItem
-                key='ordered'
-                title={t.ordered_list}
-                selected={isOrderedList}
-                onSelect={() => editor.chain().focus().toggleOrderedList().run()}
-            >
-                <Icon icon='mdi:format-list-numbered' fontSize={20} />
-            </ToolbarOverflowItem>
-        ),
-        visibleButtons < 5 && (
-            <ToolbarOverflowItem
-                key='bullet'
-                title={t.bullet_list}
-                selected={isBulletList}
-                onSelect={() => editor.chain().focus().toggleBulletList().run()}
-            >
-                <Icon icon='mdi:format-list-bulleted' fontSize={20} />
-            </ToolbarOverflowItem>
-        ),
-    ].filter(Boolean)
+        visibleButtons < 9
+            ? {
+                key: 'link',
+                title: emptySelection ? t.empty_selection_link : t.link,
+                disabled: emptySelection,
+                selected: isLink,
+                onSelect: openLinkDialog,
+                children: <LinkOutlineIcon />,
+            }
+            : null,
+        visibleButtons < 8
+            ? {
+                key: 'italic',
+                title: t.italic,
+                selected: isItalic,
+                onSelect: () => editor.chain().focus().toggleItalic().run(),
+                children: <Icon icon='material-symbols:format-italic' height={20} />,
+            }
+            : null,
+        visibleButtons < 7
+            ? {
+                key: 'bold',
+                title: t.bold,
+                selected: isBold,
+                onSelect: () => editor.chain().focus().toggleBold().run(),
+                children: <Icon icon='ooui:bold-b' />,
+            }
+            : null,
+        visibleButtons < 6
+            ? {
+                key: 'ordered',
+                title: t.ordered_list,
+                selected: isOrderedList,
+                onSelect: () => editor.chain().focus().toggleOrderedList().run(),
+                children: <Icon icon='mdi:format-list-numbered' fontSize={20} />,
+            }
+            : null,
+        visibleButtons < 5
+            ? {
+                key: 'bullet',
+                title: t.bullet_list,
+                selected: isBulletList,
+                onSelect: () => editor.chain().focus().toggleBulletList().run(),
+                children: <Icon icon='mdi:format-list-bulleted' fontSize={20} />,
+            }
+            : null,
+    ].filter((item): item is NonNullable<typeof item> => item !== null)
+
+    const selectOverflowItem = (index: number, close: boolean) => {
+        const item = overflowItems[index]
+        if (!item || item.disabled) return
+
+        item.onSelect()
+        if (close) handleClose()
+    }
+
+    const {
+        activeIndex: activeOverflowIndex,
+        keyboardActive: keyboardOverflowActive,
+        openFromPointer: openOverflowMenu,
+        handleKeyDown: handleOverflowKeyDown,
+    } = useListboxTriggerKeyboard({
+        isOpen: open,
+        itemCount: overflowItems.length,
+        getInitialActiveIndex: () => 0,
+        onOpen: openFromElement,
+        onClose: handleClose,
+        onSelect: (index, { close }) => selectOverflowItem(index, close),
+        moveActiveIndexOnOpen: false,
+    })
+
+    const activeOverflowItemId =
+        overflowItems[activeOverflowIndex] && `${overflowMenuId}-${overflowItems[activeOverflowIndex].key}`
 
     return (
         <>
@@ -157,7 +187,15 @@ export const Toolbar = ({
                                     dataTest='richeditor-emoji-button'
                                     size='large'
                                     variant='textGray'
+                                    aria-label={t.emojis}
+                                    aria-haspopup='dialog'
+                                    aria-expanded={emojiPickerOpen}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        openEmojiPicker()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         openEmojiPicker()
                                     }}
@@ -175,8 +213,15 @@ export const Toolbar = ({
                                     className='text-delta-700 text-sm font-semibold'
                                     size='large'
                                     variant={isH1 ? 'text' : 'textGray'}
+                                    aria-pressed={isH1}
                                     style={{ minWidth: 40, maxWidth: 40, padding: 0 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
+                                        editor.chain().focus().toggleHeading({ level: 1 }).run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
                                         editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -195,8 +240,15 @@ export const Toolbar = ({
                                     className='text-delta-700 text-sm font-semibold'
                                     size='large'
                                     variant={isH2 ? 'text' : 'textGray'}
+                                    aria-pressed={isH2}
                                     style={{ minWidth: 40, maxWidth: 40, padding: 0 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
+                                        editor.chain().focus().toggleHeading({ level: 2 }).run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().setMark('textStyle', { fontSize: undefined }).run()
                                         editor.chain().focus().toggleHeading({ level: 2 }).run()
@@ -207,7 +259,7 @@ export const Toolbar = ({
                             </span>
                         </StyledTooltip>
                     )}
-                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} isNorsk={isNorsk} locale={locale} />}
+                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} locale={locale} />}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title={t.bullet_list} placement='top' arrow>
                             <span>
@@ -215,8 +267,15 @@ export const Toolbar = ({
                                     dataTest='richeditor-bullet-list-button'
                                     size='large'
                                     variant={isBulletList ? 'text' : 'textGray'}
+                                    aria-label={t.bullet_list}
+                                    aria-pressed={isBulletList}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBulletList().run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().toggleBulletList().run()
                                     }}
@@ -232,8 +291,15 @@ export const Toolbar = ({
                                     dataTest='richeditor-ordered-list-button'
                                     size='large'
                                     variant={isOrderedList ? 'text' : 'textGray'}
+                                    aria-label={t.ordered_list}
+                                    aria-pressed={isOrderedList}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleOrderedList().run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().toggleOrderedList().run()
                                     }}
@@ -249,8 +315,15 @@ export const Toolbar = ({
                                     dataTest='richeditor-bold-button'
                                     size='large'
                                     variant={isBold ? 'text' : 'textGray'}
+                                    aria-label={t.bold}
+                                    aria-pressed={isBold}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleBold().run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().toggleBold().run()
                                     }}
@@ -266,8 +339,15 @@ export const Toolbar = ({
                                     dataTest='richeditor-italic-button'
                                     size='large'
                                     variant={isItalic ? 'text' : 'textGray'}
+                                    aria-label={t.italic}
+                                    aria-pressed={isItalic}
                                     style={{ minWidth: 40, maxWidth: 40 }}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        editor.chain().focus().toggleItalic().run()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         editor.chain().focus().toggleItalic().run()
                                     }}
@@ -286,8 +366,16 @@ export const Toolbar = ({
                                     size='large'
                                     variant={isLink ? 'text' : 'textGray'}
                                     style={{ minWidth: 40, maxWidth: 40 }}
+                                    aria-label={emptySelection ? t.empty_selection_link : t.link}
+                                    aria-haspopup='dialog'
+                                    aria-expanded={linkDialogOpen}
                                     startIcon={<LinkOutlineIcon width={24} height={24} />}
                                     onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        openLinkDialog()
+                                    }}
+                                    onClick={(e) => {
+                                        if (e.detail !== 0) return
                                         e.preventDefault()
                                         openLinkDialog()
                                     }}
@@ -304,15 +392,28 @@ export const Toolbar = ({
                                         dataTest='richeditor-more-menu-button'
                                         variant='text'
                                         style={{ minWidth: 40, maxWidth: 40 }}
+                                        aria-label={t.more}
+                                        role='combobox'
+                                        aria-haspopup='listbox'
+                                        aria-expanded={open}
+                                        aria-controls={open ? overflowMenuId : undefined}
+                                        aria-activedescendant={open ? activeOverflowItemId : undefined}
                                         onMouseDown={(e) => {
                                             e.stopPropagation()
                                             e.preventDefault()
-                                            handleOpen(e)
+                                            openOverflowMenu(e.currentTarget)
                                         }}
                                         onMouseUp={(e) => {
                                             e.stopPropagation()
                                             e.preventDefault()
                                         }}
+                                        onClick={(e) => {
+                                            if (e.detail !== 0) return
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                            openOverflowMenu(e.currentTarget)
+                                        }}
+                                        onKeyDown={handleOverflowKeyDown}
                                         startIcon={
                                             <DotsVerticalIcon className='text-delta-800' width={20} height={20} />
                                         }
@@ -326,12 +427,22 @@ export const Toolbar = ({
                                 open={open}
                                 anchorEl={anchorEl}
                                 onClose={handleClose}
-                                onMouseDown={(e) => {
-                                    e.preventDefault()
-                                    handleClose()
-                                }}
                             >
-                                {overflowItems}
+                                <ul id={overflowMenuId} role='listbox' aria-label={t.more} className='m-0 list-none p-0'>
+                                    {overflowItems.map((item, index) => (
+                                        <ToolbarOverflowItem
+                                            key={item.key}
+                                            id={`${overflowMenuId}-${item.key}`}
+                                            title={item.title}
+                                            disabled={item.disabled}
+                                            selected={item.selected}
+                                            active={keyboardOverflowActive && activeOverflowIndex === index}
+                                            onSelect={() => selectOverflowItem(index, true)}
+                                        >
+                                            {item.children}
+                                        </ToolbarOverflowItem>
+                                    ))}
+                                </ul>
                             </StyledPopover>
                         </>
                     )}
@@ -341,6 +452,11 @@ export const Toolbar = ({
                     size='large'
                     variant='text'
                     onMouseDown={(e) => {
+                        e.preventDefault()
+                        onClose()
+                    }}
+                    onClick={(e) => {
+                        if (e.detail !== 0) return
                         e.preventDefault()
                         onClose()
                     }}

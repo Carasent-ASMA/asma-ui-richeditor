@@ -1,8 +1,9 @@
 import type { Editor } from '@tiptap/react'
 import { StyledButton, StyledDialog, StyledDialogContent, StyledInputField } from 'asma-ui-core'
-import React, { useLayoutEffect, useMemo, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import '../styles/toolbar.css'
 import type { ILocale } from '../interfaces/types'
+import { useTranslations } from './useTranslations'
 
 export const LinkDialog: React.FC<{
     open: boolean
@@ -11,7 +12,7 @@ export const LinkDialog: React.FC<{
     locale?: ILocale
 }> = ({ open, setOpen, editor, locale }) => {
     const [url, setUrl] = useState('')
-    const isNorsk = useMemo(() => locale === 'no', [locale])
+    const t = useTranslations(locale)
 
     useLayoutEffect(() => {
         if (open) {
@@ -47,7 +48,7 @@ export const LinkDialog: React.FC<{
             dataTest={'link-modal-rte'}
             onClose={() => setOpen(false)}
             className={'z-[99]'}
-            dialogTitle={<div className={'text-gray-700'}>{isNorsk ? 'Legg til lenke' : 'Add link'}</div>}
+            dialogTitle={<div className={'text-gray-700'}>{t.add_link}</div>}
         >
             <StyledDialogContent className='border-y border-solid border-delta-200 mt-4'>
                 <div className='link-input-field'>
@@ -58,6 +59,7 @@ export const LinkDialog: React.FC<{
                         dataTest={'link-input-field'}
                         size={'small'}
                         minRows={2}
+                        aria-label={t.link_url}
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                     />
@@ -74,7 +76,7 @@ export const LinkDialog: React.FC<{
                         setUrl('')
                     }}
                 >
-                    {isNorsk ? 'Avbryt' : 'Cancel'}
+                    {t.cancel}
                 </StyledButton>
                 <StyledButton
                     dataTest={'delete-customer-confirm-button'}
@@ -82,7 +84,7 @@ export const LinkDialog: React.FC<{
                     variant={'contained'}
                     onClick={makeLink}
                 >
-                    {isNorsk ? 'Legg til lenke' : 'Add link'}
+                    {t.add_link}
                 </StyledButton>
             </div>
         </StyledDialog>

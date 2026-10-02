@@ -21,6 +21,7 @@ import { Placeholder } from '@tiptap/extensions'
 import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import { resolveDefaultExtensions } from './helpers/EditorExtensions'
+import { useTranslations } from './components/useTranslations'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
 
@@ -61,9 +62,11 @@ const RichInput: FC<IRichInput> = ({
     onImageUploadError,
     enableYoutube,
     youtubeOptions,
+    'aria-label': ariaLabel,
     ...props
 }) => {
     const cursor = useRef<number | undefined>(undefined)
+    const t = useTranslations(locale)
 
     const wrapperRef = useRef<HTMLDivElement | null>(null)
     const mirrorRef = useRef<HTMLDivElement | null>(null)
@@ -72,6 +75,7 @@ const RichInput: FC<IRichInput> = ({
 
     const [isMultiLine, setIsMultiLine] = useState(false)
     const [isEmpty, setIsEmpty] = useState(true)
+    const accessibleName = ariaLabel?.trim() || label?.trim() || title?.trim() || t.rich_text_editor
 
     const editor = useEditor(
         {
@@ -258,6 +262,21 @@ const RichInput: FC<IRichInput> = ({
     }, [readOnly, disabled, props.editable, editor])
 
     useEffect(() => {
+        const dom = editor?.view.dom
+        if (!dom) return
+        if (readOnly) {
+            // Read-only content is static text, not an input — expose no textbox role/tabindex (FND-09).
+            dom.removeAttribute('role')
+            dom.removeAttribute('tabindex')
+            dom.removeAttribute('aria-label')
+        } else {
+            // The editable host is a textbox; expose an accessible name (FND-03).
+            dom.setAttribute('role', 'textbox')
+            dom.setAttribute('aria-label', accessibleName)
+        }
+    }, [editor, readOnly, accessibleName])
+
+    useEffect(() => {
         if (cursor.current === undefined) return
 
         editor?.commands.setTextSelection(cursor.current)
@@ -353,6 +372,7 @@ const RichInput: FC<IRichInput> = ({
                                         dataTest='rich-editor-image-upload'
                                         size='large'
                                         variant='textGray'
+                                        aria-label={t.upload_image}
                                         onClick={() => imageInputRef.current?.click()}
                                         startIcon={
                                             isUploadingImage ? (
@@ -372,6 +392,8 @@ const RichInput: FC<IRichInput> = ({
                             {showFormatButton && (
                                 <StyledButton
                                     dataTest='richeditor-format-button'
+                                    aria-label={showToolbar ? t.hide_formatting : t.show_formatting}
+                                    aria-pressed={showToolbar}
                                     className={clsx(isMultiLine ? 'order-last' : 'order-first')}
                                     size='large'
                                     variant='textGray'
@@ -404,6 +426,8 @@ const RichInput: FC<IRichInput> = ({
                         focused={focused}
                         openLinkDialog={() => setLinkDialogVisible(true)}
                         openEmojiPicker={() => setEmojiPickerVisible(true)}
+                        linkDialogOpen={linkDialogVisible}
+                        emojiPickerOpen={emojiPickerVisible}
                         locale={locale}
                     />
                 )}

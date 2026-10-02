@@ -8,9 +8,13 @@ export const useToggleMenuVisibility = () => {
         setAnchorEl(event.currentTarget)
     }, [])
 
+    const openFromElement = useCallback((element: HTMLElement) => {
+        setAnchorEl(element)
+    }, [])
+
     const handleClose = useCallback(() => {
         setAnchorEl(null)
     }, [])
 
-    return { open, handleClose, handleOpen, anchorEl }
+    return { open, handleClose, handleOpen, openFromElement, anchorEl }
 }
