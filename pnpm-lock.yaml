@@ -94,8 +94,8 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2(vite@8.0.13(@types/node@18.0.3)(esbuild@0.28.0)(jiti@1.21.7)(less@4.1.3)(sass@1.89.2)(stylus@0.59.0)(terser@5.47.1)(yaml@2.8.0))
       asma-ui-core:
-        specifier: ^3.102.0
-        version: 3.102.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: ^3.103.0
+        version: 3.103.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       autoprefixer:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
@@ -2688,8 +2688,8 @@ packages:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
 
-  asma-ui-core@3.102.0:
-    resolution: {integrity: sha512-NVV8SoROnF3jerUqlhckK4/ab7LcEiQkA/9OdfzFxoYkScGT0xDWYrovoig+Wc0AnwU0n3+YZKC2uY9UbJiAEA==}
+  asma-ui-core@3.103.0:
+    resolution: {integrity: sha512-vE2+k/PnHfIH2cVe6y4CD39/94sYnr+VWH0KvumbtShFkOhNdNBC/3gAXejQhA+3rk7V8yI3tzIrPsdHq8TiQw==}
     engines: {node: '>=24 <25'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -8792,7 +8792,7 @@ snapshots:
 
   arrify@1.0.1: {}
 
-  asma-ui-core@3.102.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+  asma-ui-core@3.103.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@dnd-kit/modifiers': 7.0.0(@dnd-kit/core@6.3.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
