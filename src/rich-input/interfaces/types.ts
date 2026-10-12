@@ -1,8 +1,8 @@
-import type { ChipProps } from '@mui/material'
 import type { Editor, UseEditorOptions } from '@tiptap/react'
 import type { YoutubeOptions } from '@tiptap/extension-youtube'
 import type { RefObject } from 'react'
 import type { ImageOptions } from '@tiptap/extension-image'
+import type { StyledChipProps } from 'asma-ui-core'
 
 export interface CustomCSSProperties extends React.CSSProperties {
     '--max-scrollable-height'?: string
@@ -41,7 +41,7 @@ export interface IRichInput extends UseEditorOptions {
     maxScrollableHeight?: number
     toolbarDefaultVisible?: boolean
     locale?: ILocale
-    attachments?: (ChipProps & { key: string; dataTest: string })[]
+    attachments?: (StyledChipProps & { key: string; dataTest: string })[]
     enableImageUpload?: boolean
     /**
      * @description Options for the image plugin

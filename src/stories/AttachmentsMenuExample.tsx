@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
-import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { StyledButton } from 'asma-ui-core'
+import { StyledButton, StyledMenu, StyledMenuItem } from 'asma-ui-core'
 
 const handleDocumentUploadFromComputer = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -56,40 +55,38 @@ export const AttachmentsMenu = ({
                 }
             />
 
-            <Menu
+            <StyledMenu
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-                <MenuItem
+                <StyledMenuItem
                     onClick={() => {
                         console.log('Insert questionnaire command')
                         handleClose()
                     }}
                 >
-                    <ListItemText>Insert Questionnaire</ListItemText>
-                </MenuItem>
+                    <span>Insert Questionnaire</span>
+                </StyledMenuItem>
 
                 {doesNotHaveActiveDocumentPickers && (
-                    <MenuItem disabled>
+                    <StyledMenuItem disabled>
                         <span>Document upload not available</span>
-                    </MenuItem>
+                    </StyledMenuItem>
                 )}
 
                 {isEnabledDocumentUploadFromLocalPicker && (
                     <label htmlFor={inputId}>
-                        <MenuItem>
-                            <ListItemIcon>
-                                <Icon
-                                    icon='material-symbols:sync-saved-locally-outline'
-                                    width='24'
-                                    height='24'
-                                    color='#1C1B1F'
-                                />
-                            </ListItemIcon>
-                            <ListItemText>Upload from your device</ListItemText>
+                        <StyledMenuItem>
+                            <Icon
+                                icon='material-symbols:sync-saved-locally-outline'
+                                width='24'
+                                height='24'
+                                color='#1C1B1F'
+                            />
+                            <span>Upload from your device</span>
                             <input
                                 hidden
                                 multiple
@@ -102,10 +99,10 @@ export const AttachmentsMenu = ({
                                     handleClose()
                                 }}
                             />
-                        </MenuItem>
+                        </StyledMenuItem>
                     </label>
                 )}
-            </Menu>
+            </StyledMenu>
         </>
     )
 }
