@@ -39,7 +39,6 @@ export default defineConfig({
                         'asma-ui-core',
                         '@emotion/react',
                         '@emotion/styled',
-                        '@mui/material',
                         /^node:/,
                     ],
                 }),

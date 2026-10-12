@@ -1,11 +1,5 @@
 import { Editor, useEditorState } from '@tiptap/react'
-import {
-    DotsVerticalIcon,
-    LinkOutlineIcon,
-    StyledButton,
-    StyledPopover,
-    StyledTooltip,
-} from 'asma-ui-core'
+import { DotsVerticalIcon, LinkOutlineIcon, StyledButton, StyledPopover, StyledTooltip } from 'asma-ui-core'
 import '../styles/toolbar.css'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
@@ -50,16 +44,7 @@ export const Toolbar = ({
 
     const [actionsVisible, setActionsVisible] = useState(false)
 
-    const {
-        emptySelection,
-        isBold,
-        isBulletList,
-        isH1,
-        isH2,
-        isItalic,
-        isLink,
-        isOrderedList,
-    } = useEditorState({
+    const { emptySelection, isBold, isBulletList, isH1, isH2, isItalic, isLink, isOrderedList } = useEditorState({
         editor,
         selector: ({ editor }) => ({
             emptySelection: editor.state.selection.empty,
@@ -104,49 +89,49 @@ export const Toolbar = ({
     const overflowItems = [
         visibleButtons < 9
             ? {
-                key: 'link',
-                title: emptySelection ? t.empty_selection_link : t.link,
-                disabled: emptySelection,
-                selected: isLink,
-                onSelect: openLinkDialog,
-                children: <LinkOutlineIcon />,
-            }
+                  key: 'link',
+                  title: emptySelection ? t.empty_selection_link : t.link,
+                  disabled: emptySelection,
+                  selected: isLink,
+                  onSelect: openLinkDialog,
+                  children: <LinkOutlineIcon />,
+              }
             : null,
         visibleButtons < 8
             ? {
-                key: 'italic',
-                title: t.italic,
-                selected: isItalic,
-                onSelect: () => editor.chain().focus().toggleItalic().run(),
-                children: <Icon icon='material-symbols:format-italic' height={20} />,
-            }
+                  key: 'italic',
+                  title: t.italic,
+                  selected: isItalic,
+                  onSelect: () => editor.chain().focus().toggleItalic().run(),
+                  children: <Icon icon='material-symbols:format-italic' height={20} />,
+              }
             : null,
         visibleButtons < 7
             ? {
-                key: 'bold',
-                title: t.bold,
-                selected: isBold,
-                onSelect: () => editor.chain().focus().toggleBold().run(),
-                children: <Icon icon='ooui:bold-b' />,
-            }
+                  key: 'bold',
+                  title: t.bold,
+                  selected: isBold,
+                  onSelect: () => editor.chain().focus().toggleBold().run(),
+                  children: <Icon icon='ooui:bold-b' />,
+              }
             : null,
         visibleButtons < 6
             ? {
-                key: 'ordered',
-                title: t.ordered_list,
-                selected: isOrderedList,
-                onSelect: () => editor.chain().focus().toggleOrderedList().run(),
-                children: <Icon icon='mdi:format-list-numbered' fontSize={20} />,
-            }
+                  key: 'ordered',
+                  title: t.ordered_list,
+                  selected: isOrderedList,
+                  onSelect: () => editor.chain().focus().toggleOrderedList().run(),
+                  children: <Icon icon='mdi:format-list-numbered' fontSize={20} />,
+              }
             : null,
         visibleButtons < 5
             ? {
-                key: 'bullet',
-                title: t.bullet_list,
-                selected: isBulletList,
-                onSelect: () => editor.chain().focus().toggleBulletList().run(),
-                children: <Icon icon='mdi:format-list-bulleted' fontSize={20} />,
-            }
+                  key: 'bullet',
+                  title: t.bullet_list,
+                  selected: isBulletList,
+                  onSelect: () => editor.chain().focus().toggleBulletList().run(),
+                  children: <Icon icon='mdi:format-list-bulleted' fontSize={20} />,
+              }
             : null,
     ].filter((item): item is NonNullable<typeof item> => item !== null)
 
@@ -259,7 +244,9 @@ export const Toolbar = ({
                             </span>
                         </StyledTooltip>
                     )}
-                    {visibleButtons >= 4 && <FontSizeSelect editor={editor} locale={locale} />}
+                    {visibleButtons >= 4 && (
+                        <FontSizeSelect dataTest='toolbar-font-size-select' editor={editor} locale={locale} />
+                    )}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title={t.bullet_list} placement='top' arrow>
                             <span>
@@ -420,15 +407,13 @@ export const Toolbar = ({
                                     />
                                 </span>
                             </StyledTooltip>
-                            <StyledPopover
-                                disablePortal
-                                disableEnforceFocus
-                                disableAutoFocus
-                                open={open}
-                                anchorEl={anchorEl}
-                                onClose={handleClose}
-                            >
-                                <ul id={overflowMenuId} role='listbox' aria-label={t.more} className='m-0 list-none p-0'>
+                            <StyledPopover open={open} anchorEl={anchorEl} onClose={handleClose}>
+                                <ul
+                                    id={overflowMenuId}
+                                    role='listbox'
+                                    aria-label={t.more}
+                                    className='m-0 list-none p-0'
+                                >
                                     {overflowItems.map((item, index) => (
                                         <ToolbarOverflowItem
                                             key={item.key}

@@ -98,9 +98,6 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?
                 </span>
             </StyledTooltip>
             <StyledPopover
-                disablePortal
-                disableEnforceFocus
-                disableAutoFocus
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
