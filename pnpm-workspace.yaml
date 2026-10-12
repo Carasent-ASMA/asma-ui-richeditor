@@ -9,4 +9,4 @@ allowBuilds:
   unrs-resolver: true
 
 minimumReleaseAgeExclude:
-  - asma-ui-core@3.102.0
+  - asma-ui-core@3.103.0
