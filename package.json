@@ -81,7 +81,7 @@
         "@typescript-eslint/parser": "^5.59.0",
         "@typescript/native": "npm:typescript@7.0.2",
         "@vitejs/plugin-react": "^6.0.2",
-        "asma-ui-core": "^3.103.0",
+        "asma-ui-core": "^3.104.0",
         "autoprefixer": "^10.5.0",
         "axe-playwright": "^1.2.3",
         "esbuild": "^0.28.0",
@@ -106,6 +106,6 @@
     "peerDependencies": {
         "@emotion/react": "^11.*",
         "@emotion/styled": "^11.*",
-        "asma-ui-core": "^3.103.0"
+        "asma-ui-core": "^3.104.0"
     }
 }
