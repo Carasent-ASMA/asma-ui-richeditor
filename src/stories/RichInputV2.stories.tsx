@@ -76,6 +76,7 @@ export const Accessibility: Story = {
             />
             <RichInput dataTest='fallback-editor' content='<p>Message content</p>' />
             <RichInput dataTest='read-only-content' readOnly='plain' content='<p>Sent message</p>' />
+            <RichInput dataTest='disabled-editor' label='Disabled message' disabled content='<p>x</p>' />
         </div>
     ),
     play: async ({ canvasElement }) => {
@@ -84,6 +85,9 @@ export const Accessibility: Story = {
         const editableEditor = canvasElement.querySelector<HTMLElement>('[contenteditable="true"]')
         const fallbackEditor = canvasElement.querySelectorAll<HTMLElement>('[contenteditable="true"]')[1]
         const readOnlyEditor = canvasElement.querySelector<HTMLElement>('[contenteditable="false"]')
+        const disabledEditor = canvasElement.querySelector<HTMLElement>(
+            '[data-test="disabled-editor"] [role="textbox"]',
+        )
         const formatButton = canvasElement.querySelector<HTMLButtonElement>('[data-test="richeditor-format-button"]')
         const imageUploadButton = canvasElement.querySelector<HTMLButtonElement>('[data-test="rich-editor-image-upload"]')
 
@@ -105,6 +109,12 @@ export const Accessibility: Story = {
 
         if (readOnlyEditor?.hasAttribute('role') || readOnlyEditor?.hasAttribute('tabindex')) {
             throw new Error('Read-only RichInput content must not expose textbox or tabindex semantics.')
+        }
+        if (disabledEditor?.getAttribute('aria-disabled') !== 'true') {
+            throw new Error('A disabled RichInput must expose aria-disabled="true" on its textbox.')
+        }
+        if (editableEditor?.hasAttribute('aria-disabled') || fallbackEditor?.hasAttribute('aria-disabled')) {
+            throw new Error('An enabled RichInput must not expose aria-disabled.')
         }
     },
 }
