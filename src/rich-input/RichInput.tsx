@@ -269,12 +269,15 @@ const RichInput: FC<IRichInput> = ({
             dom.removeAttribute('role')
             dom.removeAttribute('tabindex')
             dom.removeAttribute('aria-label')
+            dom.removeAttribute('aria-disabled')
         } else {
             // The editable host is a textbox; expose an accessible name (FND-03).
             dom.setAttribute('role', 'textbox')
             dom.setAttribute('aria-label', accessibleName)
+            if (disabled && !props.editable) dom.setAttribute('aria-disabled', 'true')
+            else dom.removeAttribute('aria-disabled')
         }
-    }, [editor, readOnly, accessibleName])
+    }, [editor, readOnly, disabled, props.editable, accessibleName])
 
     useEffect(() => {
         if (cursor.current === undefined) return
@@ -340,6 +343,7 @@ const RichInput: FC<IRichInput> = ({
                                 !noDefaultStyles && 'core-ui-rte',
                                 !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
                                 !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                                disabled && !readOnly && !props.editable && 'cursor-not-allowed',
                                 editorClassName,
                                 showToolbar && 'displace-text',
                             )}
