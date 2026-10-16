@@ -298,7 +298,9 @@ const RichInput: FC<IRichInput> = ({
     const showFormatButton = showToolbar ? isMultiLine : true
 
     return (
-        <StyledFormControl className={className}>
+        <StyledFormControl
+            className={clsx(readOnly === 'plain' && !noDefaultStyles && 'rte-readonly-plain-root', className)}
+        >
             {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
             {/* Positioning context for the floating label — the field wrapper clips overflow, so the
                 shrunk label must live on a sibling layer above its top border. */}
