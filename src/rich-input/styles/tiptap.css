@@ -141,6 +141,8 @@
     background-color: white;
     border-radius: unset;
     outline: none;
+}
+:where(.rte-readonly-plain-root) {
     color: var(--colors-delta-700);
 }
 .rte-wrapper.readonly-plain:hover {
