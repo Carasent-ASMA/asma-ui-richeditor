@@ -2,7 +2,7 @@ import type { Editor, UseEditorOptions } from '@tiptap/react'
 import type { YoutubeOptions } from '@tiptap/extension-youtube'
 import type { RefObject } from 'react'
 import type { ImageOptions } from '@tiptap/extension-image'
-import type { StyledChipProps } from 'asma-ui-core'
+import type { FieldLabelPlacement, FieldWidth, StyledChipProps } from 'asma-ui-core'
 
 export interface CustomCSSProperties extends React.CSSProperties {
     '--max-scrollable-height'?: string
@@ -16,11 +16,19 @@ export interface IRichInput extends UseEditorOptions {
     replyModeComponent?: React.ReactNode
     inputRef?: RefObject<Editor | null>
     id?: string
-    /**
-     * @description MUI-style floating label: rests inside the empty field, shrinks onto the top
-     * border once the editor is focused or has content (Figma DS "Rich text editor", node 20571-30699).
-     */
+    /** Field label, rendered above the field by default (see `labelPlacement`). */
     label?: string
+    /**
+     * @description `'above'` (default) renders `label` above the field like asma-ui-core fields.
+     * `'floating'` keeps the MUI-style label that rests inside the empty field and shrinks onto the
+     * top border once the editor is focused or has content (Figma DS "Rich text editor", node 20571-30699).
+     */
+    labelPlacement?: FieldLabelPlacement
+    /**
+     * Field width pattern step; Full by default. `readOnly='plain'` is static text, not a field: it
+     * fills its container whatever the step.
+     */
+    width?: FieldWidth
     /** Accessible name for the editable editor host. Takes precedence over `label`. */
     'aria-label'?: string
     title?: string

@@ -8,24 +8,17 @@ import { RichInput } from 'src/rich-input/RichInput'
  * Figma DS "Rich text editor" (node `20571-30699`): a message input that supports plain text and
  * rich formatting through a toolbar. The stories below mirror the spec's variant stack one to one.
  *
- * - The **floating label** rests inside the empty field and shrinks onto the top border once the
- *   editor is focused or has content (`label` prop).
+ * - The **label** renders above the field like asma-ui-core fields (`label` prop). With
+ *   `labelPlacement='floating'` it rests inside the empty field and shrinks onto the top border
+ *   once the editor is focused or has content.
+ * - The field is Full width by default (up to the 600 px form column); `width` picks another step.
  * - The **toolbar** opens from the format button (or `toolbarDefaultVisible`) and collapses on
  *   narrow widths: low-priority actions move into a "⋮ more" popover, `Close` stays pinned right.
- * - `title` renders the bold heading above the field ("With title label" variant).
+ * - `title` renders a heading above the field in the label style ("With title label" variant).
  */
 const meta: Meta<typeof RichInput> = {
     title: 'Rich Text Editor',
     component: RichInput,
-    decorators: [
-        // StyledFormControl is inline-flex — give stories the spec's 600px column so the field
-        // stretches like it does inside app forms (shrinks with the viewport on the Mobile story).
-        (Story) => (
-            <div className='flex w-full max-w-[600px] flex-col'>
-                <Story />
-            </div>
-        ),
-    ],
 }
 
 export default meta
@@ -36,12 +29,19 @@ const LONG_TEXT =
 
 const noop = () => undefined
 
-/** Empty field — the floating label rests inside as the placeholder (spec row 1). */
+/** Empty field with the label above it (spec row 1). */
 export const Empty: Story = {
     render: () => <RichInput dataTest='rte-empty' label='Group message' content='' onUpdate={noop} />,
 }
 
-/** Single line with text — the label shrinks onto the top border (spec row 2). */
+/** `labelPlacement='floating'` — the label rests inside the empty field as the placeholder. */
+export const FloatingLabel: Story = {
+    render: () => (
+        <RichInput dataTest='rte-floating' label='Group message' labelPlacement='floating' content='' onUpdate={noop} />
+    ),
+}
+
+/** Single line with text (spec row 2). */
 export const SingleLineWithText: Story = {
     render: () => (
         <RichInput
@@ -68,17 +68,15 @@ export const ExpandedWithToolbar: Story = {
 
 /** Multiline / long text — the action buttons stack into a right-hand column (spec row 4). */
 export const Multiline: Story = {
-    render: () => (
-        <RichInput dataTest='rte-multiline' label='Group message' content={LONG_TEXT} onUpdate={noop} />
-    ),
+    render: () => <RichInput dataTest='rte-multiline' label='Group message' content={LONG_TEXT} onUpdate={noop} />,
 }
 
-/** Bold title above the field via `title` (spec row 5, "Title label"). */
+/** Title above the field via `title`, in the label style (spec row 5, "Title label"). */
 export const WithTitleLabel: Story = {
     render: () => <RichInput dataTest='rte-title' title='Title label' content={LONG_TEXT} onUpdate={noop} />,
 }
 
-/** Error + required — red outline, red shrunk label, helper text with icon. */
+/** Error + required — red outline, required mark on the label, helper text with icon. */
 export const ErrorRequired: Story = {
     render: () => (
         <RichInput

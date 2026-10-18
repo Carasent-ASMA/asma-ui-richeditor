@@ -1,10 +1,11 @@
-import { useEffect, useImperativeHandle, useRef, useState, type FC, useCallback, useLayoutEffect } from 'react'
+import { useEffect, useId, useImperativeHandle, useRef, useState, type FC, useCallback, useLayoutEffect } from 'react'
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
 import './styles/tiptap.css'
 import {
     ErrorOutlineIcon,
+    fieldLabelAboveClass,
     LoadingIcon,
     StyledButton,
     StyledChip,
@@ -45,6 +46,8 @@ const RichInput: FC<IRichInput> = ({
     error,
     locale,
     label,
+    labelPlacement = 'above',
+    width = 'full',
     title,
     placeholder,
     placeholderCallback,
@@ -76,6 +79,11 @@ const RichInput: FC<IRichInput> = ({
     const [isMultiLine, setIsMultiLine] = useState(false)
     const [isEmpty, setIsEmpty] = useState(true)
     const accessibleName = ariaLabel?.trim() || label?.trim() || title?.trim() || t.rich_text_editor
+    const labelId = useId()
+    const floatingLabel = !!label && labelPlacement === 'floating'
+    const labelAbove = !!label && labelPlacement === 'above' && readOnly !== 'plain'
+    const labelledBy = labelAbove && !ariaLabel?.trim() ? labelId : undefined
+    const showTitle = !!title && !(labelAbove && title.trim() === label?.trim())
 
     const editor = useEditor(
         {
@@ -84,7 +92,7 @@ const RichInput: FC<IRichInput> = ({
                 Placeholder.configure({
                     // With a floating label the resting label occupies the placeholder spot, so the
                     // configured placeholder only shows once the editor is focused (MUI behavior).
-                    placeholder: label
+                    placeholder: floatingLabel
                         ? (placeholderProps) =>
                               placeholderProps.editor.isFocused
                                   ? (placeholderCallback?.(placeholderProps) ?? placeholder ?? '')
@@ -269,15 +277,22 @@ const RichInput: FC<IRichInput> = ({
             dom.removeAttribute('role')
             dom.removeAttribute('tabindex')
             dom.removeAttribute('aria-label')
+            dom.removeAttribute('aria-labelledby')
             dom.removeAttribute('aria-disabled')
         } else {
             // The editable host is a textbox; expose an accessible name (FND-03).
             dom.setAttribute('role', 'textbox')
-            dom.setAttribute('aria-label', accessibleName)
+            if (labelledBy) {
+                dom.setAttribute('aria-labelledby', labelledBy)
+                dom.removeAttribute('aria-label')
+            } else {
+                dom.setAttribute('aria-label', accessibleName)
+                dom.removeAttribute('aria-labelledby')
+            }
             if (disabled && !props.editable) dom.setAttribute('aria-disabled', 'true')
             else dom.removeAttribute('aria-disabled')
         }
-    }, [editor, readOnly, disabled, props.editable, accessibleName])
+    }, [editor, readOnly, disabled, props.editable, accessibleName, labelledBy])
 
     useEffect(() => {
         if (cursor.current === undefined) return
@@ -298,11 +313,25 @@ const RichInput: FC<IRichInput> = ({
     const showFormatButton = showToolbar ? isMultiLine : true
 
     return (
-        <StyledFormControl className={className}>
-            {title && <p className='font-semibold text-base text-delta-700 mb-2'>{title}</p>}
+        <StyledFormControl
+            className={className}
+            width={width}
+            style={readOnly === 'plain' ? { maxWidth: 'none' } : undefined}
+        >
+            {showTitle && <p className={fieldLabelAboveClass({ disabled })}>{title}</p>}
+            {labelAbove && (
+                <label
+                    id={labelId}
+                    className={fieldLabelAboveClass({ disabled })}
+                    onClick={() => editor.commands.focus()}
+                >
+                    {label}
+                    {required && <span aria-hidden='true'>&nbsp;*</span>}
+                </label>
+            )}
             {/* Positioning context for the floating label — the field wrapper clips overflow, so the
                 shrunk label must live on a sibling layer above its top border. */}
-            {label && readOnly !== 'plain' && (
+            {label && floatingLabel && readOnly !== 'plain' && (
                 <div className='relative'>
                     <FloatingLabel
                         label={label}
