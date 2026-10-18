@@ -92,8 +92,8 @@ export const Accessibility: Story = {
         const editableDisabledEditor = canvasElement.querySelector<HTMLElement>(
             '[data-test="editable-disabled-editor"] [role="textbox"]',
         )
-        const formatButton = canvasElement.querySelector<HTMLButtonElement>('[data-test="richeditor-format-button"]')
-        const imageUploadButton = canvasElement.querySelector<HTMLButtonElement>('[data-test="rich-editor-image-upload"]')
+        const formatButton = canvasElement.querySelector<HTMLButtonElement>('[data-testid="richeditor-format-button"]')
+        const imageUploadButton = canvasElement.querySelector<HTMLButtonElement>('[data-testid="rich-editor-image-upload"]')
 
         if (editableEditor?.getAttribute('aria-label') !== 'Write a message') {
             throw new Error('The editable RichInput must expose its label as an accessible name.')
