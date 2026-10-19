@@ -136,13 +136,13 @@ export const LabelPlacement: Story = {
         }
 
         const disabledLabel = fieldRootOf(canvasElement, 'label-above-disabled').querySelector('label')
-        if (!disabledLabel?.classList.contains('text-delta-300')) {
+        if (!disabledLabel?.parentElement?.classList.contains('text-delta-300')) {
             throw new Error('A disabled field must render its label in the disabled colour.')
         }
 
         const titleAndLabel = fieldRootOf(canvasElement, 'title-and-label')
         const title = titleAndLabel.querySelector('p')
-        if (title?.textContent !== 'Note' || title.className !== titleAndLabel.querySelector('label')?.className) {
+        if (title?.textContent !== 'Note' || title.className !== titleAndLabel.querySelector('label')?.parentElement?.className) {
             throw new Error('A title must keep its text and look like the label above.')
         }
 

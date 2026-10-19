@@ -80,8 +80,9 @@ const RichInput: FC<IRichInput> = ({
     const [isEmpty, setIsEmpty] = useState(true)
     const accessibleName = ariaLabel?.trim() || label?.trim() || title?.trim() || t.rich_text_editor
     const labelId = useId()
-    const floatingLabel = !!label && labelPlacement === 'floating'
-    const labelAbove = !!label && labelPlacement === 'above' && readOnly !== 'plain'
+    const hasLabel = !!label?.trim()
+    const floatingLabel = hasLabel && labelPlacement === 'floating'
+    const labelAbove = hasLabel && labelPlacement === 'above' && readOnly !== 'plain'
     const labelledBy = labelAbove && !ariaLabel?.trim() ? labelId : undefined
     const showTitle = !!title && !(labelAbove && title.trim() === label?.trim())
 
@@ -320,14 +321,17 @@ const RichInput: FC<IRichInput> = ({
         >
             {showTitle && <p className={fieldLabelAboveClass({ disabled })}>{title}</p>}
             {labelAbove && (
-                <label
-                    id={labelId}
-                    className={fieldLabelAboveClass({ disabled })}
-                    onClick={() => editor.commands.focus()}
-                >
-                    {label}
-                    {required && <span aria-hidden='true'>&nbsp;*</span>}
-                </label>
+                <div className={fieldLabelAboveClass({ disabled })}>
+                    <label
+                        id={labelId}
+                        onClick={() => {
+                            if (!disabled && !readOnly) editor.commands.focus()
+                        }}
+                    >
+                        {label}
+                        {required && <span aria-hidden='true'>&nbsp;*</span>}
+                    </label>
+                </div>
             )}
             {/* Positioning context for the floating label — the field wrapper clips overflow, so the
                 shrunk label must live on a sibling layer above its top border. */}
