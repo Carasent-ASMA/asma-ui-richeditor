@@ -42,6 +42,12 @@ export interface IRichInput extends UseEditorOptions {
     disabled?: boolean
     error?: boolean
     readOnly?: 'plain' | 'outlined'
+    /**
+     * A locked field (disabled-states DIS-9): editing is paused for now. Shows the outlined read-only
+     * box with a lock icon, stays focusable, and the reason opens on hover, focus and tap and is the
+     * editor's accessible description.
+     */
+    lockedReason?: React.ReactNode
     helperText?: string
     required?: boolean
     hideToolbar?: boolean

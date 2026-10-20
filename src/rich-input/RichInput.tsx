@@ -1,4 +1,15 @@
-import { useEffect, useId, useImperativeHandle, useRef, useState, type FC, useCallback, useLayoutEffect } from 'react'
+import {
+    useEffect,
+    useId,
+    useImperativeHandle,
+    useRef,
+    useState,
+    type FC,
+    type ReactElement,
+    type ReactNode,
+    useCallback,
+    useLayoutEffect,
+} from 'react'
 import clsx from 'clsx'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Toolbar } from './components/Toolbar'
@@ -7,11 +18,13 @@ import {
     ErrorOutlineIcon,
     fieldLabelAboveClass,
     LoadingIcon,
+    LockIcon,
     StyledButton,
     StyledChip,
     StyledDialog,
     StyledFormControl,
     StyledFormHelperText,
+    StyledTooltip,
 } from 'asma-ui-core'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
@@ -25,6 +38,15 @@ import { resolveDefaultExtensions } from './helpers/EditorExtensions'
 import { useTranslations } from './components/useTranslations'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
+
+const LockedTooltip: FC<{ reason: ReactNode; children: ReactElement }> = ({ reason, children }) =>
+    reason === undefined ? (
+        children
+    ) : (
+        <StyledTooltip title={reason} openOnTap persistentDescription>
+            {children}
+        </StyledTooltip>
+    )
 
 /**
  * ASMA RichInput - A rich text editor component.
@@ -42,7 +64,8 @@ const RichInput: FC<IRichInput> = ({
     className,
     editorClassName,
     disabled,
-    readOnly,
+    readOnly: readOnlyProp,
+    lockedReason,
     error,
     locale,
     label,
@@ -68,6 +91,8 @@ const RichInput: FC<IRichInput> = ({
     'aria-label': ariaLabel,
     ...props
 }) => {
+    const locked = Boolean(lockedReason)
+    const readOnly = locked ? 'outlined' : readOnlyProp
     const cursor = useRef<number | undefined>(undefined)
     const t = useTranslations(locale)
 
@@ -273,7 +298,7 @@ const RichInput: FC<IRichInput> = ({
     useEffect(() => {
         const dom = editor?.view.dom
         if (!dom) return
-        if (readOnly) {
+        if (readOnly && !locked) {
             // Read-only content is static text, not an input — expose no textbox role/tabindex (FND-09).
             dom.removeAttribute('role')
             dom.removeAttribute('tabindex')
@@ -290,10 +315,19 @@ const RichInput: FC<IRichInput> = ({
                 dom.setAttribute('aria-label', accessibleName)
                 dom.removeAttribute('aria-labelledby')
             }
-            if (disabled && !props.editable) dom.setAttribute('aria-disabled', 'true')
+            if (disabled && !props.editable && !locked) dom.setAttribute('aria-disabled', 'true')
             else dom.removeAttribute('aria-disabled')
+            // A locked editor keeps its place in the focus order so its reason can be reached (DIS-9).
+            if (locked) {
+                dom.setAttribute('tabindex', '0')
+                dom.setAttribute('aria-readonly', 'true')
+                dom.setAttribute('aria-multiline', 'true')
+            } else {
+                dom.removeAttribute('aria-readonly')
+                dom.removeAttribute('aria-multiline')
+            }
         }
-    }, [editor, readOnly, disabled, props.editable, accessibleName, labelledBy])
+    }, [editor, readOnly, locked, disabled, props.editable, accessibleName, labelledBy])
 
     useEffect(() => {
         if (cursor.current === undefined) return
@@ -347,128 +381,133 @@ const RichInput: FC<IRichInput> = ({
                     />
                 </div>
             )}
-            <div
-                ref={wrapperRef}
-                className={clsx(
-                    !noDefaultStyles && 'rte-wrapper',
-                    readOnly === 'outlined' && 'readonly-outlined',
-                    readOnly === 'plain' && 'readonly-plain',
-                    !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
-                    !readOnly && !showError && focused && 'focused-state',
-                )}
-            >
-                {replyModeComponent}
-
+            <LockedTooltip reason={locked ? lockedReason : undefined}>
                 <div
-                    ref={mirrorRef}
-                    aria-hidden
-                    className='pointer-events-none invisible absolute left-[-99999px] top-0'
-                />
+                    ref={wrapperRef}
+                    className={clsx(
+                        !noDefaultStyles && 'rte-wrapper',
+                        readOnly === 'outlined' && 'readonly-outlined',
+                        locked && 'readonly-locked',
+                        readOnly === 'plain' && 'readonly-plain',
+                        !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
+                        !readOnly && !showError && focused && 'focused-state',
+                    )}
+                >
+                    {replyModeComponent}
 
-                <div className='flex gap-2'>
-                    <div className='flex-1 min-w-0'>
-                        <EditorContent
-                            aria-required={required ? true : undefined}
-                            data-test={dataTest}
-                            data-testid={dataTest}
-                            id={id}
-                            className={clsx(
-                                !noDefaultStyles && 'core-ui-rte',
-                                !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
-                                !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
-                                disabled && !readOnly && !props.editable && 'cursor-not-allowed',
-                                editorClassName,
-                                showToolbar && 'displace-text',
-                            )}
-                            editor={editor}
-                            onClick={() => editor?.chain().focus().run()}
-                            style={
-                                { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
-                            }
-                        />
-                    </div>
+                    <div
+                        ref={mirrorRef}
+                        aria-hidden
+                        className='pointer-events-none invisible absolute left-[-99999px] top-0'
+                    />
 
-                    {!hideToolbar && !disabled && !readOnly && (
-                        <div
-                            className={clsx(
-                                'flex shrink-0 items-center justify-end',
-                                isMultiLine ? 'flex-col w-10' : 'w-20',
-                            )}
-                        >
-                            {enableImageUpload ? (
-                                <>
-                                    <input
-                                        type='file'
-                                        ref={imageInputRef}
-                                        hidden
-                                        multiple
-                                        accept='image/*'
-                                        onChange={handleImageUpload}
-                                    />
+                    <div className='flex gap-2'>
+                        <div className='flex-1 min-w-0'>
+                            <EditorContent
+                                aria-required={required ? true : undefined}
+                                data-test={dataTest}
+                                data-testid={dataTest}
+                                id={id}
+                                className={clsx(
+                                    !noDefaultStyles && 'core-ui-rte',
+                                    !hideToolbar && !disabled && !readOnly && !showToolbar && 'displace-text',
+                                    !noDefaultStyles && !disabled && !readOnly && 'edit-mode',
+                                    disabled && !readOnly && !props.editable && 'cursor-not-allowed',
+                                    editorClassName,
+                                    showToolbar && 'displace-text',
+                                )}
+                                editor={editor}
+                                onClick={() => editor?.chain().focus().run()}
+                                style={
+                                    { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
+                                }
+                            />
+                        </div>
+
+                        {locked && <LockIcon width={24} height={24} className='mr-[14px] mt-2 shrink-0 text-delta-700' />}
+
+                        {!hideToolbar && !disabled && !readOnly && (
+                            <div
+                                className={clsx(
+                                    'flex shrink-0 items-center justify-end',
+                                    isMultiLine ? 'flex-col w-10' : 'w-20',
+                                )}
+                            >
+                                {enableImageUpload ? (
+                                    <>
+                                        <input
+                                            type='file'
+                                            ref={imageInputRef}
+                                            hidden
+                                            multiple
+                                            accept='image/*'
+                                            onChange={handleImageUpload}
+                                        />
+                                        <StyledButton
+                                            dataTest='rich-editor-image-upload'
+                                            size='large'
+                                            variant='textGray'
+                                            aria-label={t.upload_image}
+                                            onClick={() => imageInputRef.current?.click()}
+                                            startIcon={
+                                                isUploadingImage ? (
+                                                    <LoadingIcon width={20} height={20} />
+                                                ) : (
+                                                    <Icon
+                                                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                                                        icon='ic:baseline-attach-file'
+                                                    />
+                                                )
+                                            }
+                                        />
+                                    </>
+                                ) : (
+                                    attachmentsMenu
+                                )}
+                                {showFormatButton && (
                                     <StyledButton
-                                        dataTest='rich-editor-image-upload'
+                                        dataTest='richeditor-format-button'
+                                        aria-label={showToolbar ? t.hide_formatting : t.show_formatting}
+                                        aria-pressed={showToolbar}
+                                        className={clsx(isMultiLine ? 'order-last' : 'order-first')}
                                         size='large'
                                         variant='textGray'
-                                        aria-label={t.upload_image}
-                                        onClick={() => imageInputRef.current?.click()}
+                                        onClick={() => setShowToolbar(!showToolbar)}
                                         startIcon={
-                                            isUploadingImage ? (
-                                                <LoadingIcon width={20} height={20} />
-                                            ) : (
-                                                <Icon
-                                                    className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
-                                                    icon='ic:baseline-attach-file'
-                                                />
-                                            )
+                                            <Icon
+                                                className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                                                icon='material-symbols:format-color-text'
+                                            />
                                         }
                                     />
-                                </>
-                            ) : (
-                                attachmentsMenu
-                            )}
-                            {showFormatButton && (
-                                <StyledButton
-                                    dataTest='richeditor-format-button'
-                                    aria-label={showToolbar ? t.hide_formatting : t.show_formatting}
-                                    aria-pressed={showToolbar}
-                                    className={clsx(isMultiLine ? 'order-last' : 'order-first')}
-                                    size='large'
-                                    variant='textGray'
-                                    onClick={() => setShowToolbar(!showToolbar)}
-                                    startIcon={
-                                        <Icon
-                                            className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
-                                            icon='material-symbols:format-color-text'
-                                        />
-                                    }
-                                />
-                            )}
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {!!attachments?.length && (
+                        <div className='p-2 flex flex-wrap items-center gap-2'>
+                            {attachments.map((props) => (
+                                <StyledChip {...props} />
+                            ))}
                         </div>
                     )}
+
+                    {!hideToolbar && !disabled && !readOnly && showToolbar && (
+                        <Toolbar
+                            editor={editor}
+                            onClose={() => setShowToolbar(false)}
+                            error={error}
+                            focused={focused}
+                            openLinkDialog={() => setLinkDialogVisible(true)}
+                            openEmojiPicker={() => setEmojiPickerVisible(true)}
+                            linkDialogOpen={linkDialogVisible}
+                            emojiPickerOpen={emojiPickerVisible}
+                            locale={locale}
+                        />
+                    )}
                 </div>
-
-                {!!attachments?.length && (
-                    <div className='p-2 flex flex-wrap items-center gap-2'>
-                        {attachments.map((props) => (
-                            <StyledChip {...props} />
-                        ))}
-                    </div>
-                )}
-
-                {!hideToolbar && !disabled && !readOnly && showToolbar && (
-                    <Toolbar
-                        editor={editor}
-                        onClose={() => setShowToolbar(false)}
-                        error={error}
-                        focused={focused}
-                        openLinkDialog={() => setLinkDialogVisible(true)}
-                        openEmojiPicker={() => setEmojiPickerVisible(true)}
-                        linkDialogOpen={linkDialogVisible}
-                        emojiPickerOpen={emojiPickerVisible}
-                        locale={locale}
-                    />
-                )}
-            </div>
+            </LockedTooltip>
 
             {helperText && (
                 <StyledFormHelperText

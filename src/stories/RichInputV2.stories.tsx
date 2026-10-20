@@ -263,3 +263,43 @@ export const Accessibility: Story = {
         }
     },
 }
+
+export const Locked: Story = {
+    args: {
+        dataTest: 'locked-story',
+    },
+    render: () => (
+        <div style={{ width: 600 }}>
+            <RichInput
+                dataTest='locked-editor'
+                label='Message'
+                content='<p>Written before the activity was locked</p>'
+                lockedReason='Locked for editing after the end date'
+            />
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        await new Promise<void>((resolve) => setTimeout(resolve, 250))
+
+        const editor = canvasElement.querySelector<HTMLElement>('[data-test="locked-editor"] [role="textbox"]')
+        if (!editor || editor.getAttribute('contenteditable') !== 'false') {
+            throw new Error('A locked RichInput must render a non-editable textbox.')
+        }
+        if (editor.getAttribute('tabindex') !== '0' || editor.getAttribute('aria-readonly') !== 'true') {
+            throw new Error('A locked RichInput must stay focusable and expose aria-readonly="true".')
+        }
+        if (editor.hasAttribute('aria-disabled') || accessibleNameOf(editor) !== 'Message') {
+            throw new Error('A locked RichInput keeps its name and is not disabled.')
+        }
+        const description = (editor.getAttribute('aria-describedby') ?? '')
+            .split(/\s+/)
+            .map((id) => document.getElementById(id)?.textContent?.trim())
+            .join(' ')
+        if (!description.includes('Locked for editing after the end date')) {
+            throw new Error('The lock reason must be the locked editor’s accessible description.')
+        }
+        if (canvasElement.querySelector('.readonly-locked svg')?.getAttribute('aria-hidden') !== 'true') {
+            throw new Error('The lock icon must be hidden from assistive technology.')
+        }
+    },
+}
