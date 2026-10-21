@@ -109,9 +109,10 @@
 .rte-wrapper.error-state:hover {
     outline: 2px solid var(--colors-red-500);
 }
+/* ASMA-8561: 3px error-500, so error + focus no longer looks like error + hover (2px) */
 .rte-wrapper.error-focused-state {
-    outline: 2px solid var(--colors-red-500);
-    outline-offset: -2px;
+    outline: 3px solid var(--colors-red-500);
+    outline-offset: -3px;
 }
 
 /* readonly outlined */
@@ -145,10 +146,11 @@
 .rte-wrapper.readonly-plain:hover {
     outline: none;
 }
-/* focus state */
+/* focus state — ASMA-8097 bordered treatment, as ui-core fields: 3px color.focus.ring. Inset, so the
+   thicker edge never shifts the text or the buttons. */
 .rte-wrapper.focused-state {
-    outline: 2px solid var(--colors-gama-400);
-    outline-offset: -2px;
+    outline: 3px solid var(--colors-focus-ring);
+    outline-offset: -3px;
 }
 
 .ProseMirror {
