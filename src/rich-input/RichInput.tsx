@@ -60,10 +60,12 @@ const RichInput: FC<IRichInput> = ({
     attachments,
     replyModeComponent,
     enableImageUpload,
+    enableImageRendering,
     imageOptions,
     onImageUpload,
     onImageUploadError,
     enableYoutube,
+    enableYoutubeRendering,
     youtubeOptions,
     'aria-label': ariaLabel,
     ...props
@@ -85,6 +87,10 @@ const RichInput: FC<IRichInput> = ({
     const labelAbove = hasLabel && labelPlacement === 'above' && readOnly !== 'plain'
     const labelledBy = labelAbove && !ariaLabel?.trim() ? labelId : undefined
     const showTitle = !!title && !(labelAbove && title.trim() === label?.trim())
+    // Rendering is separate from insertion: viewers and editable answers must keep image/video
+    // nodes in the document without exposing the upload control.
+    const imagesEnabled = enableImageUpload || enableImageRendering
+    const youtubeEnabled = enableYoutube || enableYoutubeRendering
 
     const editor = useEditor(
         {
@@ -103,7 +109,7 @@ const RichInput: FC<IRichInput> = ({
                           : placeholder,
                 }),
                 ...resolveDefaultExtensions(),
-                ...(enableImageUpload
+                ...(imagesEnabled
                     ? [
                           Image.configure({
                               inline: true,
@@ -112,10 +118,12 @@ const RichInput: FC<IRichInput> = ({
                           }),
                       ]
                     : []),
-                ...(enableYoutube
+                ...(youtubeEnabled
                     ? [
                           Youtube.configure({
-                              addPasteHandler: true,
+                              // Render-only mode must not turn pasted YouTube links into
+                              // embeds while the user is typing an answer.
+                              addPasteHandler: Boolean(enableYoutube),
                               controls: true,
                               nocookie: true,
                               ...youtubeOptions,
