@@ -50,7 +50,17 @@ export interface IRichInput extends UseEditorOptions {
     toolbarDefaultVisible?: boolean
     locale?: ILocale
     attachments?: (StyledChipProps & { key: string; dataTest: string })[]
+    /**
+     * @description Enables the image node and the toolbar upload control. The user can add and
+     * replace images; an `onImageUpload` implementation is required.
+     */
     enableImageUpload?: boolean
+    /**
+     * @description Enables the image node for parsing and rendering only. Existing `<img>` content
+     * survives edits and read-only views, but no upload control is rendered. Use this for answers
+     * and viewers that may display images without allowing the user to add them.
+     */
+    enableImageRendering?: boolean
     /**
      * @description Options for the image plugin
      */
@@ -84,9 +94,16 @@ export interface IRichInput extends UseEditorOptions {
      */
     onImageUploadError?: (error: Error, file?: File) => void
     /**
-     * @description Enables YouTube extension for handling YouTube links
+     * @description Enables YouTube embeds: existing embeds render and pasted YouTube URLs are
+     * converted automatically.
      */
     enableYoutube?: boolean
+    /**
+     * @description Enables the YouTube node for parsing and rendering only. Existing embeds render,
+     * but pasted links are left as plain text and no embed UI is offered. Use this where video is
+     * displayed but not authored.
+     */
+    enableYoutubeRendering?: boolean
     /**
      * @description Options for the youtube plugin
      */
