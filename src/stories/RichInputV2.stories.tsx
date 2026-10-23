@@ -269,11 +269,21 @@ export const ImageUploadTooltip: Story = {
         // The wrapper only exists with the prop, is not a tab stop and has no role of its own.
         const wrapper = describedButton.parentElement
         if (
-            wrapper?.tagName !== 'SPAN' ||
+            !wrapper ||
+            wrapper.tagName !== 'SPAN' ||
             wrapper.getAttribute('role') !== 'presentation' ||
             wrapper.tabIndex !== -1
         ) {
             throw new Error('The tooltip wrapper must be a non-focusable presentational span.')
+        }
+        // The consumer app only ships asma-ui-core's CSS, not this package's Tailwind build, so the
+        // wrapper's layout must not depend on a class (for example `min-w-10`).
+        if (wrapper.style.display !== 'flex' || wrapper.style.minWidth !== '40px') {
+            throw new Error('The tooltip wrapper must own its flex layout inline, not through a Tailwind class.')
+        }
+        const wrapperComputed = getComputedStyle(wrapper)
+        if (wrapperComputed.display !== 'flex' || wrapperComputed.minWidth !== '40px') {
+            throw new Error('The tooltip wrapper layout must apply without this library stylesheet.')
         }
 
         // Without the prop the button keeps exactly the master layout: it sits directly in the

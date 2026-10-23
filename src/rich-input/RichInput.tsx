@@ -438,17 +438,18 @@ const RichInput: FC<IRichInput> = ({
                                     />
                                     {imageUploadTooltipText ? (
                                         // StyledButton does not forward refs, so the tooltip anchors on a
-                                        // wrapper span. `flex min-w-10` keeps the 40px button shrinking like
-                                        // the unwrapped flex item, and the presentation role keeps the span
-                                        // itself out of the accessibility tree; the description still lands
-                                        // on the first tabbable child (the button).
+                                        // wrapper span. Its flex layout is inline because the consuming app
+                                        // does not build this package's Tailwind classes; only asma-ui-core's
+                                        // shipped CSS is guaranteed. The presentation role keeps the span
+                                        // itself out of the accessibility tree, and the description still
+                                        // lands on the first tabbable child (the button).
                                         <StyledTooltip
                                             title={imageUploadTooltipText}
                                             placement='top'
                                             arrow
                                             persistentDescription
                                         >
-                                            <span className='flex min-w-10' role='presentation'>
+                                            <span role='presentation' style={{ display: 'flex', minWidth: 40 }}>
                                                 {imageUploadButton}
                                             </span>
                                         </StyledTooltip>
