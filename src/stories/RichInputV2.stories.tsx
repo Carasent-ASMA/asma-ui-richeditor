@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { StyledButton } from 'asma-ui-core'
 import { useState } from 'react'
+import { screen, userEvent, waitFor } from 'storybook/test'
 import { RichInput } from 'src/rich-input/RichInput'
 
 const meta = {
@@ -38,6 +39,15 @@ const textboxOf = (canvasElement: HTMLElement, dataTest: string) => {
     const textbox = canvasElement.querySelector<HTMLElement>(`[data-test="${dataTest}"] [role="textbox"]`)
     if (!textbox) throw new Error(`No textbox for ${dataTest}.`)
     return textbox
+}
+
+const accessibleDescriptionOf = (element: HTMLElement) => {
+    const ids = element.getAttribute('aria-describedby')?.split(/\s+/).filter(Boolean) ?? []
+    return ids
+        .map((id) => element.ownerDocument.getElementById(id))
+        .map((reference) => reference?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' ')
 }
 
 const fieldRootOf = (canvasElement: HTMLElement, dataTest: string) => {
@@ -185,6 +195,97 @@ export const Input2 = () => {
             />
         </div>
     )
+}
+
+const IMAGE_UPLOAD_WARNING = 'Do not upload images that contain personal data.'
+
+export const ImageUploadTooltip: Story = {
+    args: {
+        dataTest: 'image-upload-tooltip-story',
+    },
+    render: () => (
+        <div className='flex flex-col gap-4' style={{ width: 1000 }}>
+            <RichInput
+                dataTest='tooltip-upload'
+                label='Image with warning'
+                enableImageUpload
+                imageUploadTooltip={IMAGE_UPLOAD_WARNING}
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+            <RichInput
+                dataTest='plain-upload'
+                label='Image without warning'
+                enableImageUpload
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        await waitForEditors()
+
+        const describedButton = fieldRootOf(canvasElement, 'tooltip-upload').querySelector<HTMLButtonElement>(
+            '[data-testid="rich-editor-image-upload"]',
+        )
+        const plainButton = fieldRootOf(canvasElement, 'plain-upload').querySelector<HTMLButtonElement>(
+            '[data-testid="rich-editor-image-upload"]',
+        )
+        if (!describedButton || !plainButton) {
+            throw new Error('Both upload points must render an upload button.')
+        }
+
+        // The warning is the button's accessible description, even before the tooltip opens.
+        if (accessibleDescriptionOf(describedButton) !== IMAGE_UPLOAD_WARNING) {
+            throw new Error("The upload tooltip must be the upload button's accessible description.")
+        }
+        if (describedButton.getAttribute('aria-label') !== 'Upload image') {
+            throw new Error("The warning must not replace the upload button's accessible name.")
+        }
+        // Without the prop, the button keeps its previous surface: no tooltip, no extra attributes.
+        if (plainButton.hasAttribute('aria-describedby') || accessibleDescriptionOf(plainButton)) {
+            throw new Error('An editor without imageUploadTooltip must not describe its upload button.')
+        }
+
+        // Hover opens the tooltip.
+        await userEvent.hover(describedButton)
+        await waitFor(
+            () => {
+                if ((screen.queryByRole('tooltip')?.textContent?.trim() ?? '') !== IMAGE_UPLOAD_WARNING) {
+                    throw new Error('The upload tooltip must open on hover with the warning text.')
+                }
+            },
+            { timeout: 3000 },
+        )
+        await userEvent.unhover(describedButton)
+        await waitFor(() => {
+            if (screen.queryByRole('tooltip')) throw new Error('The upload tooltip must close when the pointer leaves.')
+        })
+
+        // Keyboard focus opens it too.
+        describedButton.focus()
+        if (document.activeElement !== describedButton) {
+            throw new Error('The upload button must accept keyboard focus.')
+        }
+        await waitFor(
+            () => {
+                if ((screen.queryByRole('tooltip')?.textContent?.trim() ?? '') !== IMAGE_UPLOAD_WARNING) {
+                    throw new Error('The upload tooltip must open on keyboard focus with the warning text.')
+                }
+            },
+            { timeout: 3000 },
+        )
+        describedButton.blur()
+        await waitFor(() => {
+            if (screen.queryByRole('tooltip')) throw new Error('The upload tooltip must close when focus leaves.')
+        })
+
+        // The editor without the prop never shows a tooltip.
+        await userEvent.hover(plainButton)
+        await new Promise<void>((resolve) => setTimeout(resolve, 800))
+        if (screen.queryByRole('tooltip')) {
+            throw new Error('An editor without imageUploadTooltip must not render a tooltip.')
+        }
+        await userEvent.unhover(plainButton)
+    },
 }
 
 export const Accessibility: Story = {

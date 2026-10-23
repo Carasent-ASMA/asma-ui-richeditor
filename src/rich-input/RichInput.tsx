@@ -12,6 +12,7 @@ import {
     StyledDialog,
     StyledFormControl,
     StyledFormHelperText,
+    StyledTooltip,
 } from 'asma-ui-core'
 import { Icon } from '@iconify/react'
 import type { IRichInput } from './interfaces/types'
@@ -60,6 +61,7 @@ const RichInput: FC<IRichInput> = ({
     attachments,
     replyModeComponent,
     enableImageUpload,
+    imageUploadTooltip,
     enableImageRendering,
     imageOptions,
     onImageUpload,
@@ -320,6 +322,27 @@ const RichInput: FC<IRichInput> = ({
     if (!editor) return null
 
     const showFormatButton = showToolbar ? isMultiLine : true
+    const imageUploadTooltipText = imageUploadTooltip?.trim()
+
+    const imageUploadButton = (
+        <StyledButton
+            dataTest='rich-editor-image-upload'
+            size='large'
+            variant='textGray'
+            aria-label={t.upload_image}
+            onClick={() => imageInputRef.current?.click()}
+            startIcon={
+                isUploadingImage ? (
+                    <LoadingIcon width={20} height={20} />
+                ) : (
+                    <Icon
+                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                        icon='ic:baseline-attach-file'
+                    />
+                )
+            }
+        />
+    )
 
     return (
         <StyledFormControl
@@ -413,23 +436,20 @@ const RichInput: FC<IRichInput> = ({
                                         accept='image/*'
                                         onChange={handleImageUpload}
                                     />
-                                    <StyledButton
-                                        dataTest='rich-editor-image-upload'
-                                        size='large'
-                                        variant='textGray'
-                                        aria-label={t.upload_image}
-                                        onClick={() => imageInputRef.current?.click()}
-                                        startIcon={
-                                            isUploadingImage ? (
-                                                <LoadingIcon width={20} height={20} />
-                                            ) : (
-                                                <Icon
-                                                    className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
-                                                    icon='ic:baseline-attach-file'
-                                                />
-                                            )
-                                        }
-                                    />
+                                    {imageUploadTooltipText ? (
+                                        // StyledButton does not forward refs, so the tooltip anchors on a
+                                        // wrapper span; it still describes the first tabbable child (the button).
+                                        <StyledTooltip
+                                            title={imageUploadTooltipText}
+                                            placement='top'
+                                            arrow
+                                            persistentDescription
+                                        >
+                                            <span>{imageUploadButton}</span>
+                                        </StyledTooltip>
+                                    ) : (
+                                        imageUploadButton
+                                    )}
                                 </>
                             ) : (
                                 attachmentsMenu
