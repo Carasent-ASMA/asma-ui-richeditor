@@ -438,14 +438,19 @@ const RichInput: FC<IRichInput> = ({
                                     />
                                     {imageUploadTooltipText ? (
                                         // StyledButton does not forward refs, so the tooltip anchors on a
-                                        // wrapper span; it still describes the first tabbable child (the button).
+                                        // wrapper span. `flex min-w-10` keeps the 40px button shrinking like
+                                        // the unwrapped flex item, and the presentation role keeps the span
+                                        // itself out of the accessibility tree; the description still lands
+                                        // on the first tabbable child (the button).
                                         <StyledTooltip
                                             title={imageUploadTooltipText}
                                             placement='top'
                                             arrow
                                             persistentDescription
                                         >
-                                            <span>{imageUploadButton}</span>
+                                            <span className='flex min-w-10' role='presentation'>
+                                                {imageUploadButton}
+                                            </span>
                                         </StyledTooltip>
                                     ) : (
                                         imageUploadButton
