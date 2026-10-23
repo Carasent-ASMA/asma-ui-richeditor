@@ -56,6 +56,12 @@ export interface IRichInput extends UseEditorOptions {
      */
     enableImageUpload?: boolean
     /**
+     * @description Text shown as a tooltip on hover and keyboard focus of the image upload button,
+     * and exposed as the button's accessible description. When it is omitted (or blank), the
+     * button renders exactly as before: no tooltip and no extra attributes.
+     */
+    imageUploadTooltip?: string
+    /**
      * @description Enables the image node for parsing and rendering only. Existing `<img>` content
      * survives edits and read-only views, but no upload control is rendered. Use this for answers
      * and viewers that may display images without allowing the user to add them.

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { StyledButton } from 'asma-ui-core'
 import { useState } from 'react'
+import { screen, userEvent, waitFor } from 'storybook/test'
 import { RichInput } from 'src/rich-input/RichInput'
 
 const meta = {
@@ -38,6 +39,15 @@ const textboxOf = (canvasElement: HTMLElement, dataTest: string) => {
     const textbox = canvasElement.querySelector<HTMLElement>(`[data-test="${dataTest}"] [role="textbox"]`)
     if (!textbox) throw new Error(`No textbox for ${dataTest}.`)
     return textbox
+}
+
+const accessibleDescriptionOf = (element: HTMLElement) => {
+    const ids = element.getAttribute('aria-describedby')?.split(/\s+/).filter(Boolean) ?? []
+    return ids
+        .map((id) => element.ownerDocument.getElementById(id))
+        .map((reference) => reference?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' ')
 }
 
 const fieldRootOf = (canvasElement: HTMLElement, dataTest: string) => {
@@ -185,6 +195,186 @@ export const Input2 = () => {
             />
         </div>
     )
+}
+
+const IMAGE_UPLOAD_WARNING = 'Do not upload images that contain personal data.'
+const MULTI_LINE_CONTENT = '<p>First line</p><p>Second line</p>'
+
+const uploadButtonOf = (canvasElement: HTMLElement, dataTest: string) => {
+    const button = fieldRootOf(canvasElement, dataTest).querySelector<HTMLButtonElement>(
+        '[data-testid="rich-editor-image-upload"]',
+    )
+    if (!button) throw new Error(`No upload button for ${dataTest}.`)
+    return button
+}
+
+const toolbarOf = (button: HTMLElement) => {
+    const toolbar = button.closest<HTMLElement>('.shrink-0')
+    if (!toolbar) throw new Error('No editor toolbar.')
+    return toolbar
+}
+
+export const ImageUploadTooltip: Story = {
+    args: {
+        dataTest: 'image-upload-tooltip-story',
+    },
+    render: () => (
+        <div className='flex flex-col gap-4' style={{ width: 1000 }}>
+            <RichInput
+                dataTest='tooltip-upload'
+                label='Image with warning'
+                enableImageUpload
+                imageUploadTooltip={IMAGE_UPLOAD_WARNING}
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+            <RichInput
+                dataTest='plain-upload'
+                label='Image without warning'
+                enableImageUpload
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+            <RichInput
+                dataTest='tooltip-upload-multi'
+                label='Multi-line image with warning'
+                content={MULTI_LINE_CONTENT}
+                enableImageUpload
+                imageUploadTooltip={IMAGE_UPLOAD_WARNING}
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+            <RichInput
+                dataTest='plain-upload-multi'
+                label='Multi-line image without warning'
+                content={MULTI_LINE_CONTENT}
+                enableImageUpload
+                onImageUpload={async () => 'https://example.test/image.png'}
+            />
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        await waitForEditors()
+
+        const describedButton = uploadButtonOf(canvasElement, 'tooltip-upload')
+        const plainButton = uploadButtonOf(canvasElement, 'plain-upload')
+        const multiLineButton = uploadButtonOf(canvasElement, 'tooltip-upload-multi')
+        const plainMultiLineButton = uploadButtonOf(canvasElement, 'plain-upload-multi')
+
+        // The warning is the button's accessible description, even before the tooltip opens.
+        if (accessibleDescriptionOf(describedButton) !== IMAGE_UPLOAD_WARNING) {
+            throw new Error("The upload tooltip must be the upload button's accessible description.")
+        }
+        if (describedButton.getAttribute('aria-label') !== 'Upload image') {
+            throw new Error("The warning must not replace the upload button's accessible name.")
+        }
+
+        // The wrapper only exists with the prop, is not a tab stop and has no role of its own.
+        const wrapper = describedButton.parentElement
+        if (
+            !wrapper ||
+            wrapper.tagName !== 'SPAN' ||
+            wrapper.getAttribute('role') !== 'presentation' ||
+            wrapper.tabIndex !== -1
+        ) {
+            throw new Error('The tooltip wrapper must be a non-focusable presentational span.')
+        }
+        // The consumer app only ships asma-ui-core's CSS, not this package's Tailwind build, so the
+        // wrapper's layout must not depend on a class (for example `min-w-10`).
+        if (wrapper.style.display !== 'flex' || wrapper.style.minWidth !== '40px') {
+            throw new Error('The tooltip wrapper must own its flex layout inline, not through a Tailwind class.')
+        }
+        const wrapperComputed = getComputedStyle(wrapper)
+        if (wrapperComputed.display !== 'flex' || wrapperComputed.minWidth !== '40px') {
+            throw new Error('The tooltip wrapper layout must apply without this library stylesheet.')
+        }
+
+        // Without the prop the button keeps exactly the master layout: it sits directly in the
+        // toolbar, which is the flex item that sizes and shrinks it.
+        if (plainButton.parentElement !== toolbarOf(plainButton)) {
+            throw new Error('An editor without imageUploadTooltip must not wrap its upload button.')
+        }
+        if (plainButton.hasAttribute('aria-describedby') || accessibleDescriptionOf(plainButton)) {
+            throw new Error('An editor without imageUploadTooltip must not describe its upload button.')
+        }
+
+        // The wrapper must not change the button's flex layout in either toolbar mode.
+        const layoutPairs = [
+            { name: 'single-line', wrapped: describedButton, unwrapped: plainButton },
+            { name: 'multi-line', wrapped: multiLineButton, unwrapped: plainMultiLineButton },
+        ]
+        for (const { name, wrapped, unwrapped } of layoutPairs) {
+            const wrappedToolbar = toolbarOf(wrapped)
+            const unwrappedToolbar = toolbarOf(unwrapped)
+            const wrappedRect = wrapped.getBoundingClientRect()
+            const unwrappedRect = unwrapped.getBoundingClientRect()
+            if (
+                Math.abs(wrappedRect.width - unwrappedRect.width) > 0.5 ||
+                Math.abs(wrappedRect.left - unwrappedRect.left) > 0.5
+            ) {
+                throw new Error(`The ${name} tooltip wrapper must not change the upload button geometry.`)
+            }
+            if (wrappedToolbar.classList.contains('flex-col') !== unwrappedToolbar.classList.contains('flex-col')) {
+                throw new Error(`The ${name} pair must use the same toolbar mode.`)
+            }
+            // The single-line toolbar is exactly two 40px buttons wide; the wrapper must keep them inside it.
+            if (name === 'single-line') {
+                const formatButton = wrappedToolbar.querySelector<HTMLButtonElement>(
+                    '[data-testid="richeditor-format-button"]',
+                )
+                if (!formatButton) throw new Error(`No format button in the ${name} toolbar.`)
+                const toolbarRect = wrappedToolbar.getBoundingClientRect()
+                for (const button of [wrapped, formatButton]) {
+                    const rect = button.getBoundingClientRect()
+                    if (rect.left < toolbarRect.left - 0.5 || rect.right > toolbarRect.right + 0.5) {
+                        throw new Error(`The ${name} toolbar must contain its upload and format buttons.`)
+                    }
+                }
+            }
+        }
+        const multiLineToolbar = toolbarOf(multiLineButton)
+        if (!multiLineToolbar.classList.contains('flex-col') || multiLineToolbar.classList.contains('w-20')) {
+            throw new Error('The multi-line upload point must exercise the column toolbar.')
+        }
+
+        // Hover opens the tooltip.
+        await userEvent.hover(describedButton)
+        await waitFor(
+            () => {
+                if ((screen.queryByRole('tooltip')?.textContent?.trim() ?? '') !== IMAGE_UPLOAD_WARNING) {
+                    throw new Error('The upload tooltip must open on hover with the warning text.')
+                }
+            },
+            { timeout: 3000 },
+        )
+        await userEvent.unhover(describedButton)
+        await waitFor(() => {
+            if (screen.queryByRole('tooltip')) throw new Error('The upload tooltip must close when the pointer leaves.')
+        })
+
+        // Keyboard focus opens it too.
+        describedButton.focus()
+        if (document.activeElement !== describedButton) {
+            throw new Error('The upload button must accept keyboard focus.')
+        }
+        await waitFor(
+            () => {
+                if ((screen.queryByRole('tooltip')?.textContent?.trim() ?? '') !== IMAGE_UPLOAD_WARNING) {
+                    throw new Error('The upload tooltip must open on keyboard focus with the warning text.')
+                }
+            },
+            { timeout: 3000 },
+        )
+        describedButton.blur()
+        await waitFor(() => {
+            if (screen.queryByRole('tooltip')) throw new Error('The upload tooltip must close when focus leaves.')
+        })
+
+        // The editor without the prop never shows a tooltip.
+        await userEvent.hover(plainButton)
+        await new Promise<void>((resolve) => setTimeout(resolve, 800))
+        if (screen.queryByRole('tooltip')) {
+            throw new Error('An editor without imageUploadTooltip must not render a tooltip.')
+        }
+        await userEvent.unhover(plainButton)
+    },
 }
 
 export const Accessibility: Story = {
