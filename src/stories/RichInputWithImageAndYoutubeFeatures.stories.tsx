@@ -27,7 +27,9 @@ const meta: Meta<typeof RichInput> = {
     },
     argTypes: {
         enableImageUpload: { control: 'boolean' },
+        enableImageRendering: { control: 'boolean' },
         enableYoutube: { control: 'boolean' },
+        enableYoutubeRendering: { control: 'boolean' },
         readOnly: { control: 'select', options: ['plain', 'outlined', undefined] },
     },
 }
@@ -122,5 +124,38 @@ export const BothFeatures: Story = {
                 </div>
             </div>
         )
+    },
+}
+
+export const RenderExistingImagesWithoutUpload: Story = {
+    render: () => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const [content, setContent] = useState(
+            '<p>This answer already contains an image:</p><img src="https://picsum.photos/320/180" alt="Example" />',
+        )
+
+        return (
+            <div className='flex flex-col gap-4 max-w-2xl'>
+                <RichInput
+                    dataTest='image-rendering-input'
+                    enableImageRendering
+                    content={content}
+                    onUpdate={({ editor }) => setContent(editor.getHTML())}
+                    placeholder='Edit the answer…'
+                    helperText='The image is parsed and preserved, but there is no upload control'
+                />
+                <div className='text-sm text-gray-500'>
+                    <p>Current content (the img tag survives an edit):</p>
+                    <pre className='bg-gray-100 p-2 rounded text-xs overflow-auto max-h-40'>{content}</pre>
+                </div>
+            </div>
+        )
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'When `enableImageRendering` is `true`, the image node is registered for parsing and rendering but the upload control stays hidden. This is the mode for an editable answer or a viewer that must keep images without letting the user add new ones.',
+            },
+        },
     },
 }

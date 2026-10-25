@@ -83,10 +83,13 @@ const RichInput: FC<IRichInput> = ({
     attachments,
     replyModeComponent,
     enableImageUpload,
+    imageUploadTooltip,
+    enableImageRendering,
     imageOptions,
     onImageUpload,
     onImageUploadError,
     enableYoutube,
+    enableYoutubeRendering,
     youtubeOptions,
     'aria-label': ariaLabel,
     ...props
@@ -110,6 +113,10 @@ const RichInput: FC<IRichInput> = ({
     const labelAbove = hasLabel && labelPlacement === 'above' && readOnly !== 'plain'
     const labelledBy = labelAbove && !ariaLabel?.trim() ? labelId : undefined
     const showTitle = !!title && !(labelAbove && title.trim() === label?.trim())
+    // Rendering is separate from insertion: viewers and editable answers must keep image/video
+    // nodes in the document without exposing the upload control.
+    const imagesEnabled = enableImageUpload || enableImageRendering
+    const youtubeEnabled = enableYoutube || enableYoutubeRendering
 
     const editor = useEditor(
         {
@@ -128,7 +135,7 @@ const RichInput: FC<IRichInput> = ({
                           : placeholder,
                 }),
                 ...resolveDefaultExtensions(),
-                ...(enableImageUpload
+                ...(imagesEnabled
                     ? [
                           Image.configure({
                               inline: true,
@@ -137,10 +144,12 @@ const RichInput: FC<IRichInput> = ({
                           }),
                       ]
                     : []),
-                ...(enableYoutube
+                ...(youtubeEnabled
                     ? [
                           Youtube.configure({
-                              addPasteHandler: true,
+                              // Render-only mode must not turn pasted YouTube links into
+                              // embeds while the user is typing an answer.
+                              addPasteHandler: Boolean(enableYoutube),
                               controls: true,
                               nocookie: true,
                               ...youtubeOptions,
@@ -346,6 +355,27 @@ const RichInput: FC<IRichInput> = ({
     if (!editor) return null
 
     const showFormatButton = showToolbar ? isMultiLine : true
+    const imageUploadTooltipText = imageUploadTooltip?.trim()
+
+    const imageUploadButton = (
+        <StyledButton
+            dataTest='rich-editor-image-upload'
+            size='large'
+            variant='textGray'
+            aria-label={t.upload_image}
+            onClick={() => imageInputRef.current?.click()}
+            startIcon={
+                isUploadingImage ? (
+                    <LoadingIcon width={20} height={20} />
+                ) : (
+                    <Icon
+                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
+                        icon='ic:baseline-attach-file'
+                    />
+                )
+            }
+        />
+    )
 
     return (
         <StyledFormControl
@@ -443,23 +473,26 @@ const RichInput: FC<IRichInput> = ({
                                             accept='image/*'
                                             onChange={handleImageUpload}
                                         />
-                                        <StyledButton
-                                            dataTest='rich-editor-image-upload'
-                                            size='large'
-                                            variant='textGray'
-                                            aria-label={t.upload_image}
-                                            onClick={() => imageInputRef.current?.click()}
-                                            startIcon={
-                                                isUploadingImage ? (
-                                                    <LoadingIcon width={20} height={20} />
-                                                ) : (
-                                                    <Icon
-                                                        className='cursor-pointer text-delta-700 h-6 w-6 min-w-6'
-                                                        icon='ic:baseline-attach-file'
-                                                    />
-                                                )
-                                            }
-                                        />
+                                        {imageUploadTooltipText ? (
+                                            // StyledButton does not forward refs, so the tooltip anchors on a
+                                            // wrapper span. Its flex layout is inline because the consuming app
+                                            // does not build this package's Tailwind classes; only asma-ui-core's
+                                            // shipped CSS is guaranteed. The presentation role keeps the span
+                                            // itself out of the accessibility tree, and the description still
+                                            // lands on the first tabbable child (the button).
+                                            <StyledTooltip
+                                                title={imageUploadTooltipText}
+                                                placement='top'
+                                                arrow
+                                                persistentDescription
+                                            >
+                                                <span role='presentation' style={{ display: 'flex', minWidth: 40 }}>
+                                                    {imageUploadButton}
+                                                </span>
+                                            </StyledTooltip>
+                                        ) : (
+                                            imageUploadButton
+                                        )}
                                     </>
                                 ) : (
                                     attachmentsMenu
