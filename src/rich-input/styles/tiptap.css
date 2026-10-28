@@ -186,3 +186,13 @@ div[data-youtube-video] > iframe {
     aspect-ratio: 16 / 9;
     width: 100%;
 }
+
+/* locked (disabled-states DIS-9): the read-only box stays focusable, so it shows the focus ring */
+.rte-wrapper.readonly-locked .ProseMirror {
+    cursor: default;
+    outline: none;
+}
+.rte-wrapper.readonly-locked:has(.ProseMirror:focus-visible) {
+    outline: 2px solid var(--colors-focus-ring);
+    outline-offset: -2px;
+}
