@@ -33,7 +33,7 @@ export default defineConfig({
             // asma-types is bundled in (it is no kernel lib) but declares no `sideEffects`, so its compiled
             // enums would ride along with the breakpoints RichInput uses. Every other module keeps the default.
             treeshake: {
-                moduleSideEffects: (id) => (/[\\/]node_modules[\\/].*asma-types[\\/]/.test(id) ? false : undefined),
+                moduleSideEffects: (id) => (/[\\/]node_modules[\\/]asma-types[\\/]/.test(id) ? false : undefined),
             },
             plugins: [
                 esmExternalRequirePlugin({
