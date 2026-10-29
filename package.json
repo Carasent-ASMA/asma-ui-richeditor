@@ -26,7 +26,7 @@
         "./tw-configs/twConfigs.json": "./tw-configs/twConfigs.json"
     },
     "repository": {
-        "url": "https://github.com:Carasent-ASMA/asma-ui-richeditor.git"
+        "url": "git+https://github.com/Carasent-ASMA/asma-ui-richeditor.git"
     },
     "scripts": {
         "dev": "vite",
