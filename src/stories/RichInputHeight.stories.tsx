@@ -1,6 +1,7 @@
 /* eslint-disable storybook/use-storybook-expect -- eslint-plugin-storybook 0.6 predates `storybook/test`, the Storybook 10 home of expect */
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { Editor } from '@tiptap/react'
+import { useState } from 'react'
 import { expect, userEvent, waitFor } from 'storybook/test'
 import { RichInput } from '../rich-input/RichInput'
 
@@ -179,6 +180,10 @@ const expectCappedComposer = async (canvasElement: HTMLElement, dataTest: string
         await expect(getComputedStyle(content).getPropertyValue('scrollbar-width')).toBe('auto')
     }
 
+    // A short reply does not scroll, so it is no extra tab stop.
+    const reply = wrapper.querySelector<HTMLElement>(':scope > .rte-reply')
+    await expect(reply?.hasAttribute('tabindex')).toBe(false)
+
     // The quoted message nested in the reply header keeps its own read-only look: no scroller, no fade.
     const quote = await findField(canvasElement, 'reply-quote')
     await expect(maskOf(quote.content)).toBe('none')
@@ -229,42 +234,113 @@ const manyAttachments = Array.from({ length: 12 }, (_, i) => ({
     label: `attachment-${i + 1}.pdf`,
 }))
 
+const crowdedComposer = (dataTest: string) => (
+    <div className='flex flex-col max-w-2xl'>
+        <RichInput
+            dataTest={dataTest}
+            label='Message'
+            content={LONG}
+            toolbarDefaultVisible
+            attachments={manyAttachments}
+            replyModeComponent={
+                <div className='border-b border-delta-200 p-2 text-sm text-delta-700'>
+                    <RichInput dataTest={`${dataTest}-quote`} readOnly='plain' content={paragraphs(20)} />
+                </div>
+            }
+            maxFieldHeight={{ mobile: 300, tablet: 400 }}
+        />
+    </div>
+)
+
+const outlineOf = (el: Element, pseudo?: string) => {
+    const style = getComputedStyle(el, pseudo)
+    return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor} ${style.outlineOffset}`
+}
+
+const expectCrowdedComposer = async (canvasElement: HTMLElement, dataTest: string, minText: number) => {
+    const { wrapper, content, tiptap, toolbar } = await findField(canvasElement, dataTest)
+    await waitFor(() => expect(wrapper.hasAttribute('data-overflowing')).toBe(true))
+    const cap = Math.min(300, window.innerHeight)
+    await expect(heightOf(wrapper)).toBeCloseTo(cap, 0)
+    const field = wrapper.getBoundingClientRect()
+    const toolbarBox = await boxOf(toolbar)
+    await expect(toolbarBox.bottom).toBeLessThanOrEqual(field.bottom + 1)
+    // The text keeps some lines, and the reply and the chips scroll inside their 30% share as named,
+    // keyboard-reachable regions.
+    await expect(content.clientHeight).toBeGreaterThanOrEqual(minText)
+    for (const [selector, label] of [
+        ['.rte-reply', 'Quoted message'],
+        ['.rte-attachments', 'Attachments'],
+    ] as const) {
+        const part = wrapper.querySelector<HTMLElement>(`:scope > ${selector}`) as HTMLElement
+        await expect(part).toBeTruthy()
+        await expect(heightOf(part)).toBeLessThanOrEqual(cap * 0.3 + 1)
+        await expect(part.scrollHeight).toBeGreaterThan(part.clientHeight)
+        await waitFor(() => expect(part.getAttribute('tabindex')).toBe('0'))
+        await expect(part.getAttribute('aria-label')).toBe(label)
+    }
+    // The outline is redrawn above the toolbar: the same outline as the field's, at rest and focused.
+    await expect(getComputedStyle(wrapper, '::after').zIndex).toBe('2')
+    await expect(outlineOf(wrapper, '::after')).toBe(outlineOf(wrapper))
+    editorOf(tiptap).commands.focus()
+    await waitFor(() => expect(wrapper.classList.contains('focused-state')).toBe(true))
+    await expect(outlineOf(wrapper, '::after')).toBe(outlineOf(wrapper))
+}
+
 /** A long quoted reply and many chips each scroll within 30% of the cap, so the text and toolbar keep their place. */
 export const ComposerLongReplyManyChips: Story = {
     globals: { viewport: { value: 'mobile2', isRotated: false } },
-    render: () => (
-        <div className='flex flex-col max-w-2xl'>
+    render: () => crowdedComposer('composer-crowded'),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded', 60),
+}
+
+/** The same crowded composer on a 320×256 screen (400% zoom): the toolbar still fits and some text shows. */
+export const ComposerLongReplyShortViewport: Story = {
+    parameters: {
+        viewport: {
+            options: { zoom400: { name: '400% zoom', styles: { width: '320px', height: '256px' }, type: 'mobile' } },
+        },
+    },
+    globals: { viewport: { value: 'zoom400', isRotated: false } },
+    render: () => crowdedComposer('composer-crowded-short'),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-short', 30),
+}
+
+const ReadOnlyToggle = () => {
+    const [readOnly, setReadOnly] = useState(false)
+    return (
+        <div className='flex flex-col gap-2 max-w-2xl'>
+            <button type='button' onClick={() => setReadOnly(!readOnly)}>
+                Toggle read-only
+            </button>
             <RichInput
-                dataTest='composer-crowded'
-                label='Message'
+                dataTest='toggle-composer'
                 content={LONG}
-                toolbarDefaultVisible
-                attachments={manyAttachments}
+                readOnly={readOnly ? 'outlined' : undefined}
                 replyModeComponent={
                     <div className='border-b border-delta-200 p-2 text-sm text-delta-700'>
-                        <RichInput dataTest='long-quote' readOnly='plain' content={paragraphs(20)} />
+                        <RichInput dataTest='toggle-quote' readOnly='plain' content='<p>Anna: “See you at 10.”</p>' />
                     </div>
                 }
-                maxFieldHeight={{ mobile: 300, tablet: 400 }}
+                maxFieldHeight={300}
             />
         </div>
-    ),
+    )
+}
+
+/** Switching the cap off and on (here through readOnly) keeps the reply content mounted. */
+export const ReplyStaysMountedWhenCapChanges: Story = {
+    render: () => <ReadOnlyToggle />,
     play: async ({ canvasElement }) => {
-        const { wrapper, content, toolbar } = await findField(canvasElement, 'composer-crowded')
-        await waitFor(() => expect(heightOf(wrapper)).toBeCloseTo(300, 0))
-        const field = wrapper.getBoundingClientRect()
-        const toolbarBox = await boxOf(toolbar)
-        await expect(toolbarBox.bottom).toBeLessThanOrEqual(field.bottom + 1)
-        // The text keeps a few lines, and the reply and the chips scroll inside their 30% share.
-        await expect(content.clientHeight).toBeGreaterThanOrEqual(60)
-        for (const selector of ['.rte-reply', '.rte-attachments']) {
-            const part = wrapper.querySelector<HTMLElement>(`:scope > ${selector}`)
-            await expect(part).toBeTruthy()
-            await expect(heightOf(part as HTMLElement)).toBeLessThanOrEqual(300 * 0.3 + 1)
-            await expect((part as HTMLElement).scrollHeight).toBeGreaterThan((part as HTMLElement).clientHeight)
-        }
-        // The outline is redrawn above the toolbar in this mode too.
-        await expect(getComputedStyle(wrapper, '::after').position).toBe('absolute')
+        const before = (await findField(canvasElement, 'toggle-quote')).tiptap
+        const button = canvasElement.querySelector('button') as HTMLButtonElement
+        await userEvent.click(button)
+        const { wrapper } = await findField(canvasElement, 'toggle-composer')
+        await waitFor(() => expect(wrapper.hasAttribute('data-rte-field-cap')).toBe(false))
+        await userEvent.click(button)
+        await waitFor(() => expect(wrapper.getAttribute('data-rte-field-cap')).toBe('capped'))
+        const after = (await findField(canvasElement, 'toggle-quote')).tiptap
+        await expect(after).toBe(before)
     },
 }
 

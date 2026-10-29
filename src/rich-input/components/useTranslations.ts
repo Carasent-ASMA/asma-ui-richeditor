@@ -26,6 +26,8 @@ const translations = {
         normal: 'Normal',
         large: 'Large',
         huge: 'Huge',
+        quoted_message: 'Quoted message',
+        attachments: 'Attachments',
     },
     no: {
         emojis: 'Emojier',
@@ -51,6 +53,8 @@ const translations = {
         normal: 'Normal',
         large: 'Stor',
         huge: 'Enorm',
+        quoted_message: 'Sitert melding',
+        attachments: 'Vedlegg',
     },
 }
 

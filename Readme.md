@@ -28,7 +28,8 @@ scrolls inside itself ([multiline fields pattern](https://carasent.atlassian.net
   wider (the `asma-types` breakpoints); `tablet` falls back to `mobile`, and a missing `mobile` means no cap on
   mobile. The cap counts the reply header, attachment chips and toolbar. The field is never taller than the
   screen (`min(cap, 100dvh)`). The reply header and the attachment chips each take at most 30% of it before
-  they scroll, so a long quote or many files never squeeze the text out.
+  they scroll, so at the composer caps a long quote or many files leave the text room. While one of them
+  scrolls it is a keyboard stop with a name ("Quoted message", "Attachments").
 - **Overflow cue:** while capped text overflows, the field shows a full scrollbar and fades the edge that hides
   text, so the cue also shows on touch devices, where scrollbars appear only while scrolling.
 - **Every other editor:** `maxFieldHeight='none'`. The field grows with its content; the toolbar, or with the

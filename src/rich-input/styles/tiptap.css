@@ -249,6 +249,11 @@ div[data-youtube-video] > iframe {
     max-height: calc(var(--rte-field-cap) * 0.3);
     overflow-y: auto;
 }
+/* While they scroll they are keyboard stops (RichInput adds tabindex), so show where focus is. */
+.rte-wrapper[data-rte-field-cap='capped'] > :is(.rte-reply, .rte-attachments):focus-visible {
+    outline: 2px solid var(--colors-focus-ring);
+    outline-offset: -2px;
+}
 /* Overflow cue, only while the capped text overflows: a full scrollbar, and a fade on each edge that
    hides text (an overlay scrollbar alone is not enough, and mobile browsers only show that one). */
 .rte-wrapper[data-rte-field-cap='capped'][data-overflowing] > .rte-editor-row > .rte-text-col > .core-ui-rte {

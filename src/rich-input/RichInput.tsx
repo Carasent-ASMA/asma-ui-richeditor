@@ -41,8 +41,13 @@ import { resolveFieldMaxHeight, resolveTextMaxHeight } from './helpers/maxHeight
 import { useMediaQuery } from './hooks/useMediaQuery.hook'
 import { useOverflowCue } from './hooks/useOverflowCue.hook'
 import { useCaretClearance } from './hooks/useCaretClearance.hook'
+import { useIsScrollable } from './hooks/useIsScrollable.hook'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
+
+/** A box that scrolls without focusable content needs a tab stop and a name to be reachable by keyboard. */
+const scrollRegion = (scrollable: boolean, label: string) =>
+    scrollable ? ({ tabIndex: 0, role: 'group', 'aria-label': label } as const) : {}
 
 const LockedTooltip: FC<{ reason: ReactNode; children: ReactElement }> = ({ reason, children }) =>
     reason === undefined ? (
@@ -363,6 +368,10 @@ const RichInput: FC<IRichInput> = ({
     const fieldCap = fieldMaxHeight === undefined ? undefined : fieldMaxHeight === 'none' ? 'none' : 'capped'
     const overflowCue = useOverflowCue(editor, fieldCap === 'capped')
     useCaretClearance(editor, fieldCap, Boolean(showToolbar && !hideToolbar && !disabled), wrapperRef)
+    const replyRef = useRef<HTMLDivElement | null>(null)
+    const attachmentsRef = useRef<HTMLDivElement | null>(null)
+    const replyScrollable = useIsScrollable(replyRef, fieldCap === 'capped' && !!replyModeComponent)
+    const attachmentsScrollable = useIsScrollable(attachmentsRef, fieldCap === 'capped' && !!attachments?.length)
 
     const showError = !readOnly && error
     if (!editor) return null
@@ -446,9 +455,17 @@ const RichInput: FC<IRichInput> = ({
                             : undefined
                     }
                 >
-                    {/* Capped, the reply header gets its own box so a long quote scrolls instead of eating the cap. */}
-                    {fieldCap === 'capped' && replyModeComponent ? (
-                        <div className='rte-reply'>{replyModeComponent}</div>
+                    {/* With maxFieldHeight the reply header gets its own box: capped, a long quote scrolls in it
+                        instead of eating the cap. The box stays when the cap mode changes, so the reply content
+                        is not remounted. */}
+                    {maxFieldHeight !== undefined && replyModeComponent ? (
+                        <div
+                            ref={replyRef}
+                            className='rte-reply'
+                            {...scrollRegion(replyScrollable, t.quoted_message)}
+                        >
+                            {replyModeComponent}
+                        </div>
                     ) : (
                         replyModeComponent
                     )}
@@ -549,7 +566,11 @@ const RichInput: FC<IRichInput> = ({
                     </div>
 
                     {!!attachments?.length && (
-                        <div className='rte-attachments p-2 flex flex-wrap items-center gap-2'>
+                        <div
+                            ref={attachmentsRef}
+                            className='rte-attachments p-2 flex flex-wrap items-center gap-2'
+                            {...scrollRegion(attachmentsScrollable, t.attachments)}
+                        >
                             {attachments.map((props) => (
                                 <StyledChip {...props} />
                             ))}
