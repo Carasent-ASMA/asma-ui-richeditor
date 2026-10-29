@@ -243,9 +243,10 @@ div[data-youtube-video] > iframe {
     scrollbar-width: thin;
     scrollbar-color: var(--colors-gray-500) transparent;
 }
-/* Many chips must not squeeze the text out of a small field: past 40% of the cap they scroll. */
-.rte-wrapper[data-rte-field-cap='capped'] > .rte-attachments {
-    max-height: calc(var(--rte-field-cap) * 0.4);
+/* A long quoted reply or many chips must not squeeze the text out of a small field: each takes at most
+   30% of the cap and scrolls past it, which leaves the text a few lines next to the toolbar. */
+.rte-wrapper[data-rte-field-cap='capped'] > :is(.rte-reply, .rte-attachments) {
+    max-height: calc(var(--rte-field-cap) * 0.3);
     overflow-y: auto;
 }
 /* Overflow cue, only while the capped text overflows: a full scrollbar, and a fade on each edge that
@@ -277,14 +278,13 @@ div[data-youtube-video] > iframe {
     --rte-fade-bottom: 24px;
 }
 
-/* --- Uncapped ('none'): grows with the page; the toolbar and format button stay reachable --- */
-.rte-wrapper[data-rte-field-cap='none'] {
-    overflow: clip; /* still clips the rounded corners, but is no scroll container, so sticky works */
-    isolation: isolate; /* keeps the z-indexes below inside the field, under the app's own sticky bars */
+/* --- Both modes: the toolbar paints over the field's inset outline (and, sticky, keeps doing so while
+   stuck). Redraw the outline on top; `inherit` keeps every state (hover, error, focus) without repeating
+   them, and isolation keeps these z-indexes inside the field, under the app's own sticky bars. --- */
+.rte-wrapper[data-rte-field-cap] {
+    isolation: isolate;
 }
-/* A sticky (positioned) toolbar paints over the field's inset outline, at rest and while stuck. Redraw the
-   outline on top; `inherit` keeps every state (hover, error, focus) without repeating them. */
-.rte-wrapper[data-rte-field-cap='none']::after {
+.rte-wrapper[data-rte-field-cap]::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -293,6 +293,11 @@ div[data-youtube-video] > iframe {
     border-radius: inherit;
     outline: inherit;
     outline-offset: inherit;
+}
+
+/* --- Uncapped ('none'): grows with the page; the toolbar and format button stay reachable --- */
+.rte-wrapper[data-rte-field-cap='none'] {
+    overflow: clip; /* still clips the rounded corners, but is no scroll container, so sticky works */
 }
 .rte-wrapper[data-rte-field-cap='none'] > .toolbar {
     position: sticky;

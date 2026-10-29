@@ -45,7 +45,8 @@ export function resolveFieldMaxHeight(
     const css = picked.trim()
     if (css === '') return undefined
     if (css.toLowerCase() === NONE) return NONE
-    // Like the number 0, a zero or negative length switches the cap off rather than hiding the field.
+    // Like the number 0, a plain zero or negative length ('0px', '-10px') switches the cap off rather than
+    // hiding the field. Expressions such as calc() and var() are the caller's responsibility.
     const isNotPositive = /^[-+]?[\d.]/.test(css) && !(parseFloat(css) > 0)
     // Validated the way it is used: as an operand of min() next to the viewport height.
     if (isNotPositive || !isValidCss(`min(${css}, 100vh)`)) {

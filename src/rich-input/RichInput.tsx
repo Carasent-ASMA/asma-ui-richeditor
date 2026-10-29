@@ -446,7 +446,12 @@ const RichInput: FC<IRichInput> = ({
                             : undefined
                     }
                 >
-                    {replyModeComponent}
+                    {/* Capped, the reply header gets its own box so a long quote scrolls instead of eating the cap. */}
+                    {fieldCap === 'capped' && replyModeComponent ? (
+                        <div className='rte-reply'>{replyModeComponent}</div>
+                    ) : (
+                        replyModeComponent
+                    )}
 
                     <div
                         ref={mirrorRef}

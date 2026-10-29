@@ -27,7 +27,8 @@ scrolls inside itself ([multiline fields pattern](https://carasent.atlassian.net
 - **Chat composer:** `maxFieldHeight={{ mobile: 300, tablet: 400 }}`. Mobile is 0–743px and tablet is 744px and
   wider (the `asma-types` breakpoints); `tablet` falls back to `mobile`, and a missing `mobile` means no cap on
   mobile. The cap counts the reply header, attachment chips and toolbar. The field is never taller than the
-  screen (`min(cap, 100dvh)`), and attachment chips take at most 40% of it before they scroll.
+  screen (`min(cap, 100dvh)`). The reply header and the attachment chips each take at most 30% of it before
+  they scroll, so a long quote or many files never squeeze the text out.
 - **Overflow cue:** while capped text overflows, the field shows a full scrollbar and fades the edge that hides
   text, so the cue also shows on touch devices, where scrollbars appear only while scrolling.
 - **Every other editor:** `maxFieldHeight='none'`. The field grows with its content; the toolbar, or with the

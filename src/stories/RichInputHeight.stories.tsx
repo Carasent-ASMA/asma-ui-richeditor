@@ -223,6 +223,51 @@ export const ComposerShortViewport: Story = {
     },
 }
 
+const manyAttachments = Array.from({ length: 12 }, (_, i) => ({
+    key: `file-${i}`,
+    dataTest: `chip-file-${i}`,
+    label: `attachment-${i + 1}.pdf`,
+}))
+
+/** A long quoted reply and many chips each scroll within 30% of the cap, so the text and toolbar keep their place. */
+export const ComposerLongReplyManyChips: Story = {
+    globals: { viewport: { value: 'mobile2', isRotated: false } },
+    render: () => (
+        <div className='flex flex-col max-w-2xl'>
+            <RichInput
+                dataTest='composer-crowded'
+                label='Message'
+                content={LONG}
+                toolbarDefaultVisible
+                attachments={manyAttachments}
+                replyModeComponent={
+                    <div className='border-b border-delta-200 p-2 text-sm text-delta-700'>
+                        <RichInput dataTest='long-quote' readOnly='plain' content={paragraphs(20)} />
+                    </div>
+                }
+                maxFieldHeight={{ mobile: 300, tablet: 400 }}
+            />
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const { wrapper, content, toolbar } = await findField(canvasElement, 'composer-crowded')
+        await waitFor(() => expect(heightOf(wrapper)).toBeCloseTo(300, 0))
+        const field = wrapper.getBoundingClientRect()
+        const toolbarBox = await boxOf(toolbar)
+        await expect(toolbarBox.bottom).toBeLessThanOrEqual(field.bottom + 1)
+        // The text keeps a few lines, and the reply and the chips scroll inside their 30% share.
+        await expect(content.clientHeight).toBeGreaterThanOrEqual(60)
+        for (const selector of ['.rte-reply', '.rte-attachments']) {
+            const part = wrapper.querySelector<HTMLElement>(`:scope > ${selector}`)
+            await expect(part).toBeTruthy()
+            await expect(heightOf(part as HTMLElement)).toBeLessThanOrEqual(300 * 0.3 + 1)
+            await expect((part as HTMLElement).scrollHeight).toBeGreaterThan((part as HTMLElement).clientHeight)
+        }
+        // The outline is redrawn above the toolbar in this mode too.
+        await expect(getComputedStyle(wrapper, '::after').position).toBe('absolute')
+    },
+}
+
 /** Short content stays short and shows no cue; read-only text ignores the cap and shows in full (MLF-2). */
 export const NoCueWhenNotCapped: Story = {
     render: () => (
