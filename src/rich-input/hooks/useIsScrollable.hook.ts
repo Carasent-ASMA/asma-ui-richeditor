@@ -1,16 +1,16 @@
-import { useEffect, useState, type RefObject } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
- * Whether the element's content overflows it, so a capped reply header or chip list can become a
+ * Whether an element's content overflows it, so a capped reply header or chip list can become a
  * keyboard-reachable scroll region only while it actually scrolls (axe `scrollable-region-focusable`).
- * Watches the element, its children (content growing inside a capped box does not resize the box) and
- * added or removed children.
+ * Returns a ref callback for the element, so a replaced element is picked up. Watches the element, its
+ * children (content growing inside a capped box does not resize the box) and added or removed children.
  */
-export const useIsScrollable = (ref: RefObject<HTMLElement | null>, enabled: boolean): boolean => {
+export const useIsScrollable = (enabled: boolean): [(element: HTMLElement | null) => void, boolean] => {
+    const [element, setElement] = useState<HTMLElement | null>(null)
     const [scrollable, setScrollable] = useState(false)
 
     useEffect(() => {
-        const element = ref.current
         if (!enabled || !element) {
             setScrollable(false)
             return
@@ -35,7 +35,7 @@ export const useIsScrollable = (ref: RefObject<HTMLElement | null>, enabled: boo
             resize.disconnect()
             mutation.disconnect()
         }
-    }, [ref, enabled])
+    }, [element, enabled])
 
-    return scrollable
+    return [setElement, scrollable]
 }

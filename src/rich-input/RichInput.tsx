@@ -368,10 +368,8 @@ const RichInput: FC<IRichInput> = ({
     const fieldCap = fieldMaxHeight === undefined ? undefined : fieldMaxHeight === 'none' ? 'none' : 'capped'
     const overflowCue = useOverflowCue(editor, fieldCap === 'capped')
     useCaretClearance(editor, fieldCap, Boolean(showToolbar && !hideToolbar && !disabled), wrapperRef)
-    const replyRef = useRef<HTMLDivElement | null>(null)
-    const attachmentsRef = useRef<HTMLDivElement | null>(null)
-    const replyScrollable = useIsScrollable(replyRef, fieldCap === 'capped' && !!replyModeComponent)
-    const attachmentsScrollable = useIsScrollable(attachmentsRef, fieldCap === 'capped' && !!attachments?.length)
+    const [replyRef, replyScrollable] = useIsScrollable(fieldCap === 'capped')
+    const [attachmentsRef, attachmentsScrollable] = useIsScrollable(fieldCap === 'capped')
 
     const showError = !readOnly && error
     if (!editor) return null

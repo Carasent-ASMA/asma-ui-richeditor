@@ -243,6 +243,14 @@ div[data-youtube-video] > iframe {
     scrollbar-width: thin;
     scrollbar-color: var(--colors-gray-500) transparent;
 }
+/* The reply box (rendered whenever maxFieldHeight is passed, so a mode change never remounts the reply)
+   only takes part in layout while capped; otherwise the reply lays out as if it were not wrapped. */
+.rte-reply {
+    display: contents;
+}
+.rte-wrapper[data-rte-field-cap='capped'] > .rte-reply {
+    display: block;
+}
 /* A long quoted reply or many chips must not squeeze the text out of a small field: each takes at most
    30% of the cap and scrolls past it, which leaves the text a few lines next to the toolbar. */
 .rte-wrapper[data-rte-field-cap='capped'] > :is(.rte-reply, .rte-attachments) {

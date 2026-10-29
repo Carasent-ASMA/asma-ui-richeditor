@@ -180,9 +180,12 @@ const expectCappedComposer = async (canvasElement: HTMLElement, dataTest: string
         await expect(getComputedStyle(content).getPropertyValue('scrollbar-width')).toBe('auto')
     }
 
-    // A short reply does not scroll, so it is no extra tab stop.
-    const reply = wrapper.querySelector<HTMLElement>(':scope > .rte-reply')
-    await expect(reply?.hasAttribute('tabindex')).toBe(false)
+    // A short reply and two chips do not scroll, so they are no extra tab stops.
+    for (const selector of ['.rte-reply', '.rte-attachments']) {
+        const part = wrapper.querySelector<HTMLElement>(`:scope > ${selector}`)
+        await expect(part).toBeTruthy()
+        await expect(part?.hasAttribute('tabindex')).toBe(false)
+    }
 
     // The quoted message nested in the reply header keeps its own read-only look: no scroller, no fade.
     const quote = await findField(canvasElement, 'reply-quote')
@@ -257,10 +260,15 @@ const outlineOf = (el: Element, pseudo?: string) => {
     return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor} ${style.outlineOffset}`
 }
 
-const expectCrowdedComposer = async (canvasElement: HTMLElement, dataTest: string, minText: number) => {
+const expectCrowdedComposer = async (
+    canvasElement: HTMLElement,
+    dataTest: string,
+    fieldCap: number,
+    minText: number,
+) => {
     const { wrapper, content, tiptap, toolbar } = await findField(canvasElement, dataTest)
     await waitFor(() => expect(wrapper.hasAttribute('data-overflowing')).toBe(true))
-    const cap = Math.min(300, window.innerHeight)
+    const cap = Math.min(fieldCap, window.innerHeight)
     await expect(heightOf(wrapper)).toBeCloseTo(cap, 0)
     const field = wrapper.getBoundingClientRect()
     const toolbarBox = await boxOf(toolbar)
@@ -279,6 +287,13 @@ const expectCrowdedComposer = async (canvasElement: HTMLElement, dataTest: strin
         await waitFor(() => expect(part.getAttribute('tabindex')).toBe('0'))
         await expect(part.getAttribute('aria-label')).toBe(label)
     }
+    // Tabbing reaches the scrolling reply (the first stop in the field) and shows its focus ring.
+    const reply = wrapper.querySelector<HTMLElement>(':scope > .rte-reply') as HTMLElement
+    for (let i = 0; i < 5 && document.activeElement !== reply; i++) await userEvent.tab()
+    await expect(document.activeElement).toBe(reply)
+    await expect(getComputedStyle(reply).outlineStyle).toBe('solid')
+    await expect(getComputedStyle(reply).outlineWidth).toBe('2px')
+
     // The outline is redrawn above the toolbar: the same outline as the field's, at rest and focused.
     await expect(getComputedStyle(wrapper, '::after').zIndex).toBe('2')
     await expect(outlineOf(wrapper, '::after')).toBe(outlineOf(wrapper))
@@ -291,7 +306,14 @@ const expectCrowdedComposer = async (canvasElement: HTMLElement, dataTest: strin
 export const ComposerLongReplyManyChips: Story = {
     globals: { viewport: { value: 'mobile2', isRotated: false } },
     render: () => crowdedComposer('composer-crowded'),
-    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded', 60),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded', 300, 60),
+}
+
+/** The crowded composer at the tablet cap of 400px. */
+export const ComposerLongReplyTablet: Story = {
+    globals: { viewport: { value: 'tablet', isRotated: false } },
+    render: () => crowdedComposer('composer-crowded-tablet'),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-tablet', 400, 100),
 }
 
 /** The same crowded composer on a 320×256 screen (400% zoom): the toolbar still fits and some text shows. */
@@ -303,7 +325,7 @@ export const ComposerLongReplyShortViewport: Story = {
     },
     globals: { viewport: { value: 'zoom400', isRotated: false } },
     render: () => crowdedComposer('composer-crowded-short'),
-    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-short', 30),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-short', 300, 30),
 }
 
 const ReadOnlyToggle = () => {
@@ -337,6 +359,9 @@ export const ReplyStaysMountedWhenCapChanges: Story = {
         await userEvent.click(button)
         const { wrapper } = await findField(canvasElement, 'toggle-composer')
         await waitFor(() => expect(wrapper.hasAttribute('data-rte-field-cap')).toBe(false))
+        // With the cap off, the kept reply box takes no part in layout.
+        const replyBox = wrapper.querySelector<HTMLElement>(':scope > .rte-reply')
+        await expect(replyBox && getComputedStyle(replyBox).display).toBe('contents')
         await userEvent.click(button)
         await waitFor(() => expect(wrapper.getAttribute('data-rte-field-cap')).toBe('capped'))
         const after = (await findField(canvasElement, 'toggle-quote')).tiptap
