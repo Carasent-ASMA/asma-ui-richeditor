@@ -245,7 +245,8 @@ div[data-youtube-video] > iframe {
 }
 /* The reply box (rendered whenever maxFieldHeight is passed, so a mode change never remounts the reply)
    only takes part in layout while capped; otherwise the reply lays out as if it were not wrapped. */
-.rte-reply {
+/* Scoped to RichInput's own field container (also without default styles), not any .rte-reply on the page. */
+:has(> .rte-editor-row) > .rte-reply {
     display: contents;
 }
 .rte-wrapper[data-rte-field-cap='capped'] > .rte-reply {

@@ -260,12 +260,7 @@ const outlineOf = (el: Element, pseudo?: string) => {
     return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor} ${style.outlineOffset}`
 }
 
-const expectCrowdedComposer = async (
-    canvasElement: HTMLElement,
-    dataTest: string,
-    fieldCap: number,
-    minText: number,
-) => {
+const expectCrowdedComposer = async (canvasElement: HTMLElement, dataTest: string, fieldCap: number) => {
     const { wrapper, content, tiptap, toolbar } = await findField(canvasElement, dataTest)
     await waitFor(() => expect(wrapper.hasAttribute('data-overflowing')).toBe(true))
     const cap = Math.min(fieldCap, window.innerHeight)
@@ -273,9 +268,9 @@ const expectCrowdedComposer = async (
     const field = wrapper.getBoundingClientRect()
     const toolbarBox = await boxOf(toolbar)
     await expect(toolbarBox.bottom).toBeLessThanOrEqual(field.bottom + 1)
-    // The text keeps some lines, and the reply and the chips scroll inside their 30% share as named,
-    // keyboard-reachable regions.
-    await expect(content.clientHeight).toBeGreaterThanOrEqual(minText)
+    // The text gets everything the reply and the chips (30% each) and the toolbar leave, at least a line,
+    // and the reply and the chips scroll inside their share as named, keyboard-reachable regions.
+    await expect(content.clientHeight).toBeGreaterThanOrEqual(Math.max(24, cap * 0.4 - toolbarBox.height - 2))
     for (const [selector, label] of [
         ['.rte-reply', 'Quoted message'],
         ['.rte-attachments', 'Attachments'],
@@ -306,14 +301,14 @@ const expectCrowdedComposer = async (
 export const ComposerLongReplyManyChips: Story = {
     globals: { viewport: { value: 'mobile2', isRotated: false } },
     render: () => crowdedComposer('composer-crowded'),
-    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded', 300, 60),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded', 300),
 }
 
 /** The crowded composer at the tablet cap of 400px. */
 export const ComposerLongReplyTablet: Story = {
     globals: { viewport: { value: 'tablet', isRotated: false } },
     render: () => crowdedComposer('composer-crowded-tablet'),
-    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-tablet', 400, 100),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-tablet', 400),
 }
 
 /** The same crowded composer on a 320×256 screen (400% zoom): the toolbar still fits and some text shows. */
@@ -325,7 +320,7 @@ export const ComposerLongReplyShortViewport: Story = {
     },
     globals: { viewport: { value: 'zoom400', isRotated: false } },
     render: () => crowdedComposer('composer-crowded-short'),
-    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-short', 300, 30),
+    play: ({ canvasElement }) => expectCrowdedComposer(canvasElement, 'composer-crowded-short', 300),
 }
 
 const ReadOnlyToggle = () => {
