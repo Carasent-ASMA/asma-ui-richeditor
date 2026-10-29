@@ -93,6 +93,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.2
         version: 6.0.2(vite@8.0.13(@types/node@18.0.3)(esbuild@0.28.0)(jiti@1.21.7)(less@4.1.3(supports-color@8.1.1))(sass@1.89.2)(stylus@0.59.0(supports-color@8.1.1))(terser@5.47.1)(yaml@2.8.0))
+      asma-types:
+        specifier: ^2.15.1
+        version: 2.15.1
       asma-ui-core:
         specifier: ^3.110.0
         version: 3.110.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -2672,6 +2675,9 @@ packages:
   arrify@1.0.1:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
+
+  asma-types@2.15.1:
+    resolution: {integrity: sha512-Rb11uODj+RZgNSB/zZbKxto3bk6f/8hLt6kW+nNEatAZs+zuL9Yh/0Ksv18HFUKyoxhA4IrtDmkTl8qLk5zc5A==}
 
   asma-ui-core@3.110.0:
     resolution: {integrity: sha512-rbLVNyjjExmo78dhC5CMZ59SRXqWTe/xDoqW2fzBaG64g20bcE04VQd5dAXUxJep7nGb6KTq6t8ULB5M93lgRA==}
@@ -8752,6 +8758,8 @@ snapshots:
       es-shim-unscopables: 1.0.0
 
   arrify@1.0.1: {}
+
+  asma-types@2.15.1: {}
 
   asma-ui-core@3.110.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
