@@ -10,6 +10,17 @@ export interface CustomCSSProperties extends React.CSSProperties {
 
 export type ILocale = 'en' | 'no'
 
+/** A pixel number, `'none'` (no cap) or a CSS length such as `'min(400px, 40dvh)'`. `Infinity` means `'none'`. */
+export type RichInputMaxHeight = number | string
+
+/** A cap per breakpoint, from the shared asma-types breakpoints. */
+export interface RichInputResponsiveMaxHeight {
+    /** Mobile, 0–743px. Omitted: no cap on mobile. */
+    mobile?: RichInputMaxHeight
+    /** Tablet and wider, from 744px. Omitted: the `mobile` value. */
+    tablet?: RichInputMaxHeight
+}
+
 export interface IRichInput extends UseEditorOptions {
     dataTest: string
     attachmentsMenu?: React.ReactNode
@@ -52,7 +63,22 @@ export interface IRichInput extends UseEditorOptions {
     required?: boolean
     hideToolbar?: boolean
     noDefaultStyles?: boolean
+    /**
+     * @description Legacy cap on the text area alone, in pixels; the toolbar, attachment chips and reply
+     * header add to it. Omitted or `0` keeps the 100px default, `Infinity` removes the cap. Ignored when
+     * `maxFieldHeight` is set; prefer `maxFieldHeight` in new code.
+     */
     maxScrollableHeight?: number
+    /**
+     * @description Cap on the whole field: reply header, text, attachment chips and toolbar. Past the cap
+     * the text scrolls inside the field and shows a visible scrollbar and edge fade, and the field is never
+     * taller than the screen. Takes a pixel number, a CSS length such as `'min(400px, 40dvh)'`, a
+     * per-breakpoint object such as `{ mobile: 300, tablet: 400 }` (the chat composer), or `'none'`: the
+     * field grows with its content and the toolbar or format button sticks to the bottom of the view
+     * while the field is in it. `Infinity` means `'none'`. Ignored when `readOnly` (read-only text is
+     * always shown in full) and with `noDefaultStyles`.
+     */
+    maxFieldHeight?: RichInputMaxHeight | RichInputResponsiveMaxHeight
     toolbarDefaultVisible?: boolean
     locale?: ILocale
     attachments?: (StyledChipProps & { key: string; dataTest: string })[]

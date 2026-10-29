@@ -14,6 +14,28 @@
 
 - All components shall be documented and tested in Storybook before PR is created.
 
+## RichInput height
+
+Multiline fields grow with their content, and the page or dialog body scrolls; only the chat composer
+scrolls inside itself ([multiline fields pattern](https://carasent.atlassian.net/wiki/spaces/ASMA/pages/2517467150/Multiline+fields+height+and+inner+scroll), MLF-1 to MLF-4).
+
+| Prop                  | Caps            | Values                                                                                           |
+| --------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| `maxFieldHeight`      | the whole field | pixel number, CSS length (`'min(400px, 40dvh)'`), `'none'`, or `{ mobile?, tablet? }`             |
+| `maxScrollableHeight` | the text alone  | legacy pixel number; omitted or `0` = 100px, `Infinity` = no cap; ignored with `maxFieldHeight` |
+
+- **Chat composer:** `maxFieldHeight={{ mobile: 300, tablet: 400 }}`. Mobile is 0–743px and tablet is 744px and
+  wider (the `asma-types` breakpoints); `tablet` falls back to `mobile`, and a missing `mobile` means no cap on
+  mobile. The cap counts the reply header, attachment chips and toolbar. The field is never taller than the
+  screen (`min(cap, 100dvh)`), and attachment chips take at most 40% of it before they scroll.
+- **Overflow cue:** while capped text overflows, the field shows a full scrollbar and fades the edge that hides
+  text, so the cue also shows on touch devices, where scrollbars appear only while scrolling.
+- **Every other editor:** `maxFieldHeight='none'`. The field grows with its content; the toolbar, or with the
+  toolbar closed the format button, sticks to the bottom of the view while the field is in it. Sticky needs
+  every ancestor between the field and the scrolling container to keep `overflow: visible` (or `clip`).
+- **Display only:** `readOnly`, which always shows the full text and ignores both caps. `disabled` keeps the cap.
+- `maxFieldHeight` needs the default styles; it has no effect with `noDefaultStyles`.
+
 ## Changelog
 
 The project uses "changesets" to automatically bump version and create a changelog.
