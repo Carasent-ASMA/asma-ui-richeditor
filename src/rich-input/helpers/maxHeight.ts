@@ -45,8 +45,10 @@ export function resolveFieldMaxHeight(
     const css = picked.trim()
     if (css === '') return undefined
     if (css.toLowerCase() === NONE) return NONE
+    // Like the number 0, a zero or negative length switches the cap off rather than hiding the field.
+    const isNotPositive = /^[-+]?[\d.]/.test(css) && !(parseFloat(css) > 0)
     // Validated the way it is used: as an operand of min() next to the viewport height.
-    if (!isValidCss(`min(${css}, 100vh)`)) {
+    if (isNotPositive || !isValidCss(`min(${css}, 100vh)`)) {
         warnOnce(
             `RichInput: ignoring invalid maxFieldHeight "${picked}". Use a pixel number, 'none' or a CSS length such as 'min(400px, 40dvh)'.`,
         )

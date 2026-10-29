@@ -1,6 +1,7 @@
 /* eslint-disable storybook/use-storybook-expect -- eslint-plugin-storybook 0.6 predates `storybook/test`, the Storybook 10 home of expect */
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor } from 'storybook/test'
+import type { Editor } from '@tiptap/react'
+import { expect, userEvent, waitFor } from 'storybook/test'
 import { RichInput } from '../rich-input/RichInput'
 
 /**
@@ -31,9 +32,10 @@ const attachments = [
     { key: 'a', dataTest: 'chip-report', label: 'report.pdf' },
     { key: 'b', dataTest: 'chip-photo', label: 'photo.png' },
 ]
+/** Like the chat composer's reply header: the quoted message is itself a read-only RichInput. */
 const replyHeader = (
     <div className='border-b border-delta-200 p-2 text-sm text-delta-700'>
-        Replying to Anna: “Can you send the report?”
+        <RichInput dataTest='reply-quote' readOnly='plain' content='<p>Anna: “Can you send the report?”</p>' />
     </div>
 )
 
@@ -55,6 +57,14 @@ const findField = async (canvasElement: HTMLElement, dataTest: string) => {
     }
 }
 const heightOf = (el: Element) => el.getBoundingClientRect().height
+/** Lets the effects and the ResizeObserver run before asserting that something did not happen. */
+const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+/** tiptap keeps its editor on the ProseMirror element. */
+const editorOf = (tiptap: HTMLElement) => (tiptap as HTMLElement & { editor: Editor }).editor
+const caretBox = () => {
+    const selection = window.getSelection()
+    return selection && selection.rangeCount ? selection.getRangeAt(0).getBoundingClientRect() : null
+}
 /** The runner's Chromium predates the unprefixed mask-image; the CSS declares both. */
 const maskOf = (el: Element) => {
     const style = getComputedStyle(el)
@@ -169,6 +179,12 @@ const expectCappedComposer = async (canvasElement: HTMLElement, dataTest: string
         await expect(getComputedStyle(content).getPropertyValue('scrollbar-width')).toBe('auto')
     }
 
+    // The quoted message nested in the reply header keeps its own read-only look: no scroller, no fade.
+    const quote = await findField(canvasElement, 'reply-quote')
+    await expect(maskOf(quote.content)).toBe('none')
+    await expect(getComputedStyle(quote.content).overflowY).toBe('hidden')
+    await expect(getComputedStyle(quote.tiptap).overflowY).toBe('hidden')
+
     // Scrolled to the end, the cue moves to the top edge.
     content.scrollTop = content.scrollHeight
     await waitFor(() => expect(wrapper.hasAttribute('data-can-scroll-down')).toBe(false))
@@ -217,6 +233,7 @@ export const NoCueWhenNotCapped: Story = {
     ),
     play: async ({ canvasElement }) => {
         const short = await findField(canvasElement, 'short-content')
+        await frames()
         await expect(heightOf(short.wrapper)).toBeLessThan(300)
         await expect(short.wrapper.hasAttribute('data-overflowing')).toBe(false)
         await expect(maskOf(short.content)).toBe('none')
@@ -252,6 +269,12 @@ export const UncappedToolbarOpen: Story = {
         const box = await boxOf(toolbar)
         await expect(box.bottom).toBeLessThanOrEqual(window.innerHeight + 1)
         await expect(box.top).toBeGreaterThanOrEqual(0)
+        // The outline redrawn above the toolbar must not take its clicks.
+        const button = toolbar()?.querySelector('button')
+        await expect(button).toBeTruthy()
+        const target = (button as HTMLElement).getBoundingClientRect()
+        const hit = document.elementFromPoint(target.left + target.width / 2, target.top + target.height / 2)
+        await expect(toolbar()?.contains(hit)).toBe(true)
     },
 }
 
@@ -269,5 +292,42 @@ export const UncappedToolbarClosed: Story = {
         const box = await boxOf(actions)
         await expect(box.bottom).toBeLessThanOrEqual(window.innerHeight + 1)
         await expect(box.top).toBeGreaterThanOrEqual(0)
+    },
+}
+
+/* ---------- Typing: the caret line stays clear of the fade and of the sticky toolbar ---------- */
+
+/** ProseMirror's own 5px scroll margin would leave the line being typed under the fade or the toolbar. */
+export const CaretStaysClear: Story = {
+    globals: { viewport: { value: 'tablet', isRotated: false } },
+    render: () => (
+        <div className='flex flex-col gap-4 max-w-2xl'>
+            <RichInput dataTest='type-capped' content={LONG} maxFieldHeight={300} />
+            <RichInput dataTest='type-uncapped' content={VERY_LONG} maxFieldHeight='none' toolbarDefaultVisible />
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        // Capped: typing at the end scrolls to the very end, so no fade covers the new line.
+        const capped = await findField(canvasElement, 'type-capped')
+        editorOf(capped.tiptap).commands.focus('end')
+        await userEvent.keyboard('{Enter}One more line')
+        await waitFor(() => expect(capped.wrapper.hasAttribute('data-can-scroll-down')).toBe(false))
+        // Moving up past the visible lines keeps the caret line out of the 24px top fade.
+        await userEvent.keyboard('{ArrowUp}'.repeat(20))
+        await waitFor(() => expect(capped.wrapper.hasAttribute('data-can-scroll-up')).toBe(true))
+        const scroller = capped.content.getBoundingClientRect()
+        const upCaret = caretBox()
+        await expect(upCaret).toBeTruthy()
+        await expect((upCaret as DOMRect).top).toBeGreaterThanOrEqual(scroller.top + 24 - 1)
+
+        // Uncapped: the line typed at the end stays above the sticky toolbar.
+        const uncapped = await findField(canvasElement, 'type-uncapped')
+        editorOf(uncapped.tiptap).commands.focus('end')
+        await userEvent.keyboard('{Enter}One more line')
+        await frames()
+        const caret = caretBox()
+        const toolbarBox = await boxOf(uncapped.toolbar)
+        await expect(caret).toBeTruthy()
+        await expect((caret as DOMRect).bottom).toBeLessThanOrEqual(toolbarBox.top)
     },
 }

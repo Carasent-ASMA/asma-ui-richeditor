@@ -40,6 +40,7 @@ import { mediaQueries } from 'asma-types'
 import { resolveFieldMaxHeight, resolveTextMaxHeight } from './helpers/maxHeight'
 import { useMediaQuery } from './hooks/useMediaQuery.hook'
 import { useOverflowCue } from './hooks/useOverflowCue.hook'
+import { useCaretClearance } from './hooks/useCaretClearance.hook'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
 
@@ -361,6 +362,7 @@ const RichInput: FC<IRichInput> = ({
     const fieldMaxHeight = readOnly || noDefaultStyles ? undefined : resolveFieldMaxHeight(maxFieldHeight, isTablet)
     const fieldCap = fieldMaxHeight === undefined ? undefined : fieldMaxHeight === 'none' ? 'none' : 'capped'
     const overflowCue = useOverflowCue(editor, fieldCap === 'capped')
+    useCaretClearance(editor, fieldCap, Boolean(showToolbar && !hideToolbar && !disabled), wrapperRef)
 
     const showError = !readOnly && error
     if (!editor) return null
