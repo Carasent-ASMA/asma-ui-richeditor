@@ -313,15 +313,23 @@ div[data-youtube-video] > iframe {
 .rte-wrapper[data-rte-field-cap='none'] {
     overflow: clip; /* still clips the rounded corners, but is no scroll container, so sticky works */
 }
+/* Sticky stops at the scroll container's padding edge. --rte-sticky-offset (that bottom padding, set by
+   useStickyToolbar) moves the control onto the edge itself, so no text shows below it. */
 .rte-wrapper[data-rte-field-cap='none'] > .toolbar {
     position: sticky;
-    bottom: 0;
+    bottom: calc(-1 * var(--rte-sticky-offset, 0px));
     z-index: 1; /* .toolbar already has an opaque background */
+}
+/* Only while stuck: separates the toolbar from the text scrolling under it. At rest it looks as before. */
+.rte-wrapper[data-rte-field-cap='none'][data-rte-toolbar-stuck] > .toolbar {
+    box-shadow:
+        0 -1px 0 0 var(--colors-delta-200),
+        0 -8px 12px -8px rgb(34 33 51 / 18%);
 }
 /* With the toolbar open its Close button is the sticky control; two sticky bottoms would overlap. */
 .rte-wrapper[data-rte-field-cap='none']:not([data-rte-toolbar='open']) > .rte-editor-row > .rte-actions {
     position: sticky;
-    bottom: 0;
+    bottom: calc(-1 * var(--rte-sticky-offset, 0px));
     align-self: flex-end; /* only a column shorter than the row can move inside it */
     z-index: 1;
 }
