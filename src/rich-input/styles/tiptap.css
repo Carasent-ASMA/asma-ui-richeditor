@@ -196,3 +196,132 @@ div[data-youtube-video] > iframe {
     outline: 2px solid var(--colors-focus-ring);
     outline-offset: -2px;
 }
+
+/* ================================================================== */
+/* WHOLE-FIELD HEIGHT (maxFieldHeight) — multiline-fields MLF-3/MLF-4  */
+/* Every rule is keyed on data-rte-field-cap, which RichInput sets only */
+/* when maxFieldHeight is given, so other callers render as before.    */
+/* Child combinators throughout: a RichInput nested in the reply header */
+/* (a quoted message in the chat composer) must not pick these up.     */
+/* ================================================================== */
+
+/* The text area never scrolls by itself in either mode (beats .core-ui-rte.edit-mode .tiptap). */
+.rte-wrapper[data-rte-field-cap] > .rte-editor-row > .rte-text-col > .core-ui-rte > .tiptap {
+    max-height: none;
+    overflow: visible;
+}
+
+/* --- Capped: the cap counts the reply header, text, attachment chips and toolbar --- */
+.rte-wrapper[data-rte-field-cap='capped'] {
+    /* Never taller than the screen. A second plain declaration can't be the dvh fallback: with var()
+       it would only fail at computed-value time, hence the @supports override below. */
+    --rte-field-cap: min(var(--rte-field-max-height), 100vh);
+    max-height: var(--rte-field-cap);
+}
+@supports (height: 100dvh) {
+    .rte-wrapper[data-rte-field-cap='capped'] {
+        --rte-field-cap: min(var(--rte-field-max-height), 100dvh);
+    }
+}
+/* The editor row absorbs the shrink; everything else keeps its natural height. */
+.rte-wrapper[data-rte-field-cap='capped'] > :not(.rte-editor-row) {
+    flex-shrink: 0;
+}
+.rte-wrapper[data-rte-field-cap='capped'] > .rte-editor-row {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+.rte-wrapper[data-rte-field-cap='capped'] > .rte-editor-row > .rte-text-col {
+    display: flex;
+    flex-direction: column;
+}
+/* .core-ui-rte is the scroller: a plain block inside a stretched flex item can't be height-capped. */
+.rte-wrapper[data-rte-field-cap='capped'] > .rte-editor-row > .rte-text-col > .core-ui-rte {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--colors-gray-500) transparent;
+}
+/* The reply box (rendered whenever maxFieldHeight is passed, so a mode change never remounts the reply)
+   only takes part in layout while capped; otherwise the reply lays out as if it were not wrapped. */
+/* Scoped to RichInput's own field container (also without default styles), not any .rte-reply on the page. */
+:has(> .rte-editor-row) > .rte-reply {
+    display: contents;
+}
+.rte-wrapper[data-rte-field-cap='capped'] > .rte-reply {
+    display: block;
+}
+/* A long quoted reply or many chips must not squeeze the text out of a small field: each takes at most
+   30% of the cap and scrolls past it, which leaves the text a few lines next to the toolbar. */
+.rte-wrapper[data-rte-field-cap='capped'] > :is(.rte-reply, .rte-attachments) {
+    max-height: calc(var(--rte-field-cap) * 0.3);
+    overflow-y: auto;
+}
+/* While they scroll they are keyboard stops (RichInput adds tabindex), so show where focus is. */
+.rte-wrapper[data-rte-field-cap='capped'] > :is(.rte-reply, .rte-attachments):focus-visible {
+    outline: 2px solid var(--colors-focus-ring);
+    outline-offset: -2px;
+}
+/* Overflow cue, only while the capped text overflows: a full scrollbar, and a fade on each edge that
+   hides text (an overlay scrollbar alone is not enough, and mobile browsers only show that one). */
+.rte-wrapper[data-rte-field-cap='capped'][data-overflowing] > .rte-editor-row > .rte-text-col > .core-ui-rte {
+    --rte-fade-top: 0px;
+    --rte-fade-bottom: 0px;
+    scrollbar-width: auto;
+    scrollbar-color: var(--colors-gray-500) var(--colors-gray-100, transparent);
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--rte-fade-top),
+        #000 calc(100% - var(--rte-fade-bottom)),
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--rte-fade-top),
+        #000 calc(100% - var(--rte-fade-bottom)),
+        transparent 100%
+    );
+}
+.rte-wrapper[data-overflowing][data-can-scroll-up] > .rte-editor-row > .rte-text-col > .core-ui-rte {
+    --rte-fade-top: 24px;
+}
+.rte-wrapper[data-overflowing][data-can-scroll-down] > .rte-editor-row > .rte-text-col > .core-ui-rte {
+    --rte-fade-bottom: 24px;
+}
+
+/* --- Both modes: the toolbar paints over the field's inset outline (and, sticky, keeps doing so while
+   stuck). Redraw the outline on top; `inherit` keeps every state (hover, error, focus) without repeating
+   them, and isolation keeps these z-indexes inside the field, under the app's own sticky bars. --- */
+.rte-wrapper[data-rte-field-cap] {
+    isolation: isolate;
+}
+.rte-wrapper[data-rte-field-cap]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+    outline: inherit;
+    outline-offset: inherit;
+}
+
+/* --- Uncapped ('none'): grows with the page; the toolbar and format button stay reachable --- */
+.rte-wrapper[data-rte-field-cap='none'] {
+    overflow: clip; /* still clips the rounded corners, but is no scroll container, so sticky works */
+}
+.rte-wrapper[data-rte-field-cap='none'] > .toolbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1; /* .toolbar already has an opaque background */
+}
+/* With the toolbar open its Close button is the sticky control; two sticky bottoms would overlap. */
+.rte-wrapper[data-rte-field-cap='none']:not([data-rte-toolbar='open']) > .rte-editor-row > .rte-actions {
+    position: sticky;
+    bottom: 0;
+    align-self: flex-end; /* only a column shorter than the row can move inside it */
+    z-index: 1;
+}

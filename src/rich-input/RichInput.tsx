@@ -36,8 +36,18 @@ import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import { resolveDefaultExtensions } from './helpers/EditorExtensions'
 import { useTranslations } from './components/useTranslations'
+import { mediaQueries } from 'asma-types'
+import { resolveFieldMaxHeight, resolveTextMaxHeight } from './helpers/maxHeight'
+import { useMediaQuery } from './hooks/useMediaQuery.hook'
+import { useOverflowCue } from './hooks/useOverflowCue.hook'
+import { useCaretClearance } from './hooks/useCaretClearance.hook'
+import { useIsScrollable } from './hooks/useIsScrollable.hook'
 
 const SINGLE_LINE_TOOLBAR_WIDTH = 80
+
+/** A box that scrolls without focusable content needs a tab stop and a name to be reachable by keyboard. */
+const scrollRegion = (scrollable: boolean, label: string) =>
+    scrollable ? ({ tabIndex: 0, role: 'group', 'aria-label': label } as const) : {}
 
 const LockedTooltip: FC<{ reason: ReactNode; children: ReactElement }> = ({ reason, children }) =>
     reason === undefined ? (
@@ -77,6 +87,7 @@ const RichInput: FC<IRichInput> = ({
     helperText,
     required,
     maxScrollableHeight,
+    maxFieldHeight,
     toolbarDefaultVisible,
     hideToolbar,
     noDefaultStyles,
@@ -351,6 +362,15 @@ const RichInput: FC<IRichInput> = ({
     const [focused, setFocused] = useState(false)
     const [emojiPickerVisible, setEmojiPickerVisible] = useState(false)
 
+    // Whole-field cap (pattern MLF-3/MLF-4). Mobile is the shared asma-types query; tablet is everything wider.
+    const isTablet = !useMediaQuery(mediaQueries.mobile, true)
+    const fieldMaxHeight = readOnly || noDefaultStyles ? undefined : resolveFieldMaxHeight(maxFieldHeight, isTablet)
+    const fieldCap = fieldMaxHeight === undefined ? undefined : fieldMaxHeight === 'none' ? 'none' : 'capped'
+    const overflowCue = useOverflowCue(editor, fieldCap === 'capped')
+    useCaretClearance(editor, fieldCap, Boolean(showToolbar && !hideToolbar && !disabled), wrapperRef)
+    const [replyRef, replyScrollable] = useIsScrollable(fieldCap === 'capped')
+    const [attachmentsRef, attachmentsScrollable] = useIsScrollable(fieldCap === 'capped')
+
     const showError = !readOnly && error
     if (!editor) return null
 
@@ -422,8 +442,31 @@ const RichInput: FC<IRichInput> = ({
                         !readOnly && showError && (focused ? 'error-focused-state' : 'error-state'),
                         !readOnly && !showError && focused && 'focused-state',
                     )}
+                    data-rte-field-cap={fieldCap}
+                    data-rte-toolbar={fieldCap && showToolbar ? 'open' : undefined}
+                    data-overflowing={overflowCue.overflowing ? '' : undefined}
+                    data-can-scroll-up={overflowCue.canScrollUp ? '' : undefined}
+                    data-can-scroll-down={overflowCue.canScrollDown ? '' : undefined}
+                    style={
+                        fieldCap === 'capped'
+                            ? ({ '--rte-field-max-height': fieldMaxHeight } as React.CSSProperties)
+                            : undefined
+                    }
                 >
-                    {replyModeComponent}
+                    {/* With maxFieldHeight the reply header gets its own box: capped, a long quote scrolls in it
+                        instead of eating the cap. The box stays when the cap mode changes, so the reply content
+                        is not remounted. */}
+                    {maxFieldHeight !== undefined && replyModeComponent ? (
+                        <div
+                            ref={replyRef}
+                            className='rte-reply'
+                            {...scrollRegion(replyScrollable, t.quoted_message)}
+                        >
+                            {replyModeComponent}
+                        </div>
+                    ) : (
+                        replyModeComponent
+                    )}
 
                     <div
                         ref={mirrorRef}
@@ -431,8 +474,8 @@ const RichInput: FC<IRichInput> = ({
                         className='pointer-events-none invisible absolute left-[-99999px] top-0'
                     />
 
-                    <div className='flex gap-2'>
-                        <div className='flex-1 min-w-0'>
+                    <div className='rte-editor-row flex gap-2'>
+                        <div className='rte-text-col flex-1 min-w-0'>
                             <EditorContent
                                 aria-required={required ? true : undefined}
                                 data-test={dataTest}
@@ -449,7 +492,9 @@ const RichInput: FC<IRichInput> = ({
                                 editor={editor}
                                 onClick={() => editor?.chain().focus().run()}
                                 style={
-                                    { '--max-scrollable-height': `${maxScrollableHeight || 100}px` } as React.CSSProperties
+                                    {
+                                        '--max-scrollable-height': resolveTextMaxHeight(maxScrollableHeight),
+                                    } as React.CSSProperties
                                 }
                             />
                         </div>
@@ -459,7 +504,7 @@ const RichInput: FC<IRichInput> = ({
                         {!hideToolbar && !disabled && !readOnly && (
                             <div
                                 className={clsx(
-                                    'flex shrink-0 items-center justify-end',
+                                    'rte-actions flex shrink-0 items-center justify-end',
                                     isMultiLine ? 'flex-col w-10' : 'w-20',
                                 )}
                             >
@@ -519,7 +564,11 @@ const RichInput: FC<IRichInput> = ({
                     </div>
 
                     {!!attachments?.length && (
-                        <div className='p-2 flex flex-wrap items-center gap-2'>
+                        <div
+                            ref={attachmentsRef}
+                            className='rte-attachments p-2 flex flex-wrap items-center gap-2'
+                            {...scrollRegion(attachmentsScrollable, t.attachments)}
+                        >
                             {attachments.map((props) => (
                                 <StyledChip {...props} />
                             ))}
