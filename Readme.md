@@ -35,6 +35,9 @@ scrolls inside itself ([multiline fields pattern](https://carasent.atlassian.net
 - **Every other editor:** `maxFieldHeight='none'`. The field grows with its content; the toolbar, or with the
   toolbar closed the format button, sticks to the bottom of the view while the field is in it. Sticky needs
   every ancestor between the field and the scrolling container to keep `overflow: visible` (or `clip`).
+  The control sits on the scrolling container's bottom edge, not on its padding: the field reads that padding
+  at runtime (`--rte-sticky-offset`), so no text shows below the stuck control. Only while stuck does the
+  toolbar get a shadow (`data-rte-toolbar-stuck`); at rest it looks as before.
 - **Display only:** `readOnly`, which always shows the full text and ignores both caps. `disabled` keeps the cap.
 - `maxFieldHeight` needs the default styles; it has no effect with `noDefaultStyles`.
 

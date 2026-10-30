@@ -416,6 +416,8 @@ export const UncappedToolbarOpen: Story = {
         const target = (button as HTMLElement).getBoundingClientRect()
         const hit = document.elementFromPoint(target.left + target.width / 2, target.top + target.height / 2)
         await expect(toolbar()?.contains(hit)).toBe(true)
+        // The page scrolls here, not a padded container: no offset, as before.
+        await expect(wrapper.style.getPropertyValue('--rte-sticky-offset')).toBe('0px')
     },
 }
 
@@ -433,6 +435,64 @@ export const UncappedToolbarClosed: Story = {
         const box = await boxOf(actions)
         await expect(box.bottom).toBeLessThanOrEqual(window.innerHeight + 1)
         await expect(box.top).toBeGreaterThanOrEqual(0)
+    },
+}
+
+/* ---------- In a padded scroll area: the stuck control sits on the area's edge, not on its padding ---------- */
+
+/** Like a dialog body or an app page: a scroll area with 16px padding (no border, so its edge is its box). */
+const paddedArea = (dataTest: string, toolbarOpen: boolean) => (
+    <div data-testid={`${dataTest}-area`} className='max-w-2xl overflow-y-auto p-4 ring-1 ring-delta-200 h-[360px]'>
+        <RichInput
+            dataTest={dataTest}
+            label='Notes'
+            content={VERY_LONG}
+            maxFieldHeight='none'
+            toolbarDefaultVisible={toolbarOpen}
+        />
+    </div>
+)
+const areaOf = (canvasElement: HTMLElement, dataTest: string) =>
+    canvasElement.querySelector<HTMLElement>(`[data-testid="${dataTest}-area"]`) as HTMLElement
+
+/**
+ * Sticky alone stops 16px above the area's edge, and the field's text showed in that strip. The toolbar now
+ * sits on the edge, and only while stuck it gets a shadow; at the end of the field it is as before.
+ */
+export const UncappedInPaddedArea: Story = {
+    render: () => paddedArea('padded-open', true),
+    play: async ({ canvasElement }) => {
+        const { wrapper, toolbar } = await findField(canvasElement, 'padded-open')
+        const area = areaOf(canvasElement, 'padded-open')
+        await expect(wrapper.style.getPropertyValue('--rte-sticky-offset')).toBe('16px')
+
+        area.scrollTop = 0
+        await waitFor(() => expect(wrapper.hasAttribute('data-rte-toolbar-stuck')).toBe(true))
+        const stuck = await boxOf(toolbar)
+        await expect(Math.abs(stuck.bottom - area.getBoundingClientRect().bottom)).toBeLessThanOrEqual(1)
+        await expect(getComputedStyle(toolbar() as HTMLElement).boxShadow).not.toBe('none')
+
+        // At the end of the field the toolbar is back in its place, without the shadow.
+        area.scrollTop = area.scrollHeight
+        await waitFor(() => expect(wrapper.hasAttribute('data-rte-toolbar-stuck')).toBe(false))
+        const rest = await boxOf(toolbar)
+        await expect(wrapper.getBoundingClientRect().bottom - rest.bottom).toBeLessThanOrEqual(2)
+        await expect(getComputedStyle(toolbar() as HTMLElement).boxShadow).toBe('none')
+    },
+}
+
+/** With the toolbar closed, the format button sits on the area's edge the same way. */
+export const UncappedInPaddedAreaClosed: Story = {
+    render: () => paddedArea('padded-closed', false),
+    play: async ({ canvasElement }) => {
+        const { wrapper, actions } = await findField(canvasElement, 'padded-closed')
+        const area = areaOf(canvasElement, 'padded-closed')
+        area.scrollTop = 0
+        await frames()
+        const box = await boxOf(actions)
+        await expect(Math.abs(box.bottom - area.getBoundingClientRect().bottom)).toBeLessThanOrEqual(1)
+        // The shadow belongs to the open toolbar only.
+        await expect(wrapper.hasAttribute('data-rte-toolbar-stuck')).toBe(false)
     },
 }
 
