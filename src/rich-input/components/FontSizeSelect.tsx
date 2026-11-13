@@ -86,7 +86,7 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?
                             openFromPointer(event.currentTarget)
                         }}
                         onKeyDown={handleKeyDown}
-                        className='font-normal capitalize'
+                        className='asma-hit-area font-normal capitalize'
                         onMouseUp={(event) => {
                             event.stopPropagation()
                             event.preventDefault()

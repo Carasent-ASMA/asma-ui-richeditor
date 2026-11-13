@@ -4,8 +4,14 @@ import clsx from 'clsx'
  * DS floating label for the rich text editor (Figma node 20571-30699). Class recipe copied from
  * asma-ui-core `src/components/inputs/field-styles.ts` (`floatingLabelClass` +
  * `floatingLabelLayoutStyle`) — those helpers are not exported from the ui-core barrel, so the
- * shrunk-notch typography/colors are duplicated here verbatim to stay pixel-identical to
- * StyledInputField. Converge on the shared helpers if ui-core ever exports them.
+ * layout/typography is duplicated here to match StyledInputField.
+ *
+ * One deliberate departure, ASMA-8913: the resting (not shrunk) label is `text-delta-600`, not the
+ * `text-delta-500` ui-core still uses. delta-500 is #7a899e on white, 3.56:1, below the 4.5:1 that
+ * WCAG 1.4.3 requires of a placeholder surrogate; delta-600 measures 5.18:1 (default and greenish)
+ * and 8.59:1 (fretex). ui-core finding F-01 covers the same defect in StyledInputField; until it is
+ * fixed there, this label is intentionally a step darker than the shared field's. Converge on the
+ * shared helpers (and drop this override) once F-01 ships.
  */
 export const FloatingLabel = ({
     label,
@@ -36,7 +42,7 @@ export const FloatingLabel = ({
                       ? 'text-gama-500'
                       : shrink
                         ? 'text-delta-800'
-                        : 'text-delta-500',
+                        : 'text-delta-600',
             shrink
                 ? 'left-[14px] bg-white px-1 text-xs leading-[16px] tracking-[0.24px]' // Figma Small 12/16, ls 0.24px
                 : 'left-[17px] text-base leading-6', // rests over the editor padding (16px + 1px outline)

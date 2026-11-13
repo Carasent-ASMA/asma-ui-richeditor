@@ -163,8 +163,13 @@
 }
 
 /* Custom CSS Needed for TipTap PlaceHolder */
+/* ASMA-8913: delta-500 (#7a899e on white) is 3.56:1 — below the 4.5:1 that WCAG 1.4.3 requires of
+   placeholder text. delta-600 measures 5.18:1 (default and greenish) and 8.59:1 (fretex). This is
+   the same defect as ui-core finding F-01; once it is fixed there, use the input placeholder token
+   (`--colors-input-active-placeholder-color`) instead of a ramp step — today it resolves to
+   delta-500 and fails. Keep this in step with FloatingLabel's resting colour. */
 .ProseMirror p.is-editor-empty:first-child::before {
-    color: var(--colors-delta-500);
+    color: var(--colors-delta-600);
     content: attr(data-placeholder);
     float: left;
     height: 0;
