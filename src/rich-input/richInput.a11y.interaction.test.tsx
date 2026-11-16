@@ -116,7 +116,11 @@ const settleToolbarLayout = async (container: HTMLElement): Promise<void> => {
         () => {
             const toolbar = container.querySelector<HTMLElement>('.toolbar')
             if (!toolbar) throw new Error('the toolbar is not rendered yet')
-            if (!toolbar.querySelector('[data-testid="richeditor-font-size-select"] svg')) {
+
+            // The font-size control only exists from four visible buttons up; when it is not there,
+            // there is no caret to wait for.
+            const fontButton = toolbar.querySelector<HTMLElement>('[data-testid="richeditor-font-size-select"]')
+            if (fontButton && !fontButton.querySelector('svg')) {
                 throw new Error('the font-size caret is not painted yet')
             }
 
@@ -270,12 +274,13 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         expect(overlay.minWidth, `${name}: ::after min-width`).toBe(`${TARGET_SIZE}px`)
         expect(overlay.minHeight, `${name}: ::after min-height`).toBe(`${TARGET_SIZE}px`)
         // `width: 100%` resolves against the padding box, so a bordered button's overlay is its box
-        // minus the 1px border on each side; the minimum is what carries the 44px target.
+        // minus the 1px border on each side; the minimum is what carries the 44px target. Computed
+        // style serialises to four decimals, hence the tolerance.
         expect(Number.parseFloat(overlay.width), `${name}: ::after width`).toBeGreaterThanOrEqual(
-            Math.max(box.width - 2, TARGET_SIZE),
+            Math.max(box.width - 2, TARGET_SIZE) - 0.01,
         )
         expect(Number.parseFloat(overlay.height), `${name}: ::after height`).toBeGreaterThanOrEqual(
-            Math.max(box.height - 2, TARGET_SIZE),
+            Math.max(box.height - 2, TARGET_SIZE) - 0.01,
         )
     }
 
@@ -321,6 +326,22 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
             )
             expect(box.right, `${nameOf(button)}: ends right of the field`).toBeLessThanOrEqual(toolbarBox.right + 0.5)
         }
+    }
+
+    /**
+     * ASMA-8913 round 2 — the space before Close, measured between the two drawn boxes. `space-between`
+     * distributes the row's leftover width into this one gap, so at a breakpoint it collapses and the
+     * control before Close loses the right edge of its 44px target.
+     */
+    const gapBeforeClose = (container: HTMLElement): number => {
+        const buttons = toolbarButtons(container)
+        const close = container.querySelector<HTMLElement>('[data-testid="richeditor-close-toolbar-button"]')
+        if (!close) throw new Error('No Close control rendered')
+        const index = buttons.indexOf(close)
+        const previous = index > 0 ? buttons[index - 1] : undefined
+        if (!previous) throw new Error('No control before Close rendered')
+
+        return close.getBoundingClientRect().left - previous.getBoundingClientRect().right
     }
 
     it('gives all ten controls of the wide toolbar a 44x44 target', async () => {
@@ -391,10 +412,7 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
             // The gap is the 4px flex gap plus whatever space-between distributes; it must be back
             // at (at least) the designed 4px rather than collapsing to 0 as it did with the wider
             // control.
-            expect(
-                close.getBoundingClientRect().left - more.getBoundingClientRect().right,
-                'the 4px gap before Close must be back',
-            ).toBeGreaterThanOrEqual(4)
+            expect(gapBeforeClose(container), 'the 4px gap before Close must be back').toBeGreaterThanOrEqual(4)
 
             // Strict: every control owns all nine points, no neighbour exception.
             for (const button of buttons) expectTarget(button)
@@ -403,32 +421,218 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         }
     })
 
-    it('switches the caret out of flow exactly at the compact threshold', async () => {
-        // The threshold is the overflow breakpoint plus the caret's 20px: 534 for Norwegian, 540 for
-        // English. Each pair is [one pixel below → compact, at the threshold → normal].
-        const cases: Array<{ width: number; locale: 'no' | 'en'; compact: boolean }> = [
-            { width: 390, locale: 'no', compact: true },
-            { width: 500, locale: 'no', compact: true },
-            { width: 514, locale: 'no', compact: true },
-            { width: 520, locale: 'en', compact: true },
-            { width: 533, locale: 'no', compact: true },
-            { width: 534, locale: 'no', compact: false },
-            { width: 539, locale: 'en', compact: true },
-            { width: 540, locale: 'en', compact: false },
+    /**
+     * ASMA-8913 round 2 — the audit's failing widths plus every effective breakpoint after the 13px
+     * slack (nominal + 13). Each case asserts the designed behaviour end-to-end: row fits, no control
+     * outside the field, **≥4px gap before Close**, and all nine hit points of every 44x44 square
+     * (strict identity, no neighbour exception). The button count is pinned too, so the cost of the
+     * slack — collapsing 13px earlier — is visible in the test as well as in the screenshots.
+     */
+    it('keeps the 4px gap and all nine hit points at every toolbar breakpoint', async () => {
+        const cases: Array<{
+            width: number
+            locale: 'no' | 'en'
+            buttons: number
+            compact: boolean
+            hasFontSize?: boolean
+        }> = [
+            // Norwegian. Audit widths first (334/380/424/469/514/534/540 + 390), then the effective
+            // breakpoints and the two sides of the compact threshold (546/547). Below four visible
+            // buttons the font-size control does not exist, so compact mode is not applicable.
+            { width: 334, locale: 'no', buttons: 5, compact: false, hasFontSize: false },
+            { width: 346, locale: 'no', buttons: 5, compact: false, hasFontSize: false },
+            { width: 347, locale: 'no', buttons: 6, compact: true },
+            { width: 380, locale: 'no', buttons: 6, compact: true },
+            { width: 390, locale: 'no', buttons: 6, compact: true },
+            { width: 392, locale: 'no', buttons: 6, compact: true },
+            { width: 393, locale: 'no', buttons: 7, compact: true },
+            { width: 424, locale: 'no', buttons: 7, compact: true },
+            { width: 436, locale: 'no', buttons: 7, compact: true },
+            { width: 437, locale: 'no', buttons: 8, compact: true },
+            { width: 469, locale: 'no', buttons: 8, compact: true },
+            { width: 481, locale: 'no', buttons: 8, compact: true },
+            { width: 482, locale: 'no', buttons: 9, compact: true },
+            { width: 514, locale: 'no', buttons: 9, compact: true },
+            { width: 526, locale: 'no', buttons: 9, compact: true },
+            { width: 527, locale: 'no', buttons: 10, compact: true },
+            { width: 534, locale: 'no', buttons: 10, compact: true },
+            { width: 540, locale: 'no', buttons: 10, compact: true },
+            { width: 546, locale: 'no', buttons: 10, compact: true },
+            { width: 547, locale: 'no', buttons: 10, compact: false },
+
+            // English: the same set shifted by its wider labels; its compact threshold is 553.
+            { width: 340, locale: 'en', buttons: 5, compact: false, hasFontSize: false },
+            { width: 352, locale: 'en', buttons: 5, compact: false, hasFontSize: false },
+            { width: 353, locale: 'en', buttons: 6, compact: true },
+            { width: 383, locale: 'en', buttons: 6, compact: true },
+            { width: 390, locale: 'en', buttons: 6, compact: true },
+            { width: 395, locale: 'en', buttons: 6, compact: true },
+            { width: 396, locale: 'en', buttons: 7, compact: true },
+            { width: 430, locale: 'en', buttons: 7, compact: true },
+            { width: 442, locale: 'en', buttons: 7, compact: true },
+            { width: 443, locale: 'en', buttons: 8, compact: true },
+            { width: 475, locale: 'en', buttons: 8, compact: true },
+            { width: 487, locale: 'en', buttons: 8, compact: true },
+            { width: 488, locale: 'en', buttons: 9, compact: true },
+            { width: 520, locale: 'en', buttons: 9, compact: true },
+            { width: 532, locale: 'en', buttons: 9, compact: true },
+            { width: 533, locale: 'en', buttons: 10, compact: true },
+            { width: 540, locale: 'en', buttons: 10, compact: true },
+            { width: 552, locale: 'en', buttons: 10, compact: true },
+            { width: 553, locale: 'en', buttons: 10, compact: false },
         ]
 
-        for (const { width, locale, compact } of cases) {
+        for (const { width, locale, buttons, compact, hasFontSize = true } of cases) {
             const { container, unmount } = await mountRichInput(width, true, locale)
             const label = `${width}px ${locale}`
+            const rendered = toolbarButtons(container)
 
-            expect(caretOutOfFlow(container), `${label}: compact mode`).toBe(compact)
-            expect(
-                fontSizeControl(container).getBoundingClientRect().width,
-                `${label}: font-size control width`,
-            ).toBe(compact ? 86.5 : 106.5)
+            if (hasFontSize) {
+                expect(caretOutOfFlow(container), `${label}: compact mode`).toBe(compact)
+                expect(
+                    fontSizeControl(container).getBoundingClientRect().width,
+                    `${label}: font-size control width`,
+                ).toBe(compact ? 86.5 : 106.5)
+            } else {
+                expect(
+                    container.querySelector('[data-testid="richeditor-font-size-select"]'),
+                    `${label}: no font-size control below four visible buttons`,
+                ).toBeNull()
+            }
+
+            expect(rendered, `${label}: button count`).toHaveLength(buttons)
             expectRowFits(container)
+            expect(gapBeforeClose(container), `${label}: gap before Close`).toBeGreaterThanOrEqual(4)
+
+            for (const button of rendered) expectTarget(button)
 
             unmount()
         }
     })
+
+    it('switches the caret out of flow exactly at the compact threshold', async () => {
+        // Overflow breakpoint + caret 20px, on the slack-adjusted width: 534 + 13 = 547 (no) and
+        // 540 + 13 = 553 (en) measured.
+        const cases: Array<{ width: number; locale: 'no' | 'en'; compact: boolean }> = [
+            { width: 546, locale: 'no', compact: true },
+            { width: 547, locale: 'no', compact: false },
+            { width: 552, locale: 'en', compact: true },
+            { width: 553, locale: 'en', compact: false },
+        ]
+
+        for (const { width, locale, compact } of cases) {
+            const { container, unmount } = await mountRichInput(width, true, locale)
+
+            expect(caretOutOfFlow(container), `${width}px ${locale}: compact mode`).toBe(compact)
+            expect(
+                fontSizeControl(container).getBoundingClientRect().width,
+                `${width}px ${locale}: font-size control width`,
+            ).toBe(compact ? 86.5 : 106.5)
+
+            unmount()
+        }
+    })
+
+    /**
+     * The round-2 audit swept 300-620px in 1px steps and found 45/321 failing widths (no) and 48/321
+     * (en). This is the same sweep as an assertion: at every width, the row fits, no control leaves
+     * the field, the gap before Close is at least 4px, and every button owns all nine points of its
+     * 44px square. Failures are collected per width so the report can say how many widths fail, not
+     * just that one did.
+     */
+    const SWEEP_WIDTHS = Array.from({ length: 321 }, (_, index) => 300 + index)
+
+    const sweepProblem = (container: HTMLElement): string | null => {
+        const toolbar = container.querySelector<HTMLElement>('.toolbar')
+        if (!toolbar) return 'no toolbar'
+        if (toolbar.scrollWidth > toolbar.clientWidth) {
+            return `row overflows (${toolbar.scrollWidth} > ${toolbar.clientWidth})`
+        }
+
+        const toolbarBox = toolbar.getBoundingClientRect()
+        const buttons = toolbarButtons(container)
+        if (buttons.length === 0) return 'no buttons'
+
+        for (const button of buttons) {
+            const box = button.getBoundingClientRect()
+            if (box.left < toolbarBox.left - 0.5) return `${nameOf(button)} starts outside the field`
+            if (box.right > toolbarBox.right + 0.5) return `${nameOf(button)} ends outside the field`
+        }
+
+        const gap = gapBeforeClose(container)
+        if (gap < 4) return `gap before Close ${gap.toFixed(2)}px`
+
+        for (const button of buttons) {
+            const box = button.getBoundingClientRect()
+            const centreX = box.left + box.width / 2
+            const centreY = box.top + box.height / 2
+            for (const [dx, dy] of TARGET_POINTS) {
+                if (document.elementFromPoint(centreX + dx, centreY + dy) !== button) {
+                    return `${nameOf(button)} does not own (${dx}, ${dy})`
+                }
+            }
+        }
+
+        return null
+    }
+
+    const sweepMount = (width: number, locale: 'no' | 'en') =>
+        mount(
+            <div style={{ width }}>
+                <RichInput
+                    dataTest='rich-input-sweep'
+                    toolbarDefaultVisible
+                    locale={locale}
+                    label={locale === 'en' ? 'Message' : 'Melding'}
+                    labelPlacement='floating'
+                    placeholder={locale === 'en' ? 'Write here' : 'Skriv her'}
+                />
+            </div>,
+        )
+
+    it('passes the 300-620px fresh-mount sweep in both locales', async () => {
+        for (const locale of ['no', 'en'] as const) {
+            const failures: string[] = []
+
+            for (const width of SWEEP_WIDTHS) {
+                const { container, unmount } = sweepMount(width, locale)
+                const problem = sweepProblem(container)
+                if (problem) failures.push(`${width}px: ${problem}`)
+                unmount()
+            }
+
+            console.log(
+                `SWEEP fresh ${locale}: ${failures.length}/${SWEEP_WIDTHS.length} failing widths` +
+                    (failures.length > 0 ? ` — ${failures.slice(0, 12).join(', ')}` : ''),
+            )
+            expect(failures, `fresh-mount sweep (${locale}): ${failures.length} failing widths`).toEqual([])
+        }
+    }, 600_000)
+
+    it('passes the 300-620px resize sweep in both locales', async () => {
+        for (const locale of ['no', 'en'] as const) {
+            const mounted = sweepMount(620, locale)
+            const host = mounted.container.firstElementChild as HTMLElement | null
+            if (!host) throw new Error('No sweep host rendered')
+            const failures: string[] = []
+
+            for (const width of SWEEP_WIDTHS) {
+                host.style.width = `${width}px`
+                // ResizeObserver → React state update → layout; two frames plus a macrotask.
+                await new Promise<void>((resolve) =>
+                    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0))),
+                )
+
+                const problem = sweepProblem(mounted.container)
+                if (problem) failures.push(`${width}px: ${problem}`)
+            }
+
+            console.log(
+                `SWEEP resize ${locale}: ${failures.length}/${SWEEP_WIDTHS.length} failing widths` +
+                    (failures.length > 0 ? ` — ${failures.slice(0, 12).join(', ')}` : ''),
+            )
+            expect(failures, `resize sweep (${locale}): ${failures.length} failing widths`).toEqual([])
+            mounted.unmount()
+        }
+    }, 600_000)
 })

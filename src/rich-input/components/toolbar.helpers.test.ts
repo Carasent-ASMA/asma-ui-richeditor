@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+    FONT_SIZE_CARET_WIDTH,
     getCompactFontSizeBreakpoint,
     getOverflowMenuBreakpoint,
     getVisibleButtonCount,
     isCompactFontSize,
+    TOOLBAR_WIDTH_SLACK,
 } from './toolbar.helpers'
 
 /**
@@ -74,14 +76,15 @@ describe('getOverflowMenuBreakpoint', () => {
 })
 
 /**
- * ASMA-8913 — where the caret stops taking part in the row's width. The table above was measured for
- * an 86.5px font-size control; the 20px caret makes it 106.5px, so compact mode has to start 20px
- * before the point where nine buttons first fit.
+ * ASMA-8913 — where the caret stops taking part in the row's width, and the slack that keeps the
+ * designed 4px gap before Close at every width. The slack shifts both the visible-button breakpoints
+ * and this threshold by 11px from the caller's side; the cost is documented and pinned here.
  */
 describe('compact font-size threshold', () => {
     it('is the overflow breakpoint plus the caret width', () => {
         expect(getCompactFontSizeBreakpoint(true)).toBe(534)
         expect(getCompactFontSizeBreakpoint(false)).toBe(540)
+        expect(getOverflowMenuBreakpoint(true) + FONT_SIZE_CARET_WIDTH).toBe(534)
     })
 
     it('switches exactly one pixel below it, and only once measured', () => {
@@ -93,5 +96,15 @@ describe('compact font-size threshold', () => {
             // first paint must assume, and the layout effect corrects it before paint anyway.
             expect(isCompactFontSize(0, isNorsk), 'unmeasured').toBe(false)
         }
+    })
+
+    it('reserves 13px of slack, which is what restores the 4px gap', () => {
+        expect(TOOLBAR_WIDTH_SLACK).toBe(13)
+        // The caller subtracts the slack before asking, so the real thresholds are 547/553 and the
+        // first visible-button bucket moves 13px earlier (334 → 347 measured).
+        expect(getCompactFontSizeBreakpoint(true) + TOOLBAR_WIDTH_SLACK).toBe(547)
+        expect(getCompactFontSizeBreakpoint(false) + TOOLBAR_WIDTH_SLACK).toBe(553)
+        expect(getVisibleButtonCount(334, true), 'nominal').toBe(4)
+        expect(getVisibleButtonCount(334 - TOOLBAR_WIDTH_SLACK, true), 'slack-adjusted').toBe(3)
     })
 })

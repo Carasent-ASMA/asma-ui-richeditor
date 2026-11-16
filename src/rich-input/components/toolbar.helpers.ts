@@ -21,10 +21,19 @@ export const getOverflowMenuBreakpoint = (isNorsk: boolean): number => (isNorsk 
 export const FONT_SIZE_CARET_WIDTH = 20
 
 /**
+ * ASMA-8913 round 2: the row exact-fits at every overflow breakpoint, so `space-between` leaves 0px
+ * before Close and the control before it loses the right edge of its 44px target. Reserving slack in
+ * the width the breakpoints see moves the control one bucket earlier and restores the designed 4px
+ * gap. Measured on the 300-620px sweep (1px steps, both locales, fresh mount and resize): 11px left
+ * one failing width (345 no, 3.94px), 12px left one (395 en, 3.80px), 13px passes 0/321 four times
+ * over. The cost is that the toolbar collapses 13px sooner than the nominal breakpoints — at 390
+ * Norwegian that is one formatting button moving into the overflow menu.
+ */
+export const TOOLBAR_WIDTH_SLACK = 13
+
+/**
  * Below the overflow breakpoint plus the caret's width, the caret is rendered out of flow so it adds
- * no width. That covers the nine-button range just above the breakpoint too: at 534px (no) the
- * 106.5px control just fits the row, and one pixel narrower it no longer does — which is why compact
- * starts exactly there.
+ * no width. The width passed here is the slack-adjusted toolbar width (see TOOLBAR_WIDTH_SLACK).
  */
 export const getCompactFontSizeBreakpoint = (isNorsk: boolean): number =>
     getOverflowMenuBreakpoint(isNorsk) + FONT_SIZE_CARET_WIDTH

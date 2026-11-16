@@ -8,7 +8,7 @@ import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import { useListboxTriggerKeyboard } from '../hooks/useListboxTriggerKeyboard.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
-import { getOverflowMenuBreakpoint, getVisibleButtonCount, isCompactFontSize } from './toolbar.helpers'
+import { getOverflowMenuBreakpoint, getVisibleButtonCount, isCompactFontSize, TOOLBAR_WIDTH_SLACK } from './toolbar.helpers'
 import { ToolbarOverflowItem } from './ToolbarOverflowItem'
 import { useTranslations } from './useTranslations'
 
@@ -69,7 +69,9 @@ export const Toolbar = ({
         if (!toolbar) return
 
         const updateVisibleActions = () => {
-            const width = toolbar.clientWidth
+            // Breakpoints and compact mode judge the slack-adjusted width, not the drawn one; the
+            // drawn row still uses the whole field, it just never exact-fits.
+            const width = Math.max(0, toolbar.clientWidth - TOOLBAR_WIDTH_SLACK)
 
             setActionsVisible(width < getOverflowMenuBreakpoint(isNorsk))
             setVisibleButtons(getVisibleButtonCount(width, isNorsk))
@@ -86,6 +88,10 @@ export const Toolbar = ({
 
     const { anchorEl, open, handleClose, openFromElement } = useToggleMenuVisibility()
     const overflowMenuId = 'richinput-overflow-menu'
+
+    // ASMA-8913 round 2: the measured width the breakpoints see reserves 13px of slack, so the row
+    // never exact-fits and the designed 4px gap before Close survives at every width.
+    const compactFontSize = isCompactFontSize(toolbarWidth, isNorsk)
 
     /** Buttons that no longer fit, in the same order they drop out of the toolbar. */
     const overflowItems = [
@@ -170,7 +176,10 @@ export const Toolbar = ({
                 scoped to this row on purpose: RichInput's action column (`rte-actions`) stacks with
                 no gap in multi-line mode and the field clips it at the right edge, so overlapping
                 44px overlays there would steal each other's presses. */}
-            <div className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })} ref={toolbarRef}>
+            <div
+                className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })}
+                ref={toolbarRef}
+            >
                 <div className='flex flex-row items-center gap-1'>
                     {visibleButtons >= 1 && (
                         <StyledTooltip arrow title={t.emojis} placement='top'>
@@ -257,7 +266,7 @@ export const Toolbar = ({
                             dataTest='toolbar-font-size-select'
                             editor={editor}
                             locale={locale}
-                            compact={isCompactFontSize(toolbarWidth, isNorsk)}
+                            compact={compactFontSize}
                         />
                     )}
                     {visibleButtons >= 5 && (
