@@ -78,7 +78,7 @@ describe('getOverflowMenuBreakpoint', () => {
 /**
  * ASMA-8913 — where the caret stops taking part in the row's width, and the slack that keeps the
  * designed 4px gap before Close at every width. The slack shifts both the visible-button breakpoints
- * and this threshold by 11px from the caller's side; the cost is documented and pinned here.
+ * and this threshold by 13px from the caller's side; the cost is documented and pinned here.
  */
 describe('compact font-size threshold', () => {
     it('is the overflow breakpoint plus the caret width', () => {

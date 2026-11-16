@@ -534,11 +534,13 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
     })
 
     /**
-     * The round-2 audit swept 300-620px in 1px steps and found 45/321 failing widths (no) and 48/321
-     * (en). This is the same sweep as an assertion: at every width, the row fits, no control leaves
-     * the field, the gap before Close is at least 4px, and every button owns all nine points of its
-     * 44px square. Failures are collected per width so the report can say how many widths fail, not
-     * just that one did.
+     * The sweep that motivated round 2 covers 300-620px in 1px steps. The project's own pre-fix run
+     * of it reports 57/321 failing widths in Norwegian and 60/321 in English: at every breakpoint the
+     * row exact-fits, the gap before Close collapses to 0-3.9px, and the control before it loses the
+     * right edge of its 44px square. This is the same sweep as an assertion: at every width, the row
+     * fits, no control leaves the field, the gap before Close is at least 4px, and every button owns
+     * all nine points of its 44px square. Failures are collected for both locales before asserting,
+     * so one run reports the count in each rather than stopping at the first failing locale.
      */
     const SWEEP_WIDTHS = Array.from({ length: 321 }, (_, index) => 300 + index)
 
@@ -590,31 +592,42 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
             </div>,
         )
 
-    it('passes the 300-620px fresh-mount sweep in both locales', async () => {
-        for (const locale of ['no', 'en'] as const) {
-            const failures: string[] = []
+    type SweepFailures = Record<'no' | 'en', string[]>
 
+    const logSweep = (kind: 'fresh' | 'resize', failures: SweepFailures): void => {
+        for (const locale of ['no', 'en'] as const) {
+            console.log(
+                `SWEEP ${kind} ${locale}: ${failures[locale].length}/${SWEEP_WIDTHS.length} failing widths` +
+                    (failures[locale].length > 0 ? ` — ${failures[locale].slice(0, 12).join(', ')}` : ''),
+            )
+        }
+    }
+
+    it('passes the 300-620px fresh-mount sweep in both locales', async () => {
+        const failures: SweepFailures = { no: [], en: [] }
+
+        for (const locale of ['no', 'en'] as const) {
             for (const width of SWEEP_WIDTHS) {
                 const { container, unmount } = sweepMount(width, locale)
                 const problem = sweepProblem(container)
-                if (problem) failures.push(`${width}px: ${problem}`)
+                if (problem) failures[locale].push(`${width}px: ${problem}`)
                 unmount()
             }
-
-            console.log(
-                `SWEEP fresh ${locale}: ${failures.length}/${SWEEP_WIDTHS.length} failing widths` +
-                    (failures.length > 0 ? ` — ${failures.slice(0, 12).join(', ')}` : ''),
-            )
-            expect(failures, `fresh-mount sweep (${locale}): ${failures.length} failing widths`).toEqual([])
         }
+
+        logSweep('fresh', failures)
+        // One assertion for both locales, so a failure reports the Norwegian and English counts
+        // together instead of stopping at whichever locale fails first.
+        expect(failures, 'fresh-mount sweep failing widths').toEqual({ no: [], en: [] })
     }, 600_000)
 
     it('passes the 300-620px resize sweep in both locales', async () => {
+        const failures: SweepFailures = { no: [], en: [] }
+
         for (const locale of ['no', 'en'] as const) {
             const mounted = sweepMount(620, locale)
             const host = mounted.container.firstElementChild as HTMLElement | null
             if (!host) throw new Error('No sweep host rendered')
-            const failures: string[] = []
 
             for (const width of SWEEP_WIDTHS) {
                 host.style.width = `${width}px`
@@ -624,15 +637,13 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
                 )
 
                 const problem = sweepProblem(mounted.container)
-                if (problem) failures.push(`${width}px: ${problem}`)
+                if (problem) failures[locale].push(`${width}px: ${problem}`)
             }
 
-            console.log(
-                `SWEEP resize ${locale}: ${failures.length}/${SWEEP_WIDTHS.length} failing widths` +
-                    (failures.length > 0 ? ` — ${failures.slice(0, 12).join(', ')}` : ''),
-            )
-            expect(failures, `resize sweep (${locale}): ${failures.length} failing widths`).toEqual([])
             mounted.unmount()
         }
+
+        logSweep('resize', failures)
+        expect(failures, 'resize sweep failing widths').toEqual({ no: [], en: [] })
     }, 600_000)
 })
