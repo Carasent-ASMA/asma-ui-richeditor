@@ -9,8 +9,8 @@ import clsx from 'clsx'
  * One deliberate departure, ASMA-8913: the resting (not shrunk) label is `text-delta-600`, not the
  * `text-delta-500` ui-core still uses. delta-500 is #7a899e on white, 3.56:1, below the 4.5:1 that
  * WCAG 1.4.3 requires of a placeholder surrogate; delta-600 measures 5.18:1 (default and greenish)
- * and 8.59:1 (fretex). ui-core finding F-01 covers the same defect in StyledInputField; until it is
- * fixed there, this label is intentionally a step darker than the shared field's. Converge on the
+ * and 8.59:1 (fretex). ui-core finding F-01 covers the same defect in StyledInputField; until ui-core
+ * resolves it, this label is intentionally a step darker than the shared field's. Converge on the
  * shared helpers (and drop this override) once F-01 ships.
  */
 export const FloatingLabel = ({

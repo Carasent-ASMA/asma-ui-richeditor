@@ -8,7 +8,7 @@ import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import { useListboxTriggerKeyboard } from '../hooks/useListboxTriggerKeyboard.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
-import { getOverflowMenuBreakpoint, getVisibleButtonCount } from './toolbar.helpers'
+import { getOverflowMenuBreakpoint, getVisibleButtonCount, isCompactFontSize } from './toolbar.helpers'
 import { ToolbarOverflowItem } from './ToolbarOverflowItem'
 import { useTranslations } from './useTranslations'
 
@@ -36,6 +36,7 @@ export const Toolbar = ({
     emojiButtonRef?: RefObject<HTMLSpanElement>
 }) => {
     const [visibleButtons, setVisibleButtons] = useState<number>(0)
+    const [toolbarWidth, setToolbarWidth] = useState<number>(0)
     const toolbarRef = useRef<HTMLDivElement | null>(null)
 
     const t = useTranslations(locale)
@@ -72,6 +73,7 @@ export const Toolbar = ({
 
             setActionsVisible(width < getOverflowMenuBreakpoint(isNorsk))
             setVisibleButtons(getVisibleButtonCount(width, isNorsk))
+            setToolbarWidth(width)
         }
 
         updateVisibleActions()
@@ -251,7 +253,12 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 4 && (
-                        <FontSizeSelect dataTest='toolbar-font-size-select' editor={editor} locale={locale} />
+                        <FontSizeSelect
+                            dataTest='toolbar-font-size-select'
+                            editor={editor}
+                            locale={locale}
+                            compact={isCompactFontSize(toolbarWidth, isNorsk)}
+                        />
                     )}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title={t.bullet_list} placement='top' arrow>

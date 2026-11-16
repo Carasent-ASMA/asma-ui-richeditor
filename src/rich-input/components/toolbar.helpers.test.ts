@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getOverflowMenuBreakpoint, getVisibleButtonCount } from './toolbar.helpers'
+import {
+    getCompactFontSizeBreakpoint,
+    getOverflowMenuBreakpoint,
+    getVisibleButtonCount,
+    isCompactFontSize,
+} from './toolbar.helpers'
 
 /**
  * T3, ASMA-8913 — a behaviour pin for the toolbar overflow maths.
@@ -64,6 +69,29 @@ describe('getOverflowMenuBreakpoint', () => {
             const breakpoint = getOverflowMenuBreakpoint(isNorsk)
             expect(getVisibleButtonCount(breakpoint - 1, isNorsk), 'just below the breakpoint').toBe(7)
             expect(getVisibleButtonCount(breakpoint, isNorsk), 'at the breakpoint').toBe(9)
+        }
+    })
+})
+
+/**
+ * ASMA-8913 — where the caret stops taking part in the row's width. The table above was measured for
+ * an 86.5px font-size control; the 20px caret makes it 106.5px, so compact mode has to start 20px
+ * before the point where nine buttons first fit.
+ */
+describe('compact font-size threshold', () => {
+    it('is the overflow breakpoint plus the caret width', () => {
+        expect(getCompactFontSizeBreakpoint(true)).toBe(534)
+        expect(getCompactFontSizeBreakpoint(false)).toBe(540)
+    })
+
+    it('switches exactly one pixel below it, and only once measured', () => {
+        for (const isNorsk of [true, false]) {
+            const threshold = getCompactFontSizeBreakpoint(isNorsk)
+            expect(isCompactFontSize(threshold - 1, isNorsk), 'just below the threshold').toBe(true)
+            expect(isCompactFontSize(threshold, isNorsk), 'at the threshold').toBe(false)
+            // Before the first ResizeObserver callback the width is 0; the wide layout is what the
+            // first paint must assume, and the layout effect corrects it before paint anyway.
+            expect(isCompactFontSize(0, isNorsk), 'unmeasured').toBe(false)
         }
     })
 })

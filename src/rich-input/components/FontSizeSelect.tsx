@@ -18,8 +18,8 @@ const fontSizeMap: { [key: string]: string } = {
 
 const fontSizes = ['small', 'normal', 'large', 'huge'] as const
 
-export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?: ILocale }) => {
-    const { editor, locale } = props
+export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?: ILocale; compact?: boolean }) => {
+    const { editor, locale, compact = false } = props
     const [selectedSize, setSelectedSize] = useState<string>('normal')
     const t = useTranslations(locale)
     const menuId = 'richinput-font-size-menu'
@@ -87,11 +87,41 @@ export const FontSizeSelect = (props: TextFieldProps & { editor: Editor; locale?
                         }}
                         onKeyDown={handleKeyDown}
                         className='asma-hit-area font-normal capitalize'
+                        // ASMA-8913: in a narrow toolbar the caret must not make this control wider.
+                        // The measured overflow breakpoints were computed for the 86.5px width, and
+                        // the 20px icon is what pushed the row to 106.5px — one pixel difference
+                        // that clipped Close at 390. Taking the icon out of the flex flow keeps the
+                        // natural width at 86.5px; the asymmetric padding moves the (still centred)
+                        // label 8px left so the caret sits at the right edge without covering the
+                        // widest size label.
+                        style={compact ? { paddingLeft: 0, paddingRight: 16 } : undefined}
                         onMouseUp={(event) => {
                             event.stopPropagation()
                             event.preventDefault()
                         }}
-                        endIcon={<Icon icon='tabler:caret-up-down-filled' fontSize={20} />}
+                        endIcon={
+                            compact ? (
+                                <span
+                                    data-testid='richeditor-font-size-caret'
+                                    aria-hidden='true'
+                                    style={{
+                                        position: 'absolute',
+                                        right: 4,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        display: 'flex',
+                                        pointerEvents: 'none',
+                                    }}
+                                >
+                                    {/* 16px, not the 20px in-flow icon: measured against the 86.5px
+                                        control this leaves a 4px gap to the widest size label and a
+                                        4px inset from the edge, where 20px would touch the label. */}
+                                    <Icon icon='tabler:caret-up-down-filled' fontSize={16} />
+                                </span>
+                            ) : (
+                                <Icon icon='tabler:caret-up-down-filled' fontSize={20} />
+                            )
+                        }
                     >
                         {selectedSize}
                     </StyledButton>

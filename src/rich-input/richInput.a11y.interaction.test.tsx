@@ -106,35 +106,40 @@ const placeholderState = (container: HTMLElement) => {
 }
 
 /**
- * Iconify paints each icon after an async lookup, so the toolbar's intrinsic width grows by the
- * icon's width (the font-size caret alone is 20px) some hundreds of milliseconds after mount.
- * Measuring before that is measuring a different toolbar, so wait until two consecutive snapshots
- * 150ms apart agree. Two equal snapshots rather than "an svg exists": the icon may legitimately not
- * arrive in an offline runner, and the row's geometry is still deterministic once nothing moves.
+ * ASMA-8913: Iconify paints an icon only after its async lookup resolves. The toolbar's six payloads
+ * are registered in `interaction.setup.ts`, so they exist on the first render and this gate is
+ * deterministic instead of a layout-stability guess: every icon-only control has its svg and the
+ * font-size control has its caret. Two animation frames then let the measured row settle.
  */
 const settleToolbarLayout = async (container: HTMLElement): Promise<void> => {
-    let previous = ''
     await vi.waitFor(
         () => {
-            const snapshot = Array.from(container.querySelectorAll<HTMLElement>('.toolbar button, .toolbar svg'))
-                .map((node) => `${node.tagName}:${Math.round(node.getBoundingClientRect().width * 100)}`)
-                .join(',')
-            if (snapshot !== previous) {
-                previous = snapshot
-                throw new Error('toolbar layout is still settling')
+            const toolbar = container.querySelector<HTMLElement>('.toolbar')
+            if (!toolbar) throw new Error('the toolbar is not rendered yet')
+            if (!toolbar.querySelector('[data-testid="richeditor-font-size-select"] svg')) {
+                throw new Error('the font-size caret is not painted yet')
+            }
+
+            const iconOnly = Array.from(toolbar.querySelectorAll('button')).filter(
+                (button) => !button.textContent?.trim(),
+            )
+            const painted = iconOnly.filter((button) => button.querySelector('svg') !== null)
+            if (painted.length !== iconOnly.length) {
+                throw new Error(`toolbar icons are not painted yet (${painted.length}/${iconOnly.length})`)
             }
         },
-        { timeout: 5000, interval: 150 },
+        { timeout: 5000, interval: 50 },
     )
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 }
 
-const mountRichInput = async (containerWidth: number, withFloatingLabel: boolean) => {
+const mountRichInput = async (containerWidth: number, withFloatingLabel: boolean, locale: 'no' | 'en' = 'no') => {
     const mounted = mount(
         <div style={{ width: containerWidth }}>
             <RichInput
                 dataTest='rich-input-a11y'
                 toolbarDefaultVisible
-                locale='no'
+                locale={locale}
                 label={withFloatingLabel ? FLOATING_LABEL : undefined}
                 labelPlacement={withFloatingLabel ? 'floating' : undefined}
                 placeholder={PLACEHOLDER}
@@ -289,6 +294,35 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         }
     }
 
+    const fontSizeControl = (container: HTMLElement): HTMLElement => {
+        const control = container.querySelector<HTMLElement>('[data-testid="richeditor-font-size-select"]')
+        if (!control) throw new Error('No font-size control rendered')
+
+        return control
+    }
+
+    /** Compact mode is the caret being out of the flex flow: it cannot add width. */
+    const caretOutOfFlow = (container: HTMLElement): boolean => {
+        const caret = container.querySelector<HTMLElement>('[data-testid="richeditor-font-size-caret"]')
+        return caret !== null && getComputedStyle(caret).position === 'absolute'
+    }
+
+    const expectRowFits = (container: HTMLElement): void => {
+        const toolbar = container.querySelector<HTMLElement>('.toolbar')
+        if (!toolbar) throw new Error('No toolbar rendered')
+
+        expect(toolbar.scrollWidth, 'toolbar content must fit its own width').toBeLessThanOrEqual(toolbar.clientWidth)
+
+        const toolbarBox = toolbar.getBoundingClientRect()
+        for (const button of toolbarButtons(container)) {
+            const box = button.getBoundingClientRect()
+            expect(box.left, `${nameOf(button)}: starts left of the field`).toBeGreaterThanOrEqual(
+                toolbarBox.left - 0.5,
+            )
+            expect(box.right, `${nameOf(button)}: ends right of the field`).toBeLessThanOrEqual(toolbarBox.right + 0.5)
+        }
+    }
+
     it('gives all ten controls of the wide toolbar a 44x44 target', async () => {
         const { container } = await mountRichInput(1280, true)
         const buttons = toolbarButtons(container)
@@ -299,13 +333,19 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
             false,
         )
 
+        // 1280 must be visually identical to bfdf679: the caret stays in flow, so the control keeps
+        // its 106.5px width and the row is untouched.
+        expect(caretOutOfFlow(container), 'compact mode must be off at 1280').toBe(false)
+        expect(fontSizeControl(container).getBoundingClientRect().width, 'font-size control width at 1280').toBe(106.5)
+        expectRowFits(container)
+
         for (const button of buttons) expectTarget(button)
     })
 
     it('covers the overflow control when the toolbar is narrow', async () => {
         // Below the 520px overflow breakpoint, so the nine formatting controls collapse and the
-        // "more" control joins the row. Still wide enough that the row does not overflow the field,
-        // which is what keeps the 4px gap (and therefore the non-overlapping 44px squares) intact.
+        // "more" control joins the row. Compact mode is on, so the caret adds no width and the row
+        // keeps its 4px gaps.
         const { container } = await mountRichInput(500, true)
         const buttons = toolbarButtons(container)
         const more = container.querySelector<HTMLElement>('[data-testid="richeditor-more-menu-button"]')
@@ -313,59 +353,82 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         expect(more, 'the overflow control must be in the toolbar row').not.toBeNull()
         expect(buttons.length).toBeGreaterThan(1)
         expect(buttons).toContain(more)
+        expect(caretOutOfFlow(container), 'compact mode must be on at 500').toBe(true)
+        expectRowFits(container)
 
         for (const button of buttons) expectTarget(button)
     })
 
-    it('keeps the target on a 390px viewport', async () => {
+    it('keeps the target and the 4px gap on a 390px viewport', async () => {
         await page.viewport(390, 700)
 
         try {
             const { container } = await mountRichInput(390, true)
             const buttons = toolbarButtons(container)
             const more = container.querySelector<HTMLElement>('[data-testid="richeditor-more-menu-button"]')
-            const toolbar = container.querySelector<HTMLElement>('.toolbar')
-            if (!toolbar) throw new Error('No toolbar rendered')
+            const close = container.querySelector<HTMLElement>('[data-testid="richeditor-close-toolbar-button"]')
+            if (!more || !close) throw new Error('the narrow toolbar must render More and Close')
 
-            expect(more, 'the overflow control must be in the toolbar row').not.toBeNull()
+            // The caret fix: the row fits, nothing is clipped, and the gap before Close is back.
+            expect(caretOutOfFlow(container), 'compact mode must be on at 390').toBe(true)
+            expect(fontSizeControl(container).getBoundingClientRect().width, 'font-size control width at 390').toBe(86.5)
+            expectRowFits(container)
 
-            // Pre-existing narrow-width layout, unchanged by this ticket (the hit area is an
-            // absolute overlay and takes no part in flex sizing): at 390 the row can be wider than
-            // the field, and when it is, the field clips the last control (Close) and the gap before
-            // it collapses to zero. Only the LAST control may do that — a future layout change that
-            // pushes an earlier one out has to update this test knowingly.
-            const toolbarBox = toolbar.getBoundingClientRect()
-            const lastButton = buttons[buttons.length - 1]
-            if (!lastButton) throw new Error('No toolbar buttons rendered')
-            const overflowing = buttons.filter(
-                (button) => button.getBoundingClientRect().right > toolbarBox.right + 0.5,
+            // The caret must sit at the right edge without covering the size label.
+            const caret = container.querySelector<HTMLElement>('[data-testid="richeditor-font-size-caret"]')
+            const labelText = fontSizeControl(container).querySelector('div')
+            if (!caret || !labelText) throw new Error('the compact caret and its label must be rendered')
+            const labelRange = document.createRange()
+            labelRange.selectNodeContents(labelText)
+            const labelBox = labelRange.getBoundingClientRect()
+            const caretBox = caret.getBoundingClientRect()
+            expect(caretBox.left, 'the caret must not overlap the size label').toBeGreaterThanOrEqual(
+                labelBox.right + 2,
             )
+            expect(caretBox.right, 'the caret must stay inside the control').toBeLessThanOrEqual(
+                fontSizeControl(container).getBoundingClientRect().right,
+            )
+            // The gap is the 4px flex gap plus whatever space-between distributes; it must be back
+            // at (at least) the designed 4px rather than collapsing to 0 as it did with the wider
+            // control.
             expect(
-                overflowing.every((button) => button === lastButton),
-                `only the last control may overflow the field at 390, got ${overflowing.map(nameOf).join(', ')}`,
-            ).toBe(true)
+                close.getBoundingClientRect().left - more.getBoundingClientRect().right,
+                'the 4px gap before Close must be back',
+            ).toBeGreaterThanOrEqual(4)
 
-            for (const button of buttons) {
-                expectTargetGeometry(button)
-
-                const box = button.getBoundingClientRect()
-                const centreX = box.left + box.width / 2
-                const centreY = box.top + box.height / 2
-                expect(document.elementFromPoint(centreX, centreY), `${nameOf(button)}: centre`).toBe(button)
-
-                // Where the gap collapsed, the neighbour's overlay legitimately owns the shared
-                // edge; the requirement that still holds is that the press is not lost to the
-                // toolbar background on any of the nine points the square covers.
-                for (const [dx, dy] of TARGET_POINTS) {
-                    const hit = document.elementFromPoint(centreX + dx, centreY + dy)
-                    expect(
-                        buttons.includes(hit as HTMLElement),
-                        `${nameOf(button)}: press at (${dx}, ${dy}) fell through the toolbar`,
-                    ).toBe(true)
-                }
-            }
+            // Strict: every control owns all nine points, no neighbour exception.
+            for (const button of buttons) expectTarget(button)
         } finally {
             await page.viewport(1280, 720)
+        }
+    })
+
+    it('switches the caret out of flow exactly at the compact threshold', async () => {
+        // The threshold is the overflow breakpoint plus the caret's 20px: 534 for Norwegian, 540 for
+        // English. Each pair is [one pixel below → compact, at the threshold → normal].
+        const cases: Array<{ width: number; locale: 'no' | 'en'; compact: boolean }> = [
+            { width: 390, locale: 'no', compact: true },
+            { width: 500, locale: 'no', compact: true },
+            { width: 514, locale: 'no', compact: true },
+            { width: 520, locale: 'en', compact: true },
+            { width: 533, locale: 'no', compact: true },
+            { width: 534, locale: 'no', compact: false },
+            { width: 539, locale: 'en', compact: true },
+            { width: 540, locale: 'en', compact: false },
+        ]
+
+        for (const { width, locale, compact } of cases) {
+            const { container, unmount } = await mountRichInput(width, true, locale)
+            const label = `${width}px ${locale}`
+
+            expect(caretOutOfFlow(container), `${label}: compact mode`).toBe(compact)
+            expect(
+                fontSizeControl(container).getBoundingClientRect().width,
+                `${label}: font-size control width`,
+            ).toBe(compact ? 86.5 : 106.5)
+            expectRowFits(container)
+
+            unmount()
         }
     })
 })
