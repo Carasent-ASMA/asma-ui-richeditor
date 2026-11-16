@@ -15,7 +15,19 @@ export default defineConfig({
         }),
         dts({
             insertTypesEntry: true,
-            exclude: ['node_modules/**/*', 'src/stories/**', 'src/**/*.stories.tsx', 'src/components/**/makeData.ts'],
+            exclude: [
+                'node_modules/**/*',
+                'src/stories/**',
+                'src/**/*.stories.tsx',
+                'src/components/**/makeData.ts',
+                // ASMA-8913: the contrast/target suite and its harness are tests, not API. Without
+                // these the tarball would gain a `.d.ts` per test file (same reason as ASMA-8139 in
+                // asma-ui-core).
+                'src/**/*.test.ts',
+                'src/**/*.interaction.test.tsx',
+                'src/test-utils/**',
+                'vitest.config.ts',
+            ],
         }),
     ],
     resolve: {

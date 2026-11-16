@@ -8,7 +8,7 @@ import { useToggleMenuVisibility } from '../hooks/useToggleMenuVisibility.hook'
 import { useListboxTriggerKeyboard } from '../hooks/useListboxTriggerKeyboard.hook'
 import type { ILocale } from '../interfaces/types'
 import { FontSizeSelect } from 'src/rich-input/components/FontSizeSelect'
-import { getOverflowMenuBreakpoint, getVisibleButtonCount } from './toolbar.helpers'
+import { getOverflowMenuBreakpoint, getVisibleButtonCount, isCompactFontSize, TOOLBAR_WIDTH_SLACK } from './toolbar.helpers'
 import { ToolbarOverflowItem } from './ToolbarOverflowItem'
 import { useTranslations } from './useTranslations'
 
@@ -36,6 +36,7 @@ export const Toolbar = ({
     emojiButtonRef?: RefObject<HTMLSpanElement>
 }) => {
     const [visibleButtons, setVisibleButtons] = useState<number>(0)
+    const [toolbarWidth, setToolbarWidth] = useState<number>(0)
     const toolbarRef = useRef<HTMLDivElement | null>(null)
 
     const t = useTranslations(locale)
@@ -68,10 +69,13 @@ export const Toolbar = ({
         if (!toolbar) return
 
         const updateVisibleActions = () => {
-            const width = toolbar.clientWidth
+            // Breakpoints and compact mode judge the slack-adjusted width, not the drawn one; the
+            // drawn row still uses the whole field, it just never exact-fits.
+            const width = Math.max(0, toolbar.clientWidth - TOOLBAR_WIDTH_SLACK)
 
             setActionsVisible(width < getOverflowMenuBreakpoint(isNorsk))
             setVisibleButtons(getVisibleButtonCount(width, isNorsk))
+            setToolbarWidth(width)
         }
 
         updateVisibleActions()
@@ -84,6 +88,10 @@ export const Toolbar = ({
 
     const { anchorEl, open, handleClose, openFromElement } = useToggleMenuVisibility()
     const overflowMenuId = 'richinput-overflow-menu'
+
+    // ASMA-8913 round 2: the measured width the breakpoints see reserves 13px of slack, so the row
+    // never exact-fits and the designed 4px gap before Close survives at every width.
+    const compactFontSize = isCompactFontSize(toolbarWidth, isNorsk)
 
     /** Buttons that no longer fit, in the same order they drop out of the toolbar. */
     const overflowItems = [
@@ -163,13 +171,22 @@ export const Toolbar = ({
 
     return (
         <>
-            <div className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })} ref={toolbarRef}>
+            {/* ASMA-8913: every control in this row carries `.asma-hit-area`, ui-core's transparent
+                44x44 pointer overlay over the drawn 40px box (the drawn size does not change). It is
+                scoped to this row on purpose: RichInput's action column (`rte-actions`) stacks with
+                no gap in multi-line mode and the field clips it at the right edge, so overlapping
+                44px overlays there would steal each other's presses. */}
+            <div
+                className={clsx('toolbar', { 'toolbar-error': error, 'toolbar-focused': focused })}
+                ref={toolbarRef}
+            >
                 <div className='flex flex-row items-center gap-1'>
                     {visibleButtons >= 1 && (
                         <StyledTooltip arrow title={t.emojis} placement='top'>
                             <span ref={emojiButtonRef}>
                                 <StyledButton
                                     dataTest='richeditor-emoji-button'
+                                    className='asma-hit-area'
                                     size='large'
                                     variant='textGray'
                                     aria-label={t.emojis}
@@ -195,7 +212,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-h1-button'
-                                    className='text-delta-700 text-sm font-semibold'
+                                    className='asma-hit-area text-delta-700 text-sm font-semibold'
                                     size='large'
                                     variant={isH1 ? 'text' : 'textGray'}
                                     aria-pressed={isH1}
@@ -222,7 +239,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-h2-button'
-                                    className='text-delta-700 text-sm font-semibold'
+                                    className='asma-hit-area text-delta-700 text-sm font-semibold'
                                     size='large'
                                     variant={isH2 ? 'text' : 'textGray'}
                                     aria-pressed={isH2}
@@ -245,13 +262,19 @@ export const Toolbar = ({
                         </StyledTooltip>
                     )}
                     {visibleButtons >= 4 && (
-                        <FontSizeSelect dataTest='toolbar-font-size-select' editor={editor} locale={locale} />
+                        <FontSizeSelect
+                            dataTest='toolbar-font-size-select'
+                            editor={editor}
+                            locale={locale}
+                            compact={compactFontSize}
+                        />
                     )}
                     {visibleButtons >= 5 && (
                         <StyledTooltip title={t.bullet_list} placement='top' arrow>
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-bullet-list-button'
+                                    className='asma-hit-area'
                                     size='large'
                                     variant={isBulletList ? 'text' : 'textGray'}
                                     aria-label={t.bullet_list}
@@ -276,6 +299,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-ordered-list-button'
+                                    className='asma-hit-area'
                                     size='large'
                                     variant={isOrderedList ? 'text' : 'textGray'}
                                     aria-label={t.ordered_list}
@@ -300,6 +324,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-bold-button'
+                                    className='asma-hit-area'
                                     size='large'
                                     variant={isBold ? 'text' : 'textGray'}
                                     aria-label={t.bold}
@@ -324,6 +349,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-italic-button'
+                                    className='asma-hit-area'
                                     size='large'
                                     variant={isItalic ? 'text' : 'textGray'}
                                     aria-label={t.italic}
@@ -348,7 +374,7 @@ export const Toolbar = ({
                             <span>
                                 <StyledButton
                                     dataTest='richeditor-link-button'
-                                    className={emptySelection ? 'cursor-not-allowed' : ''}
+                                    className={clsx('asma-hit-area', emptySelection && 'cursor-not-allowed')}
                                     disabled={emptySelection}
                                     size='large'
                                     variant={isLink ? 'text' : 'textGray'}
@@ -377,6 +403,7 @@ export const Toolbar = ({
                                     <StyledButton
                                         size='large'
                                         dataTest='richeditor-more-menu-button'
+                                        className='asma-hit-area'
                                         variant='text'
                                         style={{ minWidth: 40, maxWidth: 40 }}
                                         aria-label={t.more}
@@ -434,6 +461,7 @@ export const Toolbar = ({
                 </div>
                 <StyledButton
                     dataTest='richeditor-close-toolbar-button'
+                    className='asma-hit-area'
                     size='large'
                     variant='text'
                     onMouseDown={(e) => {
