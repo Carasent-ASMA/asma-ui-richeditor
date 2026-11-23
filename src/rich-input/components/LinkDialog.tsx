@@ -5,6 +5,15 @@ import '../styles/toolbar.css'
 import type { ILocale } from '../interfaces/types'
 import { useTranslations } from './useTranslations'
 
+const isValidUrl = (value: string): boolean => {
+    try {
+        const parsed = new URL(value)
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+    } catch {
+        return false
+    }
+}
+
 export const LinkDialog: React.FC<{
     open: boolean
     setOpen: (value: boolean) => void
@@ -12,7 +21,11 @@ export const LinkDialog: React.FC<{
     locale?: ILocale
 }> = ({ open, setOpen, editor, locale }) => {
     const [url, setUrl] = useState('')
+    const [touched, setTouched] = useState(false)
     const t = useTranslations(locale)
+
+    const trimmedUrl = url.trim()
+    const urlError = !trimmedUrl ? t.link_url_required : !isValidUrl(trimmedUrl) ? t.link_url_invalid : undefined
 
     useLayoutEffect(() => {
         if (open) {
@@ -30,6 +43,7 @@ export const LinkDialog: React.FC<{
 
             if (currentLink) setUrl(currentLink)
             else setUrl('')
+            setTouched(false)
 
             const input = document.querySelector('[data-test="link-input-field"]') as HTMLElement
             input?.focus()
@@ -37,9 +51,14 @@ export const LinkDialog: React.FC<{
     }, [open, editor])
 
     const makeLink = () => {
-        editor.chain().focus().setLink({ href: url }).run()
+        if (urlError) {
+            setTouched(true)
+            return
+        }
+        editor.chain().focus().setLink({ href: trimmedUrl }).run()
         setOpen(false)
         setUrl('')
+        setTouched(false)
     }
 
     return (
@@ -62,6 +81,9 @@ export const LinkDialog: React.FC<{
                         aria-label={t.link_url}
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
+                        onBlur={() => setTouched(true)}
+                        error={touched && !!urlError}
+                        helperText={touched ? urlError : undefined}
                     />
                 </div>
             </StyledDialogContent>
@@ -74,6 +96,7 @@ export const LinkDialog: React.FC<{
                     onClick={() => {
                         setOpen(false)
                         setUrl('')
+                        setTouched(false)
                     }}
                 >
                     {t.cancel}
