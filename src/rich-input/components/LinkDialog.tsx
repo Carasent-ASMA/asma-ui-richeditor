@@ -50,7 +50,7 @@ export const LinkDialog: React.FC<{
             className={'z-[99]'}
             dialogTitle={<div className={'text-gray-700'}>{t.add_link}</div>}
         >
-            <StyledDialogContent className='border-y border-solid border-delta-200 mt-4'>
+            <StyledDialogContent className='border-b border-solid border-delta-200 mt-4'>
                 <div className='link-input-field'>
                     <StyledInputField
                         autoFocus
