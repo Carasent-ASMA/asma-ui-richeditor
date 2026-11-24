@@ -1,3 +1,4 @@
+import { getValidationMessage } from 'asma-core-helpers/validation'
 import { useMemo } from 'react'
 import type { ILocale } from '../interfaces/types'
 
@@ -22,7 +23,7 @@ const translations = {
         add_link: 'Add link',
         cancel: 'Cancel',
         link_url: 'Link URL',
-        link_url_required: 'Required',
+        // ASMA-8073: no catalog key for a URL-specific message, so this stays app-local.
         link_url_invalid: 'Enter a valid URL, like https://example.com.',
         small: 'Small',
         normal: 'Normal',
@@ -51,7 +52,7 @@ const translations = {
         add_link: 'Legg til lenke',
         cancel: 'Avbryt',
         link_url: 'Lenkeadresse',
-        link_url_required: 'Obligatorisk',
+        // ASMA-8073: no catalog key for a URL-specific message, so this stays app-local.
         link_url_invalid: 'Skriv inn en gyldig URL, for eksempel https://example.com.',
         small: 'Liten',
         normal: 'Normal',
@@ -63,5 +64,9 @@ const translations = {
 }
 
 export function useTranslations(locale: ILocale = 'en') {
-    return useMemo(() => translations[locale] ?? translations.en, [locale])
+    return useMemo(() => {
+        const base = translations[locale] ?? translations.en
+        // ASMA-8073: "Required" comes from the shared asma-core-helpers/validation catalog.
+        return { ...base, link_url_required: getValidationMessage(locale === 'no' ? 'nb' : 'en', 'required') }
+    }, [locale])
 }
