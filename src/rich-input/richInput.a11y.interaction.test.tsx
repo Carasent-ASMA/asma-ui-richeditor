@@ -41,6 +41,22 @@ beforeAll(async () => {
     await document.fonts.ready
 })
 
+/**
+ * The fixture pins the font, but a component rule could still override it on the measured control.
+ * Assert the computed family at the measuring point so the derived widths cannot silently absorb a
+ * different font; the font-size control is absent below four visible buttons, so fall back to the row.
+ */
+const expectPinnedFont = (container: HTMLElement): void => {
+    const measured =
+        container.querySelector<HTMLElement>('[data-testid="richeditor-font-size-select"]') ??
+        container.querySelector<HTMLElement>('.toolbar')
+    if (!measured) throw new Error('No measured control rendered')
+
+    expect(getComputedStyle(measured).fontFamily, 'the measured control must render with the pinned font').toContain(
+        TEST_FONT_FAMILY,
+    )
+}
+
 /** The theme attribute `.storybook/preview.ts` drives through `withThemeByDataAttribute`. */
 const THEMES = ['default', 'greenish', 'fretex'] as const
 type Theme = (typeof THEMES)[number]
@@ -172,6 +188,7 @@ const mountRichInput = async (containerWidth: number, withFloatingLabel: boolean
         </div>,
     )
     await settleToolbarLayout(mounted.container)
+    expectPinnedFont(mounted.container)
 
     return mounted
 }
@@ -626,8 +643,8 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         return null
     }
 
-    const sweepMount = (width: number, locale: 'no' | 'en') =>
-        mount(
+    const sweepMount = (width: number, locale: 'no' | 'en') => {
+        const mounted = mount(
             <div style={{ width, fontFamily: TEST_FONT_FAMILY }}>
                 <RichInput
                     dataTest='rich-input-sweep'
@@ -639,6 +656,10 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
                 />
             </div>,
         )
+        expectPinnedFont(mounted.container)
+
+        return mounted
+    }
 
     type SweepFailures = Record<'no' | 'en', string[]>
 
