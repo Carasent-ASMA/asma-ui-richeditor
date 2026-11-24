@@ -1,7 +1,10 @@
 :root {
     --max-scrollable-height: 100px;
 }
-* {
+/* ASMA-9047: the reset stays inside the editor. An unlayered universal selector would also beat
+   every CSS layer on pages that load this package's stylesheet (asma-app-chat imports it globally).
+   :where() keeps specificity at 0, so authored rules still win exactly as they did before. */
+:where(.core-ui-rte, .core-ui-rte *) {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
