@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/react'
 import { StyledButton, StyledDialog, StyledDialogContent, StyledInputField } from 'asma-ui-core'
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useLayoutEffect, useRef, useState } from 'react'
 import '../styles/toolbar.css'
 import type { ILocale } from '../interfaces/types'
 import { useTranslations } from './useTranslations'
@@ -21,11 +21,15 @@ export const LinkDialog: React.FC<{
     locale?: ILocale
 }> = ({ open, setOpen, editor, locale }) => {
     const [url, setUrl] = useState('')
-    const [touched, setTouched] = useState(false)
+    const [urlError, setUrlError] = useState<string | undefined>(undefined)
+    const urlInputRef = useRef<HTMLTextAreaElement>(null)
     const t = useTranslations(locale)
 
-    const trimmedUrl = url.trim()
-    const urlError = !trimmedUrl ? t.link_url_required : !isValidUrl(trimmedUrl) ? t.link_url_invalid : undefined
+    const validateUrl = (value: string): string | undefined => {
+        const trimmed = value.trim()
+        if (!trimmed) return t.link_url_required
+        return isValidUrl(trimmed) ? undefined : t.link_url_invalid
+    }
 
     useLayoutEffect(() => {
         if (open) {
@@ -43,22 +47,31 @@ export const LinkDialog: React.FC<{
 
             if (currentLink) setUrl(currentLink)
             else setUrl('')
-            setTouched(false)
+            setUrlError(undefined)
 
             const input = document.querySelector('[data-test="link-input-field"]') as HTMLElement
             input?.focus()
         }
     }, [open, editor])
 
+    // ADR-0017 REQ-001/REQ-002: blur or submit introduces an error; a change only
+    // re-validates an error that is already visible, so it can clear it but never create one.
+    const handleUrlChange = (value: string) => {
+        setUrl(value)
+        setUrlError((previous) => (previous ? validateUrl(value) : undefined))
+    }
+
     const makeLink = () => {
-        if (urlError) {
-            setTouched(true)
+        const nextError = validateUrl(url)
+        if (nextError) {
+            setUrlError(nextError)
+            urlInputRef.current?.focus()
             return
         }
-        editor.chain().focus().setLink({ href: trimmedUrl }).run()
+        editor.chain().focus().setLink({ href: url.trim() }).run()
         setOpen(false)
         setUrl('')
-        setTouched(false)
+        setUrlError(undefined)
     }
 
     return (
@@ -80,10 +93,12 @@ export const LinkDialog: React.FC<{
                         minRows={2}
                         aria-label={t.link_url}
                         value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        onBlur={() => setTouched(true)}
-                        error={touched && !!urlError}
-                        helperText={touched ? urlError : undefined}
+                        inputRef={urlInputRef}
+                        onChange={(e) => handleUrlChange(e.target.value)}
+                        onBlur={() => setUrlError(validateUrl(url))}
+                        error={!!urlError}
+                        helperText={urlError}
+                        reserveHelperText
                     />
                 </div>
             </StyledDialogContent>
@@ -96,7 +111,7 @@ export const LinkDialog: React.FC<{
                     onClick={() => {
                         setOpen(false)
                         setUrl('')
-                        setTouched(false)
+                        setUrlError(undefined)
                     }}
                 >
                     {t.cancel}
