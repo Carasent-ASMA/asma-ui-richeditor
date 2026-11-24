@@ -31,6 +31,18 @@ export const LinkDialog: React.FC<{
         return isValidUrl(trimmed) ? undefined : t.link_url_invalid
     }
 
+    const isUrlValid = validateUrl(url) === undefined
+
+    // ADR-0017 REQ-005: aria-invalid tracks real validity at all times, independently of whether
+    // the error is visible yet. ui-core derives aria-invalid from `error`, which must stay on the
+    // blur/submit timing, so publish validity on the same control through the field's inputRef.
+    useLayoutEffect(() => {
+        const input = urlInputRef.current
+        if (!input) return
+        if (isUrlValid) input.removeAttribute('aria-invalid')
+        else input.setAttribute('aria-invalid', 'true')
+    }, [open, isUrlValid])
+
     useLayoutEffect(() => {
         if (open) {
             const { from, to } = editor.state.selection

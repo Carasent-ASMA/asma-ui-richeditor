@@ -159,6 +159,23 @@ describe('ASMA-8073 — LinkDialog error timing, focus and layout (F1/F2/F3)', (
         editor.destroy()
     })
 
+    it('F5: marks the field aria-invalid before blur, even while the visible error is still hidden', async () => {
+        const editor = new Editor({ extensions: resolveDefaultExtensions() })
+        const { container } = mount(<LinkDialog open setOpen={() => undefined} editor={editor} locale='en' />)
+        const textarea = urlField(container)
+
+        await userEvent.fill(textarea, 'https://example.com')
+        await userEvent.click(textarea)
+        await userEvent.tab() // blur while valid: no error
+        await userEvent.click(textarea)
+        await userEvent.fill(textarea, 'https://') // edit to an invalid value without blurring again
+
+        expect(container.textContent).not.toContain('Enter a valid URL')
+        expect(textarea.getAttribute('aria-invalid')).toBe('true')
+
+        editor.destroy()
+    })
+
     it('F3: the helper row is mounted before any error, so showing one does not shift the layout', async () => {
         const editor = new Editor({ extensions: resolveDefaultExtensions() })
         const { container } = mount(<LinkDialog open setOpen={() => undefined} editor={editor} locale='en' />)
