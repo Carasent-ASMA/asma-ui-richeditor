@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { RichInput } from 'src/rich-input/RichInput'
 import { cleanup, mount } from 'src/test-utils/renderInteraction'
@@ -19,6 +19,27 @@ import { contrastRatio, parseColor, relativeLuminance, WHITE, type Rgba } from '
 const WCAG_AA_TEXT = 4.5
 const TARGET_SIZE = 44
 const DRAWN_SIZE = 40
+
+/**
+ * ASMA-8913 portability: the component ships Roboto faces in `styles/index.scss`, but the toolbar
+ * inherits Tailwind's `ui-sans-serif, system-ui` stack, so its text metrics (and the measured
+ * breakpoint slack) depended on the host OS. Pin the bundled face on each test fixture only —
+ * production CSS is untouched — and load every weight before measuring, so macOS and the Linux CI
+ * runner exercise the same metrics. The derived width assertions below then hold on either host.
+ */
+const TEST_FONT_FAMILY = 'Roboto'
+const TEST_FONT_WEIGHTS = [100, 300, 400, 500, 700, 900]
+
+beforeAll(async () => {
+    const faces = await Promise.all(
+        TEST_FONT_WEIGHTS.map((weight) => document.fonts.load(`${weight} 16px ${TEST_FONT_FAMILY}`)),
+    )
+    expect(
+        faces.every((loaded) => loaded.length > 0),
+        `the bundled ${TEST_FONT_FAMILY} faces must load in the test browser`,
+    ).toBe(true)
+    await document.fonts.ready
+})
 
 /** The theme attribute `.storybook/preview.ts` drives through `withThemeByDataAttribute`. */
 const THEMES = ['default', 'greenish', 'fretex'] as const
@@ -139,7 +160,7 @@ const settleToolbarLayout = async (container: HTMLElement): Promise<void> => {
 
 const mountRichInput = async (containerWidth: number, withFloatingLabel: boolean, locale: 'no' | 'en' = 'no') => {
     const mounted = mount(
-        <div style={{ width: containerWidth }}>
+        <div style={{ width: containerWidth, fontFamily: TEST_FONT_FAMILY }}>
             <RichInput
                 dataTest='rich-input-a11y'
                 toolbarDefaultVisible
@@ -306,6 +327,27 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         return control
     }
 
+    /**
+     * The drawn width of the font-size control, derived from the rendered label and whichever caret
+     * is actually in flow. No font metric or caret pixel value is hardcoded: compact mode must
+     * contribute exactly the label plus horizontal padding/border, and wide mode exactly that plus
+     * the in-flow caret. If the compact caret were put back in flow, this width would grow by its box.
+     */
+    const expectedFontSizeControlWidth = (container: HTMLElement, compact: boolean): number => {
+        const control = fontSizeControl(container)
+        const label = control.querySelector<HTMLElement>('div')
+        if (!label) throw new Error('No font-size label rendered')
+        const style = getComputedStyle(control)
+        const chrome = ['border-left-width', 'border-right-width', 'padding-left', 'padding-right'].reduce(
+            (sum, property) => sum + Number.parseFloat(style.getPropertyValue(property) || '0'),
+            0,
+        )
+        const caret = compact ? null : control.querySelector('svg')
+        if (!compact && !caret) throw new Error('the wide font-size control must render its in-flow caret')
+
+        return label.getBoundingClientRect().width + chrome + (caret?.getBoundingClientRect().width ?? 0)
+    }
+
     /** Compact mode is the caret being out of the flex flow: it cannot add width. */
     const caretOutOfFlow = (container: HTMLElement): boolean => {
         const caret = container.querySelector<HTMLElement>('[data-testid="richeditor-font-size-caret"]')
@@ -355,9 +397,12 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
         )
 
         // 1280 must be visually identical to bfdf679: the caret stays in flow, so the control keeps
-        // its 106.5px width and the row is untouched.
+        // the label plus caret width and the row is untouched.
         expect(caretOutOfFlow(container), 'compact mode must be off at 1280').toBe(false)
-        expect(fontSizeControl(container).getBoundingClientRect().width, 'font-size control width at 1280').toBe(106.5)
+        expect(
+            fontSizeControl(container).getBoundingClientRect().width,
+            'font-size control width at 1280',
+        ).toBeCloseTo(expectedFontSizeControlWidth(container, false), 2)
         expectRowFits(container)
 
         for (const button of buttons) expectTarget(button)
@@ -392,7 +437,10 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
 
             // The caret fix: the row fits, nothing is clipped, and the gap before Close is back.
             expect(caretOutOfFlow(container), 'compact mode must be on at 390').toBe(true)
-            expect(fontSizeControl(container).getBoundingClientRect().width, 'font-size control width at 390').toBe(86.5)
+            expect(
+                fontSizeControl(container).getBoundingClientRect().width,
+                'font-size control width at 390',
+            ).toBeCloseTo(expectedFontSizeControlWidth(container, true), 2)
             expectRowFits(container)
 
             // The caret must sit at the right edge without covering the size label.
@@ -492,7 +540,7 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
                 expect(
                     fontSizeControl(container).getBoundingClientRect().width,
                     `${label}: font-size control width`,
-                ).toBe(compact ? 86.5 : 106.5)
+                ).toBeCloseTo(expectedFontSizeControlWidth(container, compact), 2)
             } else {
                 expect(
                     container.querySelector('[data-testid="richeditor-font-size-select"]'),
@@ -527,7 +575,7 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
             expect(
                 fontSizeControl(container).getBoundingClientRect().width,
                 `${width}px ${locale}: font-size control width`,
-            ).toBe(compact ? 86.5 : 106.5)
+            ).toBeCloseTo(expectedFontSizeControlWidth(container, compact), 2)
 
             unmount()
         }
@@ -580,7 +628,7 @@ describe('ASMA-8913 T2 — 44px pointer targets in the toolbar row', () => {
 
     const sweepMount = (width: number, locale: 'no' | 'en') =>
         mount(
-            <div style={{ width }}>
+            <div style={{ width, fontFamily: TEST_FONT_FAMILY }}>
                 <RichInput
                     dataTest='rich-input-sweep'
                     toolbarDefaultVisible
