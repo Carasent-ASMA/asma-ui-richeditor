@@ -23,8 +23,6 @@ const translations = {
         add_link: 'Add link',
         cancel: 'Cancel',
         link_url: 'Link URL',
-        // ASMA-8073: no catalog key for a URL-specific message, so this stays app-local.
-        link_url_invalid: 'Enter a valid URL, like https://example.com.',
         small: 'Small',
         normal: 'Normal',
         large: 'Large',
@@ -52,8 +50,6 @@ const translations = {
         add_link: 'Legg til lenke',
         cancel: 'Avbryt',
         link_url: 'Lenkeadresse',
-        // ASMA-8073: no catalog key for a URL-specific message, so this stays app-local.
-        link_url_invalid: 'Skriv inn en gyldig URL, for eksempel https://example.com.',
         small: 'Liten',
         normal: 'Normal',
         large: 'Stor',
@@ -66,7 +62,11 @@ const translations = {
 export function useTranslations(locale: ILocale = 'en') {
     return useMemo(() => {
         const base = translations[locale] ?? translations.en
-        // ASMA-8073: "Required" comes from the shared asma-core-helpers/validation catalog.
-        return { ...base, link_url_required: getValidationMessage(locale === 'no' ? 'nb' : 'en', 'required') }
+        const validationLocale = locale === 'no' ? 'nb' : 'en'
+        return {
+            ...base,
+            link_url_required: getValidationMessage(validationLocale, 'required'),
+            link_url_invalid: getValidationMessage(validationLocale, 'invalid_url'),
+        }
     }, [locale])
 }
