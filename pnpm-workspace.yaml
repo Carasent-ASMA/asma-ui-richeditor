@@ -10,3 +10,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - asma-ui-core@3.103.0 || 3.104.0 || 3.110.0
+  - asma-core-helpers@0.43.0 || 0.44.0

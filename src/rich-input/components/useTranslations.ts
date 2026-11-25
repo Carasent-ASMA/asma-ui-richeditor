@@ -1,3 +1,4 @@
+import { getValidationMessage } from 'asma-core-helpers/validation'
 import { useMemo } from 'react'
 import type { ILocale } from '../interfaces/types'
 
@@ -59,5 +60,13 @@ const translations = {
 }
 
 export function useTranslations(locale: ILocale = 'en') {
-    return useMemo(() => translations[locale] ?? translations.en, [locale])
+    return useMemo(() => {
+        const base = translations[locale] ?? translations.en
+        const validationLocale = locale === 'no' ? 'nb' : 'en'
+        return {
+            ...base,
+            link_url_required: getValidationMessage(validationLocale, 'required'),
+            link_url_invalid: getValidationMessage(validationLocale, 'invalid_url'),
+        }
+    }, [locale])
 }
