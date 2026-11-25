@@ -62,7 +62,7 @@
         "@tiptap/extensions": "^3.27.2",
         "@tiptap/react": "^3.27.2",
         "@tiptap/starter-kit": "^3.27.2",
-        "asma-core-helpers": "^0.43.0",
+        "asma-core-helpers": "^0.44.0",
         "clsx": "^2.1.1",
         "emoji-picker-react": "^4.13.2",
         "tiptap-extension-font-size": "^1.2.0"
